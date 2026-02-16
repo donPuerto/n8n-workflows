@@ -1,0 +1,1751 @@
+{
+  "updatedAt": "2026-02-12T15:39:21.273Z",
+  "createdAt": "2026-01-01T03:52:58.551Z",
+  "id": "Dm34kcocvPR7PllT",
+  "name": "03. Discord File Upload v2 - Hi Pages Lead",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ",
+          "mode": "list",
+          "cachedResultName": "Leads Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "raw",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\n",
+            "Id": "={{ $json.id }}",
+            "Lead Type": "={{ $json.leadType }}",
+            "First Name": "={{ $json.firstName }}",
+            "Last Name": "={{ $json.lastName }}",
+            "Mobile Number": "={{ $json.mobileNumber }}",
+            "Email Address": "={{ $json.emailAddress }}",
+            "Phone Number": "={{ $json.phoneNumber }}",
+            "Address": "={{ $json.address }}",
+            "State": "={{ $json.state }}",
+            "Postal Code": "={{ $json.postalCode }}",
+            "Suburb": "={{ $json.suburb }}",
+            "Enquiry": "={{ $json.enquiry }}",
+            "Quantity": "={{ $json.quantity }}",
+            "I’d Like To Get My Project Underway": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+            "How they heard about us": "={{ $json.howTheyHeardAboutUs }}",
+            "Lead Qualifier": "={{ $json.leadQualifier }}",
+            "Referred By": "={{ $json.referredBy }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Id",
+              "displayName": "Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Type",
+              "displayName": "Lead Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mobile Number",
+              "displayName": "Mobile Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suburb",
+              "displayName": "Suburb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Postal Code",
+              "displayName": "Postal Code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Enquiry",
+              "displayName": "Enquiry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "I’d Like To Get My Project Underway",
+              "displayName": "I’d Like To Get My Project Underway",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "How they heard about us",
+              "displayName": "How they heard about us",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Qualifier",
+              "displayName": "Lead Qualifier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referred By",
+              "displayName": "Referred By",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1632,
+        -352
+      ],
+      "id": "7698d334-dc37-4f05-9913-60bd061a1d33",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "S4FmXrss6MgN5rzt",
+          "name": "WR: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "react",
+        "guildId": {
+          "__rl": true,
+          "value": "753455160209965106",
+          "mode": "list",
+          "cachedResultName": "Window Revival",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $json.channelId }}",
+          "mode": "id"
+        },
+        "messageId": "={{ $json.messageId }}",
+        "emoji": "👍"
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -256
+      ],
+      "id": "988bfb9f-465e-4e92-b273-97dc446e3455",
+      "name": "React with an emoji to a message",
+      "webhookId": "78d6b1b5-2d88-4a5b-aaaa-4c7a5e59edfc",
+      "credentials": {
+        "discordBotApi": {
+          "id": "a0FDlWFh8PBA5Add",
+          "name": "WR: Discord Bot Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "753455160209965106",
+          "mode": "list",
+          "cachedResultName": "Window Revival",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "912496260823519232",
+          "mode": "list",
+          "cachedResultName": "leads・new",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106/912496260823519232"
+        },
+        "content": "===========\nLead Type: {{ $json.leadType }}\nTimestamp: {{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\nId: {{ $json.id }}\nFirst Name: {{ $json.firstName }}\nLast Name: {{ $json.lastName }}\nMobile Number: {{ $json.mobileNumber }}\nPhone Number: {{ $json.phoneNumber }}\nEmail Address: {{ $json.emailAddress }}\nAddress: {{ $json.address }}\nState: {{ $json.state }}\nSuburb: {{ $json.suburb }}\nEnquiry: {{ $json.enquiry }}\nQuantity: {{ $json.quantity }}\nI'd Like to Get My Project Underway: {{ $json.IdLikeToGetMyProjectUnderway }}\nHow they heard about us?: {{ $json.howTheyHeardAboutUs }}\nLead Qualifier: {{ $json.leadQualifier }}\nReferred by: {{ $json.leadQualifier }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        -448
+      ],
+      "id": "85a55159-3e0a-4822-bf8d-5bae880f586a",
+      "name": "Send a message",
+      "webhookId": "d2e978df-db4f-4b19-b1e8-31948398a217",
+      "credentials": {
+        "discordBotApi": {
+          "id": "a0FDlWFh8PBA5Add",
+          "name": "WR: Discord Bot Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "eSdWCK7MPonSrTuzU7-wK",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/eSdWCK7MPonSrTuzU7-wK",
+          "cachedResultName": "[SW] Wrapp: New Lead - Create Contact & Opportunities"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1632,
+        -160
+      ],
+      "id": "89db1a48-84c0-47cd-97a5-02d3827f510e",
+      "name": "Call '[SW] Wrapp: New Lead - Create Contact & Opportunities'"
+    },
+    {
+      "parameters": {
+        "guildIds": [
+          "753455160209965106"
+        ],
+        "channelIds": [
+          "1456133270352822373"
+        ],
+        "roleIds": [
+          "901010019900882994",
+          "901010696152698890"
+        ],
+        "pattern": "every",
+        "additionalFields": {
+          "attachmentsRequired": true
+        }
+      },
+      "type": "n8n-nodes-discord-trigger-new.discordTrigger",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -160
+      ],
+      "id": "78ab2641-1382-43dc-912a-2a9dad4e8136",
+      "name": "Trigger – New Discord Message",
+      "credentials": {
+        "discordBotTriggerApi": {
+          "id": "bWnCMGqUZEPKKfgs",
+          "name": "WR: Discord Bot Trigger Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * n8n Function node\n * Output ONLY:\n * messageId, guildId, channelId, authorId, authorName,\n * content,\n * leadType,\n * howDidYouHearAboutUs,\n * referredBy,\n * leadQualifier,\n * imageAttachments[]\n */\n\n// ---------- Helpers ----------\nfunction isImageAttachment(att) {\n  const ct = (att.contentType || '').toLowerCase();\n  const name = (att.name || '').toLowerCase();\n\n  if (ct.startsWith('image/')) return true;\n\n  return /\\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(name);\n}\n\nfunction pickImageFields(att) {\n  return {\n    id: att.id ?? null,\n    name: att.name ?? null,\n    url: att.url ?? att.attachment ?? null,\n    proxyURL: att.proxyURL ?? null,\n    size: att.size ?? null,\n    width: att.width ?? null,\n    height: att.height ?? null,\n    contentType: att.contentType ?? null,\n    title: att.title ?? null,\n    description: att.description ?? null,\n  };\n}\n\n// ---------- Main ----------\nconst message = $input.first().json;\n\nconst attachments = Array.isArray(message.attachments) ? message.attachments : [];\n\nconst imageAttachments = attachments\n  .filter(isImageAttachment)\n  .map(pickImageFields);\n\nconst output = {\n  messageId: message.id ?? null,\n  guildId: message.guildId ?? null,\n  channelId: message.channelId ?? null,\n  authorId: message.authorId ?? null,\n  authorName: message.authorName ?? null,\n  content: message.content ?? null,\n  leadType: \"HiPages Lead\",\n  howDidYouHearAboutUs: \"HiPages\",\n  referredBy: null,\n  leadQualifier: \"Good\", // ✅ added\n  imageAttachments,\n};\n\nreturn [{ json: output }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -160
+      ],
+      "id": "904c6a3a-b84b-4668-a309-4886089fbaf9",
+      "name": "Normalize – Discord Message"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (Once for All Items)\n// FIXED: Robust parsing for truncated AI JSON + CRM enquiry formatting\n// - Recovers fields even when AI response is cut off mid-key (status: incomplete)\n// - Enquiry formatted for Google Sheets (CRM clean) and works even if Discord message is missing\n// - Removes imageAttachments here (you will merge later)\n// - Fixes address: \"Carindale, 4152\" => \"Carindale\"\n// - Adds Timestamp (Australia/Brisbane)\n// - fileName: FirstNameLastName-DD-MM-YYYY-HiLead\n//\n// CHANGE REQUEST APPLIED:\n// - Removed messageId, channelId, authorId, authorName from the output completely\n// - Also deletes these keys if they appear in AI JSON (lead.*)\n\nconst inputItems = $input.all();\nconst outputItems = [];\n\n// ---------- Brisbane Timestamp ----------\nfunction nowBrisbaneTimestamp() {\n  const tz = 'Australia/Brisbane';\n  const d = new Date();\n\n  const parts = new Intl.DateTimeFormat('en-AU', {\n    timeZone: tz,\n    day: '2-digit',\n    month: '2-digit',\n    year: 'numeric',\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit',\n    hour12: false,\n  }).formatToParts(d);\n\n  const get = (type) => parts.find(p => p.type === type)?.value;\n  return `${get('day')}/${get('month')}/${get('year')}, ${get('hour')}:${get('minute')}:${get('second')}`;\n}\n\n// ---------- Filename ----------\nfunction formatDDMMYYYY() {\n  const d = new Date();\n  const dd = String(d.getDate()).padStart(2, '0');\n  const mm = String(d.getMonth() + 1).padStart(2, '0');\n  const yyyy = String(d.getFullYear());\n  return `${dd}-${mm}-${yyyy}`;\n}\nfunction safeName(s) {\n  return String(s || '').trim().replace(/\\s+/g, '').replace(/[^a-zA-Z0-9_-]/g, '');\n}\nfunction buildFileName(firstName, lastName) {\n  const name = (safeName(firstName) + safeName(lastName)) || 'Unknown';\n  return `${name}-${formatDDMMYYYY()}-HiLead`;\n}\n\n// ---------- Deep search helper (returns FIRST found value, may be object/array/string) ----------\nfunction deepFindKey(root, keyName, maxDepth = 12) {\n  const seen = new Set();\n  const queue = [{ value: root, depth: 0 }];\n\n  while (queue.length) {\n    const { value, depth } = queue.shift();\n    if (value === null || value === undefined) continue;\n    if (typeof value !== 'object') continue;\n    if (seen.has(value)) continue;\n    seen.add(value);\n\n    if (Object.prototype.hasOwnProperty.call(value, keyName)) {\n      return value[keyName];\n    }\n\n    if (depth >= maxDepth) continue;\n\n    if (Array.isArray(value)) {\n      for (const v of value) queue.push({ value: v, depth: depth + 1 });\n    } else {\n      for (const k of Object.keys(value)) queue.push({ value: value[k], depth: depth + 1 });\n    }\n  }\n  return undefined;\n}\n\n// ---------- AI Text Extraction ----------\nfunction getAiTextAnyShape(data) {\n  // Common n8n OpenAI \"Responses\" wrapper: [[{ content:[{text:\"...\"}] }]]\n  if (Array.isArray(data) && Array.isArray(data[0]) && data[0][0]?.content?.[0]?.text) {\n    return data[0][0].content[0].text;\n  }\n\n  // Merge output shape: { \"0\": { content:[{text:\"...\"}] }, ... }\n  if (data?.[\"0\"]?.content?.[0]?.text) {\n    return data[\"0\"].content[0].text;\n  }\n\n  // Direct: { content:[{text:\"...\"}] }\n  if (data?.content?.[0]?.text) {\n    return data.content[0].text;\n  }\n\n  // Last resort: search for a \"text\" field that looks like JSON\n  const maybeText = deepFindKey(data, 'text');\n  if (typeof maybeText === 'string' && maybeText.trim().startsWith('{')) {\n    return maybeText;\n  }\n\n  return null;\n}\n\n// ---------- Normalize / extract JSON block ----------\nfunction normalizeAndExtractJsonBlock(rawText) {\n  let t = String(rawText || '').trim();\n\n  // remove fences\n  t = t.replace(/```json/gi, '```').replace(/```/g, '').trim();\n\n  // normalize curly quotes\n  t = t\n    .replace(/[“”]/g, '\"')\n    .replace(/[‘’]/g, \"'\")\n    .replace(/\\u00A0/g, ' ');\n\n  const start = t.indexOf('{');\n  if (start === -1) return '';\n  t = t.slice(start);\n\n  // If there's a full closing brace, keep only up to it (best case)\n  const lastBrace = t.lastIndexOf('}');\n  if (lastBrace !== -1) {\n    return t.slice(0, lastBrace + 1).trim();\n  }\n\n  // Otherwise return truncated block\n  return t.trim();\n}\n\n// ---------- Progressive trim parser (salvages valid prefix) ----------\nfunction parseJsonSalvage(rawText) {\n  const block = normalizeAndExtractJsonBlock(rawText);\n  if (!block) return {};\n\n  // 1) try direct\n  try {\n    return JSON.parse(block);\n  } catch {}\n\n  // 2) progressive trimming: cut from end to last comma boundary, close }\n  let candidate = block;\n\n  // If odd number of quotes, close string\n  const quoteCount = (candidate.match(/\"/g) || []).length;\n  if (quoteCount % 2 === 1) candidate += '\"';\n\n  // Try up to 80 trims\n  for (let i = 0; i < 80; i++) {\n    candidate = candidate.trim();\n\n    // Remove trailing comma\n    candidate = candidate.replace(/,\\s*$/g, '');\n\n    // Close object\n    if (!candidate.endsWith('}')) candidate = candidate + '\\n}';\n\n    try {\n      return JSON.parse(candidate);\n    } catch {\n      // Remove the final \"}\" we added so we can cut properly\n      candidate = candidate.replace(/\\n\\}\\s*$/g, '').replace(/\\}\\s*$/g, '');\n\n      const lastComma = candidate.lastIndexOf(',');\n      if (lastComma === -1) break;\n\n      candidate = candidate.slice(0, lastComma);\n    }\n  }\n\n  return {};\n}\n\n// ---------- Regex fallback extraction for enquiry (works even if JSON parse fails) ----------\nfunction extractEnquiryFromRaw(rawText) {\n  const t = String(rawText || '');\n  const m = t.match(/\"enquiry\"\\s*:\\s*\"([\\s\\S]*?)(?:\"\\s*,\\s*\"|\\s*\"\\s*[\\}\\n\\r]|$)/i);\n  if (!m || !m[1]) return '';\n  return m[1]\n    .replace(/\\\\\"/g, '\"')\n    .replace(/\\\\n/g, '\\n')\n    .trim();\n}\n\n// ---------- Address fix ----------\nfunction normalizeAddressToSuburbOnly(address) {\n  const a = String(address || '').trim();\n  if (!a) return a;\n\n  const m = a.match(/^(.+?),\\s*\\d{4}\\s*$/);\n  if (m) return m[1].trim();\n\n  const m2 = a.match(/^(.+?)\\s+\\d{4}\\s*$/);\n  if (m2) return m2[1].trim();\n\n  return a;\n}\n\n// ---------- Discord content extractor (string only; avoids [object Object]) ----------\nfunction getDiscordMessageText(data) {\n  if (typeof data?.content === 'string') return data.content.trim();\n\n  const found = deepFindKey(data, 'content');\n  if (typeof found === 'string') return found.trim();\n\n  return '';\n}\n\n// ---------- Extract DISCORD / IMAGES from AI enquiry format ----------\nfunction splitAiEnquiry(aiEnquiry) {\n  const s = String(aiEnquiry || '').trim();\n  if (!s) return { discord: '', images: '' };\n\n  const m = s.match(/^DISCORD:\\s*([\\s\\S]*?)\\s*\\|\\s*IMAGES:\\s*([\\s\\S]*)$/i);\n  if (m) {\n    return { discord: (m[1] || '').trim(), images: (m[2] || '').trim() };\n  }\n\n  const mi = s.match(/IMAGES:\\s*([\\s\\S]*)$/i);\n  if (mi) {\n    return { discord: '', images: (mi[1] || '').trim() };\n  }\n\n  return { discord: '', images: s };\n}\n\n// ---------- CRM Clean Enquiry Format ----------\nfunction formatEnquiryCRM(discordText, imagesText) {\n  const discord = String(discordText || '').trim();\n  const images = String(imagesText || '').trim();\n\n  const sections = [];\n  if (discord) sections.push('===== DISCORD MESSAGE =====\\n' + discord);\n  if (images) sections.push('===== IMAGE DETAILS =====\\n' + images);\n\n  return sections.join('\\n\\n').trim();\n}\n\n// ---------- MAIN ----------\nfor (const item of inputItems) {\n  const data = item.json;\n\n  const rawText = getAiTextAnyShape(data);\n  if (!rawText) {\n    throw new Error('AI output not found. Make sure the Code node receives the AI node output.');\n  }\n\n  // Parse salvaging fields even when truncated\n  const lead = parseJsonSalvage(rawText);\n\n  // If enquiry missing due to truncation, try regex extraction\n  if (!lead.enquiry) {\n    lead.enquiry = extractEnquiryFromRaw(rawText);\n  }\n\n  // Fix address to suburb only\n  if (lead.address !== undefined) {\n    lead.address = normalizeAddressToSuburbOnly(lead.address);\n  }\n\n  // Build CRM enquiry:\n  const discordFromMerge = getDiscordMessageText(data);\n  const split = splitAiEnquiry(lead.enquiry);\n\n  const finalDiscord = discordFromMerge || split.discord;\n  const finalImages = split.images;\n\n  lead.enquiry = formatEnquiryCRM(finalDiscord, finalImages);\n\n  const fileName = buildFileName(lead.firstName, lead.lastName);\n  const Timestamp = nowBrisbaneTimestamp();\n\n  // Remove unwanted fields + attachments here\n  delete lead.guildId;\n  delete lead.content;\n  delete lead.aiStatus;\n  delete lead.imageAttachments;\n\n  // REMOVE THESE META FIELDS COMPLETELY\n  delete lead.messageId;\n  delete lead.channelId;\n  delete lead.authorId;\n  delete lead.authorName;\n\n  const out = {\n    ...lead,\n    fileName,\n    Timestamp,\n  };\n\n  outputItems.push({ json: out });\n}\n\nreturn outputItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -256
+      ],
+      "id": "644b3571-ae90-4e8a-99d4-7b0ebab87245",
+      "name": "Parse – AI JSON Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "36573eea-17d7-418c-aff2-d2bb9ca647d0",
+              "name": "messageId",
+              "value": "={{ $json.messageId }}",
+              "type": "string"
+            },
+            {
+              "id": "df4f463d-bb9b-4c70-89c3-2bbd587ed1a0",
+              "name": "channelId",
+              "value": "={{ $json.channelId }}",
+              "type": "string"
+            },
+            {
+              "id": "e8ad65fc-0bd5-4184-9054-c673ac2d13dc",
+              "name": "authorId",
+              "value": "={{ $json.authorId }}",
+              "type": "string"
+            },
+            {
+              "id": "54705a5a-d90e-4201-8b60-27e6c5c4cef7",
+              "name": "authorName",
+              "value": "={{ $json.authorName }}",
+              "type": "string"
+            },
+            {
+              "id": "eb9962c8-cffb-435e-9b16-71f1f5d98db0",
+              "name": "leadType",
+              "value": "={{ $json.leadType }}",
+              "type": "string"
+            },
+            {
+              "id": "7cfb1fb3-5c6c-4eea-ac15-a2cae2c5ce52",
+              "name": "howDidYouHearAboutUs",
+              "value": "={{ $json.howDidYouHearAboutUs }}",
+              "type": "string"
+            },
+            {
+              "id": "b03dcb46-2a7a-42a6-9355-711bd44b804a",
+              "name": "referredBy",
+              "value": "={{ $json.referredBy }}",
+              "type": "string"
+            },
+            {
+              "id": "b52b1e3f-2056-482b-b78c-20fcb9210677",
+              "name": "imageAttachments",
+              "value": "={{ $json.imageAttachments }}",
+              "type": "array"
+            },
+            {
+              "id": "84c90a80-a176-4d34-a15f-010bb24f5a77",
+              "name": "content",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "f33cba39-9a58-433f-ad6e-f6eab2f68211",
+              "name": "leadQualifier",
+              "value": "={{ $json.leadQualifier }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        736,
+        -64
+      ],
+      "id": "b5339cf2-bdc2-4fe8-96c0-9123b43bd03e",
+      "name": "Prepare Image Attachments"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        960,
+        -160
+      ],
+      "id": "a212ef45-e065-49bf-9e27-359551933a91",
+      "name": "Merge AI Lead with Attachments"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfe143c1-1c01-4b62-b292-ab210706031b",
+              "name": "Timestamp",
+              "value": "={{ $json.Timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "7c753874-2708-4658-9211-ab1a07be7f81",
+              "name": "id",
+              "value": "={{ $json.messageId }}",
+              "type": "string"
+            },
+            {
+              "id": "59c5c353-8830-4285-9b9d-f3b53888cb50",
+              "name": "authorId",
+              "value": "={{ $json.authorId }}",
+              "type": "string"
+            },
+            {
+              "id": "265db7eb-7687-476b-96f5-11d030f8251a",
+              "name": "channelId",
+              "value": "={{ $json.channelId }}",
+              "type": "string"
+            },
+            {
+              "id": "4814f4f1-cea7-4c83-94c9-691ed2a48b65",
+              "name": "messageId",
+              "value": "={{ $json.messageId }}",
+              "type": "string"
+            },
+            {
+              "id": "7fd6c372-a574-46eb-b8a8-4ca5514c2bb4",
+              "name": "leadType",
+              "value": "={{ $json.leadType }}",
+              "type": "string"
+            },
+            {
+              "id": "319cbc2f-686c-4690-b0da-99edb563a4d9",
+              "name": "firstName",
+              "value": "={{ $json.firstName }}",
+              "type": "string"
+            },
+            {
+              "id": "e318f933-3a86-4e92-8d45-fdd5c9d6db45",
+              "name": "lastName",
+              "value": "={{ $json.lastName }}",
+              "type": "string"
+            },
+            {
+              "id": "1033f6f6-ff3d-462c-a819-0253ba1097a9",
+              "name": "mobileNumber",
+              "value": "={{ $json.mobileNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "42c58a65-dab0-4938-a047-f6beba67e9d3",
+              "name": "phoneNumber",
+              "value": "={{ $json.phoneNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "75060d69-eaa3-4924-b9f6-b7cf159502d4",
+              "name": "emailAddress",
+              "value": "={{ $json.emailAddress }}",
+              "type": "string"
+            },
+            {
+              "id": "518ce6f1-f3a0-4e61-b483-c85feb63ae15",
+              "name": "postalCode",
+              "value": "={{ $json.postalCode }}",
+              "type": "string"
+            },
+            {
+              "id": "2420ae52-e6a5-4d5e-889a-014ad00b28b2",
+              "name": "address",
+              "value": "={{ $json.address }}",
+              "type": "string"
+            },
+            {
+              "id": "421623c8-2db6-4b40-a102-f6dc36ff61ed",
+              "name": "state",
+              "value": "={{ $json.state }}",
+              "type": "string"
+            },
+            {
+              "id": "7cc111a4-9134-4fe3-97eb-75b5e81c8d31",
+              "name": "suburb",
+              "value": "={{ $json.suburb }}",
+              "type": "string"
+            },
+            {
+              "id": "fb3af799-02a3-4669-97b7-5616f9bc8d93",
+              "name": "enquiry",
+              "value": "={{ $json.enquiry }}",
+              "type": "string"
+            },
+            {
+              "id": "e76aa2b3-3c3f-43d7-b9e2-8dfe2c4ecad3",
+              "name": "quantity",
+              "value": "={{ $json.Quantity }}",
+              "type": "string"
+            },
+            {
+              "id": "193cbe77-7015-40c3-95b1-eba1fd89481c",
+              "name": "leadQualifier",
+              "value": "={{ $json.leadQualifier }}",
+              "type": "string"
+            },
+            {
+              "id": "6c8b740a-0f64-4828-bc0a-f71e2bf6621b",
+              "name": "referredBy",
+              "value": "={{ $json.referredBy }}",
+              "type": "string"
+            },
+            {
+              "id": "33a52d4e-10f1-4357-90d4-de70e6873925",
+              "name": "IdLikeToGetMyProjectUnderway",
+              "value": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+              "type": "string"
+            },
+            {
+              "id": "9c3726e2-0e35-4a55-8fb3-2cfc97653e48",
+              "name": "howTheyHeardAboutUs",
+              "value": "={{ $json.howDidYouHearAboutUs }}",
+              "type": "string"
+            },
+            {
+              "id": "891ac909-a00b-497c-b50e-9edfcab72a09",
+              "name": "fileName",
+              "value": "={{ $json.fileName }}",
+              "type": "string"
+            },
+            {
+              "id": "a17b94b9-37be-4b9d-a580-8debdcaba569",
+              "name": "imageAttachments",
+              "value": "={{ $json.imageAttachments }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1408,
+        -160
+      ],
+      "id": "ab255258-d600-49f3-a68f-9bdc9b93bafc",
+      "name": "Map HiPages Lead"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageAttachments[0].proxyURL }}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1632,
+        32
+      ],
+      "id": "8541b89e-68b2-4f6a-b385-f4db14fb1da8",
+      "name": "Download Lead Attachments"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "13LLScY5KwHtjVa94gCIQhdK4o9Ruc2-e",
+          "mode": "list",
+          "cachedResultName": "HiPages Lead",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/13LLScY5KwHtjVa94gCIQhdK4o9Ruc2-e"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1856,
+        32
+      ],
+      "id": "21367576-9c77-4f88-8a91-0a4aced02ba7",
+      "name": "Upload Attachments to Gmail Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "cO0NLqiTRlyGeXAH",
+          "name": "WR: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (merge lead + meta/attachments)\n// - Keeps ALL original lead fields (address, postalCode, etc.)\n// - Appends Discord message to end of enquiry ONLY if present\n// - Forces referredBy to \"\"\n// - Forces leadQualifier to \"Good\"\n\nconst lead = items[0].json;\nconst meta = items[1]?.json || {};\nconst attachments = meta.imageAttachments || [];\n\n// Safely extract Discord message\nconst discordMessage = (meta.content || meta.message || meta.discordMessage || '')\n  .toString()\n  .trim();\n\n// Existing enquiry from AI\nconst currentEnquiry = (lead.enquiry || '').toString().trim();\n\nlet mergedEnquiry = currentEnquiry;\n\n// Append Discord section only if message exists\nif (discordMessage) {\n  mergedEnquiry = [\n    currentEnquiry,\n    '===== DISCORD MESSAGE =====',\n    discordMessage,\n  ]\n    .filter(Boolean)\n    .join('\\n\\n');\n}\n\nreturn [\n  {\n    json: {\n      // KEEP EVERYTHING from AI lead (including address + postalCode)\n      ...lead,\n\n      // Meta fields from Discord item\n      messageId: meta.messageId ?? lead.messageId ?? null,\n      channelId: meta.channelId ?? lead.channelId ?? null,\n      authorId: meta.authorId ?? lead.authorId ?? null,\n      authorName: meta.authorName ?? lead.authorName ?? null,\n      leadType: meta.leadType ?? lead.leadType ?? null,\n      howDidYouHearAboutUs: meta.howDidYouHearAboutUs ?? lead.howDidYouHearAboutUs ?? null,\n\n      // Force required overrides\n      referredBy: \"\",\n      leadQualifier: \"Good\",\n\n      // Updated enquiry\n      enquiry: mergedEnquiry,\n\n      // Attachments\n      imageAttachments: attachments,\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        -160
+      ],
+      "id": "0bb2ca84-f279-44e7-ac59-4f4cf7c5efe6",
+      "name": "Merge Both JSON Objects"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $input.first().json;\nconst imgs = Array.isArray(base.imageAttachments)\n  ? base.imageAttachments\n  : [];\n\n// If no images, return nothing\nif (!imgs.length) {\n  return [];\n}\n\n// Explode into one item per image\nreturn imgs.map(img => ({\n  json: {\n    image: img\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -256
+      ],
+      "id": "0a706dee-9ebb-46d0-9595-598ece4ad4d5",
+      "name": "Explode imageAttachments[]"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "=HiPages parsing rules (IMPORTANT):\n\nYou are analyzing this image:\n{{ $json.image.url }}\n\nExtract customer details directly from the text visible in the image.\n\nInstructions:\n\nUse ONLY what is clearly readable in the image.\nDo NOT guess.\nDo NOT hallucinate.\nIf a field is not clearly present/readable, return an empty string \"\".\n\nRespond with JSON only.\nDo NOT wrap the JSON in markdown.\nDo NOT include explanations.\nDo NOT include any keys other than those in the output JSON below.\n\nName:\nIf a full name is visible, put the first word into \"firstName\" and the last word into \"lastName\".\nIf only one name is visible, put it in \"firstName\" and leave \"lastName\" as \"\".\nDo NOT use business names unless clearly identifying a person.\n\nPhone:\nIf a mobile number is visible, put it in \"mobileNumber\".\nIf a landline is visible, put it in \"phoneNumber\".\n\nEmail:\nIf clearly visible, put it in \"emailAddress\".\n\nAddress:\nIf a full street address is visible, put the full street address into \"address\".\nIf only suburb/locality is visible, put that into \"address\".\nAlways fill \"suburb\" if suburb/locality is visible.\nIf \"address\" contains only suburb/locality (no street), copy it into \"suburb\".\n\nState classification (ONLY use one of these values):\n\"NSW\"\n\"Brisbane\"\n\"Gold Coast\"\n\nRules:\nIf suburb/postcode clearly belongs to NSW → \"NSW\"\nIf suburb/postcode clearly belongs to Brisbane metro → \"Brisbane\"\nIf suburb/postcode clearly belongs to Gold Coast region → \"Gold Coast\"\nIf not confidently determined → \"\"\n\nPostcode:\nFill \"postalCode\" only if clearly visible.\n\nIdLikeToGetMyProjectUnderway:\nOnly fill \"IdLikeToGetMyProjectUnderway\" if this exact field (or a clearly equivalent label like \"Start by\" / \"Start date\" / \"When to start\") is visible in the image.\nExamples:\n- If the image shows \"Start by ASAP\" → set \"IdLikeToGetMyProjectUnderway\" = \"ASAP\"\n- If the image shows a date/time → copy it exactly\nIf not visible, return \"\".\n\nQuantity:\nOnly fill \"Quantity\" if a quantity (number of items/doors/windows/etc.) is clearly visible in the image.\nCopy the quantity exactly as shown (e.g., \"2\", \"two\", \"2 doors\", \"2x\").\nIf not visible, return \"\".\n\nEnquiry field (MANDATORY):\nThe \"enquiry\" field MUST contain the job description text extracted from the image.\nDo NOT summarize.\nDo NOT reword.\nYou may lightly clean obvious OCR formatting issues (extra spaces/line breaks) but do NOT change the wording.\nIf no usable job details are visible, return \"\" for \"enquiry\".\n\nReturn EXACTLY this JSON structure (no extra keys):\n\n{\n  \"firstName\": \"\",\n  \"lastName\": \"\",\n  \"mobileNumber\": \"\",\n  \"phoneNumber\": \"\",\n  \"emailAddress\": \"\",\n  \"address\": \"\",\n  \"state\": \"\",\n  \"suburb\": \"\",\n  \"postalCode\": \"\",\n  \"enquiry\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\",\n  \"Quantity\": \"\"\n}\n",
+        "imageUrls": "={{ $json.image.url }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -256
+      ],
+      "id": "4a2b36d3-25e0-4631-ad60-ce9c8c9fc461",
+      "name": "OCR / Analyze Image",
+      "credentials": {
+        "openAiApi": {
+          "id": "oQQrCQWqdo1CuRzx",
+          "name": "WRai: OpenAi account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "React with an emoji to a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger – New Discord Message": {
+      "main": [
+        [
+          {
+            "node": "Normalize – Discord Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize – Discord Message": {
+      "main": [
+        [
+          {
+            "node": "Prepare Image Attachments",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Explode imageAttachments[]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse – AI JSON Response": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Lead with Attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Image Attachments": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Lead with Attachments",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge AI Lead with Attachments": {
+      "main": [
+        [
+          {
+            "node": "Merge Both JSON Objects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map HiPages Lead": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call '[SW] Wrapp: New Lead - Create Contact & Opportunities'",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Download Lead Attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Lead Attachments": {
+      "main": [
+        [
+          {
+            "node": "Upload Attachments to Gmail Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Attachments to Gmail Drive": {
+      "main": [
+        []
+      ]
+    },
+    "Merge Both JSON Objects": {
+      "main": [
+        [
+          {
+            "node": "Map HiPages Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explode imageAttachments[]": {
+      "main": [
+        [
+          {
+            "node": "OCR / Analyze Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OCR / Analyze Image": {
+      "main": [
+        [
+          {
+            "node": "Parse – AI JSON Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "953dcfb2-2014-4fb2-b7d9-a82ddc2970ac",
+  "activeVersionId": "fb8484ce-e7a0-4aa7-9234-4b6bc2bb1104",
+  "versionCounter": 569,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-01T03:52:58.556Z",
+      "createdAt": "2026-01-01T03:52:58.556Z",
+      "role": "workflow:owner",
+      "workflowId": "Dm34kcocvPR7PllT",
+      "projectId": "6TsYTzg0HY92xH2K",
+      "project": {
+        "updatedAt": "2025-11-14T08:33:27.896Z",
+        "createdAt": "2025-11-14T07:49:25.938Z",
+        "id": "6TsYTzg0HY92xH2K",
+        "name": "Christine Kam <windowrevival@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-11-14T07:49:25.938Z",
+            "createdAt": "2025-11-14T07:49:25.938Z",
+            "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b",
+            "projectId": "6TsYTzg0HY92xH2K",
+            "user": {
+              "updatedAt": "2026-02-16T14:08:50.000Z",
+              "createdAt": "2025-11-14T07:49:14.641Z",
+              "id": "bc31a112-3ed8-48ca-b94c-7225571c3d7b",
+              "email": "windowrevival@gmail.com",
+              "firstName": "Christine",
+              "lastName": "Kam",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-11-14T08:34:38.735Z",
+                "personalization_survey_n8n_version": "1.119.1",
+                "automationGoalDevops": [
+                  "reporting",
+                  "other"
+                ],
+                "automationGoalDevopsOther": "Automate all apps",
+                "companySize": "<20",
+                "companyType": "systems-integrator",
+                "role": "it",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ZwjGOdSLvNlPoB1E",
+                "userActivatedAt": 1763281773859,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763554974919
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-17",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-25T13:05:18.454Z",
+      "createdAt": "2025-11-25T13:05:18.454Z",
+      "id": "xn6seEX74pkTOLqC",
+      "name": "@lead"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-03T06:43:08.000Z",
+    "createdAt": "2026-02-03T06:37:37.051Z",
+    "versionId": "fb8484ce-e7a0-4aa7-9234-4b6bc2bb1104",
+    "workflowId": "Dm34kcocvPR7PllT",
+    "nodes": [
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ",
+            "mode": "list",
+            "cachedResultName": "Leads Logs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "raw",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\n",
+              "Id": "={{ $json.id }}",
+              "Lead Type": "={{ $json.leadType }}",
+              "First Name": "={{ $json.firstName }}",
+              "Last Name": "={{ $json.lastName }}",
+              "Mobile Number": "={{ $json.mobileNumber }}",
+              "Email Address": "={{ $json.emailAddress }}",
+              "Phone Number": "={{ $json.phoneNumber }}",
+              "Address": "={{ $json.address }}",
+              "State": "={{ $json.state }}",
+              "Postal Code": "={{ $json.postalCode }}",
+              "Suburb": "={{ $json.suburb }}",
+              "Enquiry": "={{ $json.enquiry }}",
+              "Quantity": "={{ $json.quantity }}",
+              "I’d Like To Get My Project Underway": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+              "How they heard about us": "={{ $json.howTheyHeardAboutUs }}",
+              "Lead Qualifier": "={{ $json.leadQualifier }}",
+              "Referred By": "={{ $json.referredBy }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Id",
+                "displayName": "Id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Lead Type",
+                "displayName": "Lead Type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "First Name",
+                "displayName": "First Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Last Name",
+                "displayName": "Last Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Mobile Number",
+                "displayName": "Mobile Number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Phone Number",
+                "displayName": "Phone Number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Email Address",
+                "displayName": "Email Address",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Address",
+                "displayName": "Address",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "State",
+                "displayName": "State",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Suburb",
+                "displayName": "Suburb",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Postal Code",
+                "displayName": "Postal Code",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Enquiry",
+                "displayName": "Enquiry",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Quantity",
+                "displayName": "Quantity",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "I’d Like To Get My Project Underway",
+                "displayName": "I’d Like To Get My Project Underway",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "How they heard about us",
+                "displayName": "How they heard about us",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Lead Qualifier",
+                "displayName": "Lead Qualifier",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Referred By",
+                "displayName": "Referred By",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          1184,
+          -528
+        ],
+        "id": "7698d334-dc37-4f05-9913-60bd061a1d33",
+        "name": "Append row in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "S4FmXrss6MgN5rzt",
+            "name": "WR: Google Sheets Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "name": "={{\n  [\n    $now.setZone('Australia/Brisbane').toFormat('dd-MM-yy') || '',\n    $json.leadType || '',\n    $json.firstName || '',\n    $json.lastName || '',\n    $json.attachmentName || '',\n    \n  ]\n    .filter(p => p && p !== '')\n    .join('_')\n}}\n",
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "13LLScY5KwHtjVa94gCIQhdK4o9Ruc2-e",
+            "mode": "list",
+            "cachedResultName": "HiPages Lead",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/13LLScY5KwHtjVa94gCIQhdK4o9Ruc2-e"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          512,
+          -216
+        ],
+        "id": "21367576-9c77-4f88-8a91-0a4aced02ba7",
+        "name": "Upload file",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cO0NLqiTRlyGeXAH",
+            "name": "WR: Google Drive Account"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "resource": "image",
+          "operation": "analyze",
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "GPT-4O-MINI"
+          },
+          "text": "=HiPages parsing rules (IMPORTANT):\n\n- Use ALL provided image URL(s). The job/enquiry details may be spread across multiple images/pages.\n- Extract any clearly readable text that helps fill the fields (name, contact details, address, job/enquiry details).\n- Ignore images that don’t contain relevant lead text (e.g., extra photos, reference images, unrelated files).\n- Keep the values already pre-filled from the input (id, leadType, referredBy).\n- For every other field, use only information you can clearly read in the images.\n- If a field is not present or not readable, leave it as an empty string.\n- Respond with the completed JSON only, with no extra text.\n\nName (IMPORTANT):\n- Always try to extract the customer’s name from the images.\n- If the full name is shown, put the first word in \"firstName\" and the last word in \"lastName\".\n- If only one name is shown, put it in \"firstName\" and leave \"lastName\" as an empty string.\n- Do NOT copy business names into first/last name unless it clearly identifies a person.\n\nAddress & State classification rules (IMPORTANT – HiPages only):\n- Extract address information from all images that contain customer or job details.\n- If a full street address is visible, set \"address\" to the full street address.\n- If only a suburb/locality is visible, set \"address\" to the suburb/locality name.\n\nSuburb:\n- Always fill \"suburb\" with the suburb/locality name when it is visible.\n- If \"address\" contains only a suburb/locality (no street name/number), copy that value into \"suburb\".\n\nState:\n- Classify \"state\" using ONLY the following values:\n  - \"NSW\"\n  - \"Brisbane\"\n  - \"Gold Coast\"\n- If the suburb or postcode clearly belongs to New South Wales, set \"state\" to \"NSW\".\n- If the suburb or postcode clearly belongs to Brisbane (QLD – Brisbane metro), set \"state\" to \"Brisbane\".\n- If the suburb or postcode clearly belongs to the Gold Coast (QLD – Gold Coast region), set \"state\" to \"Gold Coast\".\n- If the state/region cannot be confidently determined from the images, leave \"state\" as an empty string.\n\nPostcode:\n- Fill \"postalCode\" only if a valid postcode is clearly visible in the images.\n\n{\n  \"id\": \"{{ $json.messageId }}\",\n  \"leadType\": \"{{ $json.leadType }}\",\n  \"firstName\": \"\",\n  \"lastName\": \"\",\n  \"mobileNumber\": \"\",\n  \"phoneNumber\": \"\",\n  \"emailAddress\": \"\",\n  \"address\": \"\",\n  \"state\": \"\",\n  \"suburb\": \"\",\n  \"postalCode\": \"\",\n  \"enquiry\": \"\",\n  \"quantity\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\",\n  \"howTheyHeardAboutUs\": \"\",\n  \"leadQualifier\": \"Good\",\n  \"referredBy\": \"{{ $json.referredBy }}\"\n}\n",
+          "imageUrls": "={{ $json.imageAttachments.map(img => img.url) }}\n",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 2,
+        "position": [
+          288,
+          -504
+        ],
+        "id": "4a2b36d3-25e0-4631-ad60-ce9c8c9fc461",
+        "name": "convert images to text",
+        "credentials": {
+          "openAiApi": {
+            "id": "oQQrCQWqdo1CuRzx",
+            "name": "WRai: OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "guildIds": [
+            "753455160209965106"
+          ],
+          "channelIds": [
+            "1456133270352822373"
+          ],
+          "roleIds": [
+            "901010019900882994",
+            "901010696152698890"
+          ],
+          "pattern": "every",
+          "additionalFields": {
+            "attachmentsRequired": true
+          }
+        },
+        "type": "n8n-nodes-discord-trigger-new.discordTrigger",
+        "typeVersion": 1,
+        "position": [
+          -160,
+          -360
+        ],
+        "id": "78ab2641-1382-43dc-912a-2a9dad4e8136",
+        "name": "Listen to Discord messages",
+        "credentials": {
+          "discordBotTriggerApi": {
+            "id": "bWnCMGqUZEPKKfgs",
+            "name": "WR: Discord Bot Trigger Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "/**\n * n8n Function node\n * Output ONLY:\n * messageId, guildId, channelId, authorId, authorName, leadType, referredBy, imageAttachments[]\n * (supports multiple images)\n */\n\n// ---------- Helpers ----------\nfunction isImageAttachment(att) {\n  const ct = (att.contentType || '').toLowerCase();\n  const name = (att.name || '').toLowerCase();\n\n  if (ct.startsWith('image/')) return true;\n\n  // fallback if contentType is missing\n  return /\\.(png|jpe?g|gif|webp|bmp|tiff?)$/i.test(name);\n}\n\nfunction pickImageFields(att) {\n  // keep only useful image fields (no raw / extra)\n  return {\n    id: att.id ?? null,\n    name: att.name ?? null,\n    url: att.url ?? att.attachment ?? null,\n    proxyURL: att.proxyURL ?? null,\n    size: att.size ?? null,\n    width: att.width ?? null,\n    height: att.height ?? null,\n    contentType: att.contentType ?? null,\n    title: att.title ?? null,\n    description: att.description ?? null,\n  };\n}\n\n// ---------- Main ----------\nconst message = $input.first().json;\n\nconst attachments = Array.isArray(message.attachments) ? message.attachments : [];\n\nconst imageAttachments = attachments\n  .filter(isImageAttachment)\n  .map(pickImageFields);\n\nconst output = {\n  messageId: message.id ?? null,\n  guildId: message.guildId ?? null,\n  channelId: message.channelId ?? null,\n  authorId: message.authorId ?? null,\n  authorName: message.authorName ?? null,\n  leadType: \"HiPages Lead\",\n  referredBy: null,\n  imageAttachments,\n};\n\nreturn [{ json: output }];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          64,
+          -360
+        ],
+        "id": "904c6a3a-b84b-4668-a309-4886089fbaf9",
+        "name": "Sanitize output"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.imageAttachments[0].proxyURL }}\n",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          288,
+          -216
+        ],
+        "id": "8541b89e-68b2-4f6a-b385-f4db14fb1da8",
+        "name": "Download Image(s)",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "operation": "react",
+          "guildId": {
+            "__rl": true,
+            "value": "753455160209965106",
+            "mode": "list",
+            "cachedResultName": "Window Revival",
+            "cachedResultUrl": "https://discord.com/channels/753455160209965106"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "={{ $json.channelId }}",
+            "mode": "id"
+          },
+          "messageId": "={{ $json.messageId }}",
+          "emoji": "👍"
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          1408,
+          -432
+        ],
+        "id": "988bfb9f-465e-4e92-b273-97dc446e3455",
+        "name": "React with an emoji to a message",
+        "webhookId": "78d6b1b5-2d88-4a5b-aaaa-4c7a5e59edfc",
+        "credentials": {
+          "discordBotApi": {
+            "id": "a0FDlWFh8PBA5Add",
+            "name": "WR: Discord Bot Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "753455160209965106",
+            "mode": "list",
+            "cachedResultName": "Window Revival",
+            "cachedResultUrl": "https://discord.com/channels/753455160209965106"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "912496260823519232",
+            "mode": "list",
+            "cachedResultName": "leads・new",
+            "cachedResultUrl": "https://discord.com/channels/753455160209965106/912496260823519232"
+          },
+          "content": "===========\nLead Type: {{ $json.leadType }}\nTimestamp: {{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\nId: {{ $json.id }}\nFirst Name: {{ $json.firstName }}\nLast Name: {{ $json.lastName }}\nMobile Number: {{ $json.mobileNumber }}\nPhone Number: {{ $json.phoneNumber }}\nEmail Address: {{ $json.emailAddress }}\nAddress: {{ $json.address }}\nState: {{ $json.state }}\nSuburb: {{ $json.suburb }}\nEnquiry: {{ $json.enquiry }}\nQuantity: {{ $json.quantity }}\nI'd Like to Get My Project Underway: {{ $json.IdLikeToGetMyProjectUnderway }}\nHow they heard about us?: {{ $json.howTheyHeardAboutUs }}\nLead Qualifier: {{ $json.leadQualifier }}\nReferred by: {{ $json.leadQualifier }}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          1408,
+          -624
+        ],
+        "id": "85a55159-3e0a-4822-bf8d-5bae880f586a",
+        "name": "Send a message",
+        "webhookId": "d2e978df-db4f-4b19-b1e8-31948398a217",
+        "credentials": {
+          "discordBotApi": {
+            "id": "a0FDlWFh8PBA5Add",
+            "name": "WR: Discord Bot Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "7c753874-2708-4658-9211-ab1a07be7f81",
+                "name": "id",
+                "value": "={{ $json.id }}",
+                "type": "string"
+              },
+              {
+                "id": "7fd6c372-a574-46eb-b8a8-4ca5514c2bb4",
+                "name": "leadType",
+                "value": "={{ $json.leadType }}",
+                "type": "string"
+              },
+              {
+                "id": "319cbc2f-686c-4690-b0da-99edb563a4d9",
+                "name": "firstName",
+                "value": "={{ $json.firstName }}",
+                "type": "string"
+              },
+              {
+                "id": "e318f933-3a86-4e92-8d45-fdd5c9d6db45",
+                "name": "lastName",
+                "value": "={{ $json.lastName }}",
+                "type": "string"
+              },
+              {
+                "id": "1033f6f6-ff3d-462c-a819-0253ba1097a9",
+                "name": "mobileNumber",
+                "value": "={{ $json.mobileNumber }}",
+                "type": "string"
+              },
+              {
+                "id": "42c58a65-dab0-4938-a047-f6beba67e9d3",
+                "name": "phoneNumber",
+                "value": "={{ $json.phoneNumber }}",
+                "type": "string"
+              },
+              {
+                "id": "75060d69-eaa3-4924-b9f6-b7cf159502d4",
+                "name": "emailAddress",
+                "value": "={{ $json.emailAddress }}",
+                "type": "string"
+              },
+              {
+                "id": "2420ae52-e6a5-4d5e-889a-014ad00b28b2",
+                "name": "address",
+                "value": "={{ $json.address }}",
+                "type": "string"
+              },
+              {
+                "id": "421623c8-2db6-4b40-a102-f6dc36ff61ed",
+                "name": "state",
+                "value": "={{ $json.state }}",
+                "type": "string"
+              },
+              {
+                "id": "7cc111a4-9134-4fe3-97eb-75b5e81c8d31",
+                "name": "suburb",
+                "value": "={{ $json.suburb }}",
+                "type": "string"
+              },
+              {
+                "id": "518ce6f1-f3a0-4e61-b483-c85feb63ae15",
+                "name": "postalCode",
+                "value": "={{ $json.postalCode }}",
+                "type": "string"
+              },
+              {
+                "id": "fb3af799-02a3-4669-97b7-5616f9bc8d93",
+                "name": "enquiry",
+                "value": "={{ $json.enquiry }}",
+                "type": "string"
+              },
+              {
+                "id": "e76aa2b3-3c3f-43d7-b9e2-8dfe2c4ecad3",
+                "name": "quantity",
+                "value": "={{ $json.quantity }}",
+                "type": "string"
+              },
+              {
+                "id": "193cbe77-7015-40c3-95b1-eba1fd89481c",
+                "name": "leadQualifier",
+                "value": "={{ $json.leadQualifier }}",
+                "type": "string"
+              },
+              {
+                "id": "6c8b740a-0f64-4828-bc0a-f71e2bf6621b",
+                "name": "referredBy",
+                "value": "={{ $json.referredBy }}",
+                "type": "string"
+              },
+              {
+                "id": "265db7eb-7687-476b-96f5-11d030f8251a",
+                "name": "channelId",
+                "value": "={{ $json.channelId }}",
+                "type": "string"
+              },
+              {
+                "id": "59c5c353-8830-4285-9b9d-f3b53888cb50",
+                "name": "authorId",
+                "value": "={{ $json.authorId }}",
+                "type": "string"
+              },
+              {
+                "id": "33a52d4e-10f1-4357-90d4-de70e6873925",
+                "name": "IdLikeToGetMyProjectUnderway",
+                "value": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+                "type": "string"
+              },
+              {
+                "id": "9c3726e2-0e35-4a55-8fb3-2cfc97653e48",
+                "name": "howTheyHeardAboutUs",
+                "value": "={{ $json.howTheyHeardAboutUs }}",
+                "type": "string"
+              },
+              {
+                "id": "4814f4f1-cea7-4c83-94c9-691ed2a48b65",
+                "name": "messageId",
+                "value": "={{ $json.messageId }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          960,
+          -432
+        ],
+        "id": "ab255258-d600-49f3-a68f-9bdc9b93bafc",
+        "name": "Set HiPages Lead"
+      },
+      {
+        "parameters": {
+          "jsCode": "// n8n Function / Code node\n// Build search candidates from email, mobile, phone\n\nconst candidates = [];\n\nconst clean = (v) => String(v ?? \"\").trim();\n\nconst normalizeAuNumber9 = (v) => {\n  let digits = clean(v).replace(/\\D/g, \"\"); // digits only\n  if (!digits) return \"\";\n\n  // Remove AU prefixes\n  if (digits.startsWith(\"61\")) digits = digits.slice(2);\n  if (digits.startsWith(\"0\")) digits = digits.slice(1);\n\n  // Keep last 9 digits\n  if (digits.length > 9) digits = digits.slice(-9);\n\n  return digits;\n};\n\n// ✅ Email candidate (use emailAddress)\nif (clean($json.emailAddress)) {\n  candidates.push({\n    q: clean($json.emailAddress),\n    by: \"email\"\n  });\n}\n\n// ✅ Mobile candidate\nconst mobile9 = normalizeAuNumber9($json.mobileNumber);\nif (mobile9) {\n  candidates.push({\n    q: mobile9,\n    by: \"mobile\"\n  });\n}\n\n// ✅ Phone candidate\nconst phone9 = normalizeAuNumber9($json.phoneNumber);\nif (phone9) {\n  candidates.push({\n    q: phone9,\n    by: \"phone\"\n  });\n}\n\nreturn [\n  {\n    json: {\n      ...$json,\n      candidates,\n      found: false\n    }\n  }\n];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1120,
+          -176
+        ],
+        "id": "6e6fa740-83df-43d1-986d-f308ca5be612",
+        "name": "Search by Email, Mobile, Phone",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineAll",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          736,
+          -432
+        ],
+        "id": "5c8638b3-daa1-4f8b-ad64-817370202c76",
+        "name": "Merge Image Meta and Text Input"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "eSdWCK7MPonSrTuzU7-wK",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/eSdWCK7MPonSrTuzU7-wK",
+            "cachedResultName": "[SW] Wrapp: New Lead - Create Contact & Opportunities"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          1408,
+          -240
+        ],
+        "id": "89db1a48-84c0-47cd-97a5-02d3827f510e",
+        "name": "Call '[SW] Wrapp: New Lead - Create Contact & Opportunities'"
+      },
+      {
+        "parameters": {
+          "jsCode": "// This Code node should run \"Once for All Items\".\n// It will parse the AI JSON, merge with attachment info, and add a date-based fileName.\n// Format: DD-MM-YYYY-HiLead-file1 (or file2, file3...) per lead/type for that date.\n\nconst inputItems = $input.all();\nconst outputItems = [];\n\n// ---- Date formatter (DD-MM-YYYY) ----\nfunction formatDDMMYYYY(dateInput) {\n  const d = dateInput ? new Date(dateInput) : new Date();\n  if (Number.isNaN(d.getTime())) {\n    // fallback to \"now\" if invalid\n    const now = new Date();\n    const dd = String(now.getDate()).padStart(2, '0');\n    const mm = String(now.getMonth() + 1).padStart(2, '0');\n    const yyyy = String(now.getFullYear());\n    return `${dd}-${mm}-${yyyy}`;\n  }\n  const dd = String(d.getDate()).padStart(2, '0');\n  const mm = String(d.getMonth() + 1).padStart(2, '0');\n  const yyyy = String(d.getFullYear());\n  return `${dd}-${mm}-${yyyy}`;\n}\n\n// ---- Lead short tag ----\nfunction leadTag(leadType) {\n  const lt = (leadType || '').toLowerCase();\n  // user example: \"HiLead\"\n  if (lt.includes('hipages')) return 'HiLead';\n  // keep something sensible for other values\n  if (lt.includes('referral')) return 'RefLead';\n  return 'Lead';\n}\n\n// Count files per (date + leadTag) so file1/file2 increments correctly\nconst counterByGroup = new Map();\n\nfor (const item of inputItems) {\n  const data = item.json;\n\n  // --- 1. Get the AI message object (from merged branch) ---\n  const aiMsg = data[\"0\"];\n  if (\n    !aiMsg ||\n    !Array.isArray(aiMsg.content) ||\n    !aiMsg.content[0] ||\n    typeof aiMsg.content[0].text !== 'string'\n  ) {\n    throw new Error('Could not find 0.content[0].text in incoming data.');\n  }\n\n  const rawText = aiMsg.content[0].text;\n\n  // --- 2. Strip ```json ... ``` fences ---\n  const cleaned = rawText\n    .replace(/^```json\\s*/i, '')\n    .replace(/^```\\s*/i, '')\n    .replace(/```$/i, '')\n    .trim();\n\n  // --- 3. Parse the JSON returned by the model ---\n  const lead = JSON.parse(cleaned);\n\n  // --- 4. Build date-based filename: DD-MM-YYYY-HiLead-fileN ---\n  // Prefer message timestamp if present; else use current date\n  // (Discord timestamp in ms is common; ISO string also works)\n  const dateStr = formatDDMMYYYY(data.timestamp ?? data.messageTimestamp ?? Date.now());\n\n  const tag = leadTag(lead.leadType || data.leadType);\n\n  const groupKey = `${dateStr}-${tag}`;\n  const nextIndex = (counterByGroup.get(groupKey) || 0) + 1;\n  counterByGroup.set(groupKey, nextIndex);\n\n  const fileName = `${dateStr}-${tag}-file${nextIndex}`;\n\n  // --- 5. Merge everything into one clean object ---\n  const merged = {\n    // lead fields\n    ...lead,\n\n    // original meta (optional, but useful)\n    messageId: data.messageId,\n    guildId: data.guildId,\n    channelId: data.channelId,\n    authorName: data.authorName,\n    rawMessage: data.rawMessage,\n    referredBy: data.referredBy,\n    technician: data.technician,\n\n    // attachment info\n    attachmentName: data.attachmentName,\n    attachmentUrl: data.attachmentUrl,\n    attachmentId: data.attachmentId,\n    attachmentContentType: data.attachmentContentType,\n    attachmentSize: data.attachmentSize,\n\n    // new: final filename to use in Google Drive\n    //fileName,\n  };\n\n  outputItems.push({ json: merged });\n}\n\nreturn outputItems;\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          512,
+          -504
+        ],
+        "id": "644b3571-ae90-4e8a-99d4-7b0ebab87245",
+        "name": "Parse Fields"
+      }
+    ],
+    "connections": {
+      "Append row in sheet": {
+        "main": [
+          [
+            {
+              "node": "React with an emoji to a message",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload file": {
+        "main": [
+          []
+        ]
+      },
+      "convert images to text": {
+        "main": [
+          [
+            {
+              "node": "Parse Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Listen to Discord messages": {
+        "main": [
+          [
+            {
+              "node": "Sanitize output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Sanitize output": {
+        "main": [
+          [
+            {
+              "node": "convert images to text",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Download Image(s)",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Merge Image Meta and Text Input",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Download Image(s)": {
+        "main": [
+          [
+            {
+              "node": "Upload file",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set HiPages Lead": {
+        "main": [
+          [
+            {
+              "node": "Append row in sheet",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Search by Email, Mobile, Phone",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Call '[SW] Wrapp: New Lead - Create Contact & Opportunities'",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search by Email, Mobile, Phone": {
+        "main": [
+          []
+        ]
+      },
+      "Merge Image Meta and Text Input": {
+        "main": [
+          [
+            {
+              "node": "Set HiPages Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Fields": {
+        "main": [
+          [
+            {
+              "node": "Merge Image Meta and Text Input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Christine Kam",
+    "name": "Version fb8484ce",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-03T06:43:08.526Z",
+        "id": 121,
+        "workflowId": "Dm34kcocvPR7PllT",
+        "versionId": "fb8484ce-e7a0-4aa7-9234-4b6bc2bb1104",
+        "event": "activated",
+        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    ]
+  }
+}
