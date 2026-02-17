@@ -1,0 +1,1180 @@
+{
+  "updatedAt": "2026-02-13T01:08:32.059Z",
+  "createdAt": "2026-02-13T01:00:27.563Z",
+  "id": "RYEk05bzAWo9zg1X",
+  "name": "EbayProcessIncomingOrder",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "topic": "orders/create"
+      },
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -64
+      ],
+      "id": "983eea56-6add-473f-ad0c-04a373ed3027",
+      "name": "Shopify Trigger",
+      "webhookId": "f60c94fc-5326-4aff-b608-b182cee02985",
+      "credentials": {
+        "shopifyOAuth2Api": {
+          "id": "GM2UhKe3UQoTJHft",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// INPUT is an array: [ { order } ]\nconst payload = $json;\nconst order = Array.isArray(payload) ? payload[0] : payload;\n\nconst orderDate = new Date(order.created_at).toLocaleDateString('en-AU', {\n  day: '2-digit',\n  month: 'long',\n  year: 'numeric',\n});\n\nconst shipping = order.shipping_address || {};\nconst billing = order.billing_address || {};\n\n// ---------- helpers ----------\nconst toNumber = (v) => {\n  if (v === null || v === undefined) return 0;\n  if (typeof v === 'number') return v;\n  const n = Number(String(v).replace(/[^0-9.-]/g, ''));\n  return Number.isFinite(n) ? n : 0;\n};\n\n// ---------- shipping ----------\nconst firstShippingLine =\n  Array.isArray(order.shipping_lines) && order.shipping_lines.length\n    ? order.shipping_lines[0]\n    : null;\n\nconst shipping_title =\n  firstShippingLine?.title ||\n  firstShippingLine?.code ||\n  '';\n\nconst shipping_price = toNumber(firstShippingLine?.price);\n\n// ---------- payments ----------\nconst payment_gateway_names = Array.isArray(order.payment_gateway_names)\n  ? order.payment_gateway_names.filter(Boolean)\n  : [];\n\nconst payment_gateways = payment_gateway_names.join(', ');\n\n// ---------- totals ----------\nconst total_paid = toNumber(order.total_price);\nconst subtotal = toNumber(order.subtotal_price); // ✅ Using Shopify subtotal only\n\n// ---------- line items ----------\nconst line_items_structured = [];\nconst variant_ids = [];\n\n(order.line_items || []).forEach((li) => {\n  const title = (li.title || li.name || '').trim();\n  const sku = li.sku && String(li.sku).trim() ? String(li.sku).trim() : 'n/a';\n  const quantity = li.quantity ?? 0;\n\n  const variant_id =\n    li.variant_id !== null &&\n    li.variant_id !== undefined &&\n    Number.isFinite(Number(li.variant_id))\n      ? Number(li.variant_id)\n      : null;\n\n  if (variant_id) variant_ids.push(variant_id);\n\n  const price_each = toNumber(li.price);\n\n  line_items_structured.push({\n    title,\n    sku,\n    quantity,\n    price_each,     // ✅ Per-item price only\n    product_url: null, // will be populated in next step\n    product_id: li.product_id ?? null,\n    variant_id,\n    variant_gid: variant_id\n      ? `gid://shopify/ProductVariant/${variant_id}`\n      : null,\n    image_url: null // will be added later\n  });\n});\n\n// Deduplicate variant IDs for GraphQL\nconst variant_ids_unique = [...new Set(variant_ids)];\nconst variant_gids_unique = variant_ids_unique.map(\n  (id) => `gid://shopify/ProductVariant/${id}`\n);\n\nreturn {\n  json: {\n    order_id: order.id,\n    order_number: order.name,\n    order_date: orderDate,\n\n    shipping_name: shipping.name || '',\n    shipping_address: [\n      shipping.address1,\n      shipping.address2,\n      [shipping.city, shipping.province, shipping.zip].filter(Boolean).join(' '),\n      shipping.country,\n    ].filter(Boolean).join('\\n'),\n\n    billing_name: billing.name || '',\n    billing_address: [\n      billing.address1,\n      billing.address2,\n      [billing.city, billing.province, billing.zip].filter(Boolean).join(' '),\n      billing.country,\n    ].filter(Boolean).join('\\n'),\n\n    shipping_title,\n    shipping_price,\n\n    payment_gateway_names,\n    payment_gateways,\n\n    subtotal,      // ✅ Shopify subtotal only\n    total_paid,    // includes shipping\n\n    line_items_structured,\n\n    variant_ids_unique,\n    variant_gids_unique,\n  },\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -64
+      ],
+      "id": "77cdc9d3-34b9-4dd2-a0fe-c0bc0769cd1a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "=1n-mW2zeZ9gxowNPQA7Lr2X6R-VjDJUdl70eKXxmqbqU"
+        },
+        "name": "={{ String($json.order_number || '').trim().replace(/^#/, '') }} - PackingSlip",
+        "sameFolder": false,
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/folders/14aUnJ12fJfTE3XkBpvEIZneJsgNibl4S",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        368,
+        -64
+      ],
+      "id": "c433395a-a445-4318-a2eb-d43a4e6129c5",
+      "name": "Copy file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{order_number}}",
+              "replaceText": "={{ $('Code in JavaScript').item.json.order_number }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{order_date}}",
+              "replaceText": "={{ $('Code in JavaScript').item.json.order_date }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{shipping_name}}",
+              "replaceText": "={{ $('Code in JavaScript').item.json.shipping_name }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{shipping_address}}",
+              "replaceText": "={{ $('Code in JavaScript').item.json.shipping_address }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{billing_name}}",
+              "replaceText": "={{ $('Code in JavaScript').item.json.billing_name }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{billing_address}}",
+              "replaceText": "={{ $('Code in JavaScript').item.json.billing_address }}",
+              "matchCase": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -64
+      ],
+      "id": "f7f1f827-d7b3-47ca-85fc-b8b2ba6ce319",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "7hqPnkkybGiEUtlG",
+          "name": "WR: Google Docs account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf"
+            }
+          },
+          "fileName": "={{ $('Copy file').item.json.name }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        -64
+      ],
+      "id": "09672134-5f1e-4c8d-a16b-8d816451172f",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Copy file').item.json.name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/folders/14aUnJ12fJfTE3XkBpvEIZneJsgNibl4S",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1376,
+        -64
+      ],
+      "id": "f7486182-9b9c-4822-a32a-c22108fd0311",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1520,
+        -64
+      ],
+      "id": "68886dc6-4f7a-4336-acae-9a0bf145fb3f",
+      "name": "Share file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "id",
+          "value": "2095084692"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "order_no": "={{ $('Code in JavaScript').item.json.order_number }}",
+            "status": "⚫ Pending",
+            "ordered": "={{ $('Code in JavaScript').item.json.order_date }}",
+            "name": "={{ $('Code in JavaScript').item.json.shipping_name }}",
+            "packing_slip": "={{ $('Upload file').item.json.webViewLink }}"
+          },
+          "matchingColumns": [
+            "order_no"
+          ],
+          "schema": [
+            {
+              "id": "ordered",
+              "displayName": "ordered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "order_no",
+              "displayName": "order_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "track",
+              "displayName": "track",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "label_created",
+              "displayName": "label_created",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "dispatched_date",
+              "displayName": "dispatched_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fulfilled_date",
+              "displayName": "fulfilled_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tracking_number",
+              "displayName": "tracking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "delivered_date",
+              "displayName": "delivered_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "packing_slip",
+              "displayName": "packing_slip",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "shipping_label",
+              "displayName": "shipping_label",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tax_invoice",
+              "displayName": "tax_invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tracking_link",
+              "displayName": "tracking_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "working_days_to_resolve",
+              "displayName": "working_days_to_resolve",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "working_days_to_deliver",
+              "displayName": "working_days_to_deliver",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "send_by",
+              "displayName": "send_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "locationDefine": {
+            "values": {
+              "headerRow": 3,
+              "firstDataRow": 6
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1664,
+        -64
+      ],
+      "id": "c3142d53-e80a-44c5-8728-9da3a7c0144b",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iNsBYYAG0CoB29qK",
+          "name": "WR: Google Sheets Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1471333477101207594",
+          "mode": "id"
+        },
+        "sendTo": "=channel",
+        "userId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1471333508851957780",
+          "mode": "id"
+        },
+        "content": "=New Order Placed - Packing Slip Ready",
+        "options": {},
+        "embeds": {
+          "values": [
+            {
+              "description": "=Customer: {{ $('Code in JavaScript').item.json.shipping_name }}\nStatus: Pending\nOrdered: {{ $json.ordered }}\nSend by: {{ $json.send_by }}\n\nShipping: ${{ $('Code in JavaScript2').item.json.shipping_price }} {{ $('Code in JavaScript2').item.json.shipping_title }}\nPayment Method: {{ $('Code in JavaScript2').item.json.payment_gateways }}\nTotal Paid: ${{ $('Code in JavaScript2').item.json.total_paid }}\n\nItems:\n{{ $('Code in JavaScript2').item.json.line_items_structured.map(item => \n`• ${item.title}\n  ${item.product_url}\n  $${item.price_each}\n`).join('\\n') }}\n",
+              "color": "#000000",
+              "title": "=Order {{ $('Code in JavaScript').item.json.order_number }}",
+              "url": "={{ $('Upload file').item.json.webViewLink }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        -64
+      ],
+      "id": "48add99d-26b7-4d17-8d46-cefe029cac55",
+      "name": "Send a message",
+      "webhookId": "748505d9-0594-44d9-8e67-4b848f836e9e",
+      "credentials": {
+        "discordBotApi": {
+          "id": "Q7zz7uhF16mvp292",
+          "name": "Discord Bot account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://window-revival-shop.myshopify.com/admin/api/2026-01/graphql.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "shopifyOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"query VariantMainImages($ids: [ID!]!) { nodes(ids: $ids) { ... on ProductVariant { id product { id title handle featuredMedia { __typename ... on MediaImage { image { url } } } } } } }\",\n  \"variables\": {\n    \"ids\": {{ $json.variant_gids_unique.toJsonString() }}\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "3f75ba53-6926-4e1f-8904-ffdd2ca741d4",
+      "name": "HTTP Request",
+      "credentials": {
+        "shopifyOAuth2Api": {
+          "id": "GM2UhKe3UQoTJHft",
+          "name": "Shopify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Get the original extracted order payload from your earlier Code node\n// IMPORTANT: use the exact node name as shown in your workflow\nconst base = $('Code in JavaScript').first().json;\n\n// 2) Get GraphQL nodes from the HTTP Request output (this node’s $json)\n// (n8n sometimes passes an array of items; handle both shapes)\nconst graphqlItem = Array.isArray($json) ? $json[0] : $json;\nconst nodes = graphqlItem?.data?.nodes || [];\n\n// ✅ Set your store domain here (or replace with an env/credential-driven value)\nconst STORE_DOMAIN = 'https://windowrevivalshop.com';\n\n// 3) Build maps: variant_gid -> image_url, and variant_gid -> product_url\nconst variantImageMap = {};\nconst variantProductUrlMap = {};\n\nfor (const n of nodes) {\n  if (!n?.id) continue;\n\n  // image url (featuredMedia)\n  const media = n.product?.featuredMedia;\n  let imageUrl = null;\n  if (media?.__typename === 'MediaImage') {\n    imageUrl = media.image?.url ?? null;\n  }\n\n  // product url (from handle)\n  const handle = n.product?.handle || null;\n  const productUrl = handle ? `${STORE_DOMAIN}/products/${handle}` : null;\n\n  variantImageMap[n.id] = imageUrl;\n  variantProductUrlMap[n.id] = productUrl;\n}\n\n// 4) Enrich structured items with image_url + product_url\nconst enriched = (base.line_items_structured || []).map((li) => ({\n  ...li,\n  image_url: li.variant_gid ? (variantImageMap[li.variant_gid] ?? null) : null,\n  product_url: li.variant_gid ? (variantProductUrlMap[li.variant_gid] ?? null) : null,\n}));\n\n// 5) Return the original payload + enriched items\nreturn [\n  {\n    json: {\n      ...base,\n      line_items_structured: enriched,\n      variantImageMap,       // optional (handy for debugging)\n      variantProductUrlMap,  // optional (handy for debugging)\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -64
+      ],
+      "id": "8cbf93db-9cfc-4871-bb55-8b3635e9f662",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $json.documentId }}",
+        "simple": false
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -64
+      ],
+      "id": "8151092a-6b44-4c0a-b160-57c4902bd0ec",
+      "name": "Get a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "7hqPnkkybGiEUtlG",
+          "name": "WR: Google Docs account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node\n// Inputs expected on $json / via selectors you already use:\n// - documentId (string)\n// - anchorStartIndex (number)\n// - anchorEndIndex (number)\n// - items array (line_items_structured)\n\nconst documentId = $('Update a document').first().json.documentId;\n\n// NOTE: you are currently hardcoding content[8] — keep if that's stable,\n// but it’s safer to find the {{anchor}} paragraph dynamically.\n// Leaving your existing approach as requested:\nconst anchorStartIndex = $input.first().json.body.content[8].paragraph.elements[0].startIndex;\nconst anchorEndIndex = $input.first().json.body.content[8].paragraph.elements[0].endIndex;\n\nconst items = $('Code in JavaScript2').first().json.line_items_structured || [];\n\nif (!documentId) throw new Error(\"Missing documentId\");\nif (!anchorStartIndex || !anchorEndIndex) throw new Error(\"Missing anchor indices\");\n\nconst requests = [];\nconst reversed = [...items].reverse();\n\n// Helper: decide whether SKU should be shown\n// Only allow \"2-3 letters\" + \"-\" + \"3 digits\", e.g. DOR-000, DOC-000, RL-000, WR-123, etc.\nfunction hasRealSku(rawSku) {\n  if (rawSku === null || rawSku === undefined) return false;\n\n  const s = String(rawSku).trim();\n  if (!s) return false;\n\n  // treat these as \"no sku\"\n  const lowered = s.toLowerCase();\n  if (lowered === \"n/a\" || lowered === \"na\" || lowered === \"none\" || lowered === \"null\" || lowered === \"-\") return false;\n\n  // Validate format: 2-3 letters, hyphen, 3 digits\n  // Examples that pass: RL-000, WR-123, DOC-045, DOR-999\n  return /^[A-Za-z]{2,3}-\\d{3}$/.test(s);\n}\n\nfor (const item of reversed) {\n  const qty = (item.quantity ?? \"\").toString().trim() || \"0\";\n  const title = (item.title ?? \"\").toString().trim() || \"\";\n  const imageUrl = (item.image_url ?? \"\").toString().trim();\n\n  // Build the first line (SKU optional)\n  const skuLine = hasRealSku(item.sku)\n    ? `SKU: ${String(item.sku).trim()}     QTY: ${qty}\\n`\n    : `QTY: ${qty}\\n`;\n\n  // Insert at a single index. To get final visual order:\n  // SKU/QTY line\n  // TITLE\n  // IMAGE\n  // (SPACE)\n  // ...we add in reverse: SPACE, IMAGE(+newline), TITLE, SKU/QTY\n  requests.push({\n    insertText: {\n      location: { index: anchorStartIndex },\n      text: \"\\n\", // (SPACE)\n    },\n  });\n\n  if (imageUrl) {\n    requests.push({\n      insertText: {\n        location: { index: anchorStartIndex },\n        text: \"\\n\", // newline after image\n      },\n    });\n    requests.push({\n      insertInlineImage: {\n        location: { index: anchorStartIndex },\n        uri: imageUrl,\n        objectSize: {\n          height: { magnitude: 100, unit: \"PT\" },\n          width: { magnitude: 100, unit: \"PT\" },\n        },\n      },\n    });\n  }\n\n  requests.push({\n    insertText: {\n      location: { index: anchorStartIndex },\n      text: `${title}\\n`,\n    },\n  });\n\n  requests.push({\n    insertText: {\n      location: { index: anchorStartIndex },\n      text: skuLine,\n    },\n  });\n}\n\nreturn [\n  {\n    json: {\n      documentId,\n      requests,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -64
+      ],
+      "id": "d4255f32-db83-40da-8af0-bd6faf631028",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://docs.googleapis.com/v1/documents/{{$json.documentId}}:batchUpdate\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ requests: $json.requests }) }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        944,
+        -64
+      ],
+      "id": "e9e3243b-e18a-4753-8d05-81ba6ff9e4c1",
+      "name": "HTTP Request1",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "7hqPnkkybGiEUtlG",
+          "name": "WR: Google Docs account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('Update a document').item.json.documentId }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{anchor}}",
+              "matchCase": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        -64
+      ],
+      "id": "2e3a0603-3018-46bb-840a-79bf7e4ed26b",
+      "name": "Update a document1",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "7hqPnkkybGiEUtlG",
+          "name": "WR: Google Docs account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Update a document1').item.json.documentId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2112,
+        -64
+      ],
+      "id": "9f2938b4-5293-4c99-af67-0331e27e1877",
+      "name": "Delete a file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU",
+          "mode": "list",
+          "cachedResultName": "Order Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2095084692,
+          "mode": "list",
+          "cachedResultName": "Tracker - Shopify",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit#gid=2095084692"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=order_no",
+              "lookupValue": "={{ $('Code in JavaScript').item.json.order_number }}"
+            }
+          ]
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange",
+              "headerRow": 3,
+              "firstDataRow": 6
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1808,
+        -64
+      ],
+      "id": "e348a6f3-fa0b-4006-a33e-8f2bf2fab036",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iNsBYYAG0CoB29qK",
+          "name": "WR: Google Sheets Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        208
+      ],
+      "id": "4eff032b-44c9-47d7-a108-3a42d240db29",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.ebay.com/sell/fulfillment/v1/order",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -32,
+        208
+      ],
+      "id": "a507b9f7-a075-45a3-95fc-7f663e117f16",
+      "name": "HTTP Request2"
+    }
+  ],
+  "connections": {
+    "Shopify Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Get a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Share file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Copy file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Update a document1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document1": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Delete a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "uuxIWB5TVjU2H3nWtHINp"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Shopify Trigger": [
+      {
+        "json": {
+          "id": 6700801523879,
+          "admin_graphql_api_id": "gid://shopify/Order/6700801523879",
+          "app_id": 580111,
+          "browser_ip": "2403:580b:5291:0:dcbd:33f3:df9a:7117",
+          "buyer_accepts_marketing": true,
+          "cancel_reason": null,
+          "cancelled_at": null,
+          "cart_token": "hWN8ZugFnrHMC07oAZoz2F6K",
+          "checkout_id": 33452580634791,
+          "checkout_token": "92617e86e28b6815cdd35703709873e1",
+          "closed_at": null,
+          "confirmation_number": "8VKYL10MX",
+          "confirmed": true,
+          "contact_email": "test@email.com",
+          "created_at": "2026-02-09T19:25:25+11:00",
+          "currency": "AUD",
+          "current_subtotal_price": "482.50",
+          "current_total_price": "503.50",
+          "current_total_tax": "0.00",
+          "customer_locale": "en-AU",
+          "discount_codes": [],
+          "duties_included": false,
+          "email": "test@email.com",
+          "financial_status": "paid",
+          "fulfillment_status": null,
+          "name": "#1212",
+          "note": null,
+          "number": 212,
+          "order_number": 1212,
+          "payment_gateway_names": [
+            "bogus"
+          ],
+          "presentment_currency": "AUD",
+          "processed_at": "2026-02-09T19:25:23+11:00",
+          "source_name": "web",
+          "subtotal_price": "482.50",
+          "tax_exempt": false,
+          "tax_lines": [],
+          "taxes_included": false,
+          "test": true,
+          "token": "3250a0e71bcfa63740dea9fee131d10a",
+          "total_discounts": "0.00",
+          "total_line_items_price": "482.50",
+          "total_outstanding": "0.00",
+          "total_price": "503.50",
+          "total_tax": "0.00",
+          "total_tip_received": "0.00",
+          "total_weight": 814,
+          "updated_at": "2026-02-09T19:25:26+11:00",
+          "billing_address": {
+            "first_name": "test",
+            "last_name": "lastname6",
+            "address1": "13 Apia Avenue",
+            "address2": null,
+            "city": "Clear Island Waters",
+            "province": "Queensland",
+            "province_code": "QLD",
+            "country": "Australia",
+            "country_code": "AU",
+            "zip": "4226",
+            "phone": "0411111111",
+            "name": "test lastname6",
+            "company": null,
+            "latitude": -28.0332222,
+            "longitude": 153.4047723
+          },
+          "shipping_address": {
+            "first_name": "test",
+            "last_name": "lastname6",
+            "address1": "13 Apia Avenue",
+            "address2": null,
+            "city": "Clear Island Waters",
+            "province": "Queensland",
+            "province_code": "QLD",
+            "country": "Australia",
+            "country_code": "AU",
+            "zip": "4226",
+            "phone": "0411111111",
+            "name": "test lastname6",
+            "company": null,
+            "latitude": -28.0332222,
+            "longitude": 153.4047723
+          },
+          "line_items": [
+            {
+              "id": 15819586076839,
+              "admin_graphql_api_id": "gid://shopify/LineItem/15819586076839",
+              "current_quantity": 1,
+              "fulfillable_quantity": 1,
+              "fulfillment_service": "manual",
+              "fulfillment_status": null,
+              "gift_card": false,
+              "grams": 50,
+              "name": "Wardrobe Door Rollers | Suits Stegbar, Aki, old Regency Wardrobes",
+              "price": "25.50",
+              "product_id": 5269420179623,
+              "quantity": 1,
+              "requires_shipping": true,
+              "sku": "50",
+              "taxable": false,
+              "title": "Wardrobe Door Rollers | Suits Stegbar, Aki, old Regency Wardrobes",
+              "total_discount": "0.00",
+              "variant_id": 34540264128679,
+              "vendor": "Window Revival Shop"
+            },
+            {
+              "id": 15819586109607,
+              "admin_graphql_api_id": "gid://shopify/LineItem/15819586109607",
+              "current_quantity": 2,
+              "fulfillable_quantity": 2,
+              "fulfillment_service": "manual",
+              "fulfillment_status": null,
+              "gift_card": false,
+              "grams": 70,
+              "name": "Heavy Duty Commercial Sliding Door Roller | Suits G James",
+              "price": "130.00",
+              "product_id": 5269617344679,
+              "quantity": 2,
+              "requires_shipping": true,
+              "sku": "50",
+              "taxable": false,
+              "title": "Heavy Duty Commercial Sliding Door Roller | Suits G James",
+              "total_discount": "0.00",
+              "variant_id": 34541362610343,
+              "vendor": "Window Revival Shop"
+            }
+          ],
+          "shipping_lines": [
+            {
+              "id": 5248121143463,
+              "code": "Standard - 500g to 1kg",
+              "price": "21.00",
+              "source": "shopify",
+              "title": "Standard - 500g to 1kg"
+            }
+          ],
+          "payment_terms": null,
+          "refunds": [],
+          "returns": [],
+          "line_item_groups": []
+        }
+      }
+    ]
+  },
+  "versionId": "6602a1e3-5bf8-4e32-b5fa-0fbd9b6bc20c",
+  "activeVersionId": null,
+  "versionCounter": 8,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-13T01:00:27.567Z",
+      "createdAt": "2026-02-13T01:00:27.567Z",
+      "role": "workflow:owner",
+      "workflowId": "RYEk05bzAWo9zg1X",
+      "projectId": "6TsYTzg0HY92xH2K",
+      "project": {
+        "updatedAt": "2025-11-14T08:33:27.896Z",
+        "createdAt": "2025-11-14T07:49:25.938Z",
+        "id": "6TsYTzg0HY92xH2K",
+        "name": "Christine Kam <windowrevival@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-11-14T07:49:25.938Z",
+            "createdAt": "2025-11-14T07:49:25.938Z",
+            "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b",
+            "projectId": "6TsYTzg0HY92xH2K",
+            "user": {
+              "updatedAt": "2026-02-16T14:08:50.000Z",
+              "createdAt": "2025-11-14T07:49:14.641Z",
+              "id": "bc31a112-3ed8-48ca-b94c-7225571c3d7b",
+              "email": "windowrevival@gmail.com",
+              "firstName": "Christine",
+              "lastName": "Kam",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-11-14T08:34:38.735Z",
+                "personalization_survey_n8n_version": "1.119.1",
+                "automationGoalDevops": [
+                  "reporting",
+                  "other"
+                ],
+                "automationGoalDevopsOther": "Automate all apps",
+                "companySize": "<20",
+                "companyType": "systems-integrator",
+                "role": "it",
+                "reportedSource": "google"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ZwjGOdSLvNlPoB1E",
+                "userActivatedAt": 1763281773859,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1763554974919
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-17",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
