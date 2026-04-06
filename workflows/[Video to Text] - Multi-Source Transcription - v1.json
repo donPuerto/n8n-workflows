@@ -1,0 +1,2893 @@
+{
+  "updatedAt": "2026-03-31T00:19:16.931Z",
+  "createdAt": "2026-03-27T04:56:46.987Z",
+  "id": "51GKzBSTM3iGhJH1",
+  "name": "[Video to Text] - Multi-Source Transcription - v1",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "video-to-text",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "a0000001-0000-0000-0000-000000000001",
+      "name": "Webhook: Video to Text API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        864
+      ],
+      "webhookId": "video-to-text-api",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aXsApdZEwxno7Tkr",
+          "name": "Video to Text API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => {\nconst body = $json.body || {};\nconst url = body.url || '';\nconst source = body.source || 'auto';\nconst transcriber = body.transcriber || 'assemblyai';\nconst gdrive_file_id = body.gdrive_file_id || '';\nconst callback_url = body.callback_url || '';\n\nlet detectedSource = source;\nif (source === 'auto' && url) {\n  if (url.includes('youtube.com') || url.includes('youtu.be')) {\n    detectedSource = 'youtube';\n  } else if (url.includes('drive.google.com')) {\n    detectedSource = 'gdrive';\n  } else {\n    detectedSource = 'social';\n  }\n}\nif (gdrive_file_id) detectedSource = 'gdrive';\n\nreturn JSON.stringify({ url, source: detectedSource, transcriber, gdrive_file_id, callback_url });\n})() }}",
+        "options": {}
+      },
+      "id": "a0000002-0000-0000-0000-000000000002",
+      "name": "Set: Extract & Detect Source",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-youtube",
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "youtube",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "YouTube"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-social",
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "social",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Social Media"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-gdrive",
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "gdrive",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Google Drive"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "a0000003-0000-0000-0000-000000000003",
+      "name": "Switch: Source Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-whisper",
+                    "leftValue": "={{ $json.transcriber }}",
+                    "rightValue": "whisper",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Whisper"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-assemblyai",
+                    "leftValue": "={{ $json.transcriber }}",
+                    "rightValue": "assemblyai",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AssemblyAI"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-deepgram-yt",
+                    "leftValue": "={{ $json.transcriber }}",
+                    "rightValue": "deepgram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Deepgram"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "a0000004-0000-0000-0000-000000000004",
+      "name": "Switch: Transcriber (YouTube)",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        656,
+        528
+      ],
+      "notesInFlow": true,
+      "notes": "YouTube path: choose transcriber"
+    },
+    {
+      "parameters": {
+        "url": "={{ (() => { const url = $(\"Set: Extract & Detect Source\").first().json.url; const match = url.match(new RegExp(\"(?:v=|youtu.be/)([a-zA-Z0-9_-]{11})\")); return \"https://youtube-mp36.p.rapidapi.com/dl?id=\" + (match ? match[1] : \"\"); })() }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-rapidapi-key",
+              "value": "b8599adad4mshaa463d039fabfd0p175df4jsn40d478261b9b"
+            },
+            {
+              "name": "x-rapidapi-host",
+              "value": "youtube-mp36.p.rapidapi.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a0000005-0000-0000-0000-000000000005",
+      "name": "RapidAPI: YouTube to MP3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        192
+      ],
+      "notesInFlow": true,
+      "notes": "Gets direct MP3 download URL from YouTube via RapidAPI (500 free req/month)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.assemblyai.com/v2/transcript",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ audio_url: $(\"AssemblyAI: Upload YouTube Audio\").first().json.upload_url, speech_models: [\"universal-2\"] }) }}",
+        "options": {}
+      },
+      "id": "a0000006-0000-0000-0000-000000000006",
+      "name": "AssemblyAI: Submit YouTube MP3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1568,
+        192
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2Tfzk1f7G8y7weLt",
+          "name": "DP: AssemblyAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "whisper-1"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a0000009-0000-0000-0000-000000000009",
+      "name": "Whisper: Transcribe YouTube Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2240,
+        400
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "JQ6ARVQIEbbwoWxD",
+          "name": "DP: OpenAi Account"
+        }
+      },
+      "disabled": true,
+      "notes": "Whisper needs audio file — requires download first for YouTube"
+    },
+    {
+      "parameters": {
+        "url": "=https://fastsaverapi.com/api/v1/download?url={{ encodeURIComponent($('Set: Extract & Detect Source').first().json.url) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "a0000010-0000-0000-0000-000000000010",
+      "name": "FastSaverAPI: Get Download URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        800
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3rAcXpBW5Rs40hha",
+          "name": "FastSaverAPI Key"
+        }
+      },
+      "notes": "Extract audio download URL from social media"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.result?.audio || $json.result?.video || $json.result?.url || '' }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "a0000011-0000-0000-0000-000000000011",
+      "name": "Download Audio File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        800
+      ],
+      "notesInFlow": true,
+      "notes": "Download the actual audio binary"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "cond-whisper-social",
+                    "leftValue": "={{ $('Set: Extract & Detect Source').first().json.transcriber }}",
+                    "rightValue": "whisper",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Whisper"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "cond-aai-social",
+                    "leftValue": "={{ $('Set: Extract & Detect Source').first().json.transcriber }}",
+                    "rightValue": "assemblyai",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AssemblyAI"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "cond-deepgram-social",
+                    "leftValue": "={{ $(\"Set: Extract & Detect Source\").first().json.transcriber }}",
+                    "rightValue": "deepgram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Deepgram"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "a0000012-0000-0000-0000-000000000012",
+      "name": "Switch: Transcriber (Social/GDrive)",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1120,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "whisper-1"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a0000013-0000-0000-0000-000000000013",
+      "name": "Whisper: Transcribe Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2240,
+        784
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JQ6ARVQIEbbwoWxD",
+          "name": "DP: OpenAi Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.assemblyai.com/v2/upload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "a0000014-0000-0000-0000-000000000014",
+      "name": "AssemblyAI: Upload Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        1328
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2Tfzk1f7G8y7weLt",
+          "name": "DP: AssemblyAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.assemblyai.com/v2/transcript",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ audio_url: $json.upload_url, speech_models: ['universal-2'] }) }}",
+        "options": {}
+      },
+      "id": "a0000015-0000-0000-0000-000000000015",
+      "name": "AssemblyAI: Create Transcript",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1584,
+        1328
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2Tfzk1f7G8y7weLt",
+          "name": "DP: AssemblyAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "await new Promise(resolve => setTimeout(resolve, 15000));\nreturn $input.all();"
+      },
+      "id": "a0000016-0000-0000-0000-000000000016",
+      "name": "Wait: Poll Delay",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.assemblyai.com/v2/transcript/{{ $('AssemblyAI: Create Transcript').first().json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "a0000017-0000-0000-0000-000000000017",
+      "name": "AssemblyAI: Poll Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2032,
+        1264
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2Tfzk1f7G8y7weLt",
+          "name": "DP: AssemblyAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-complete",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000018-0000-0000-0000-000000000018",
+      "name": "IF: Transcript Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Set: Extract & Detect Source').first().json.gdrive_file_id }}"
+        },
+        "options": {}
+      },
+      "id": "a0000019-0000-0000-0000-000000000019",
+      "name": "Google Drive: Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        896,
+        1072
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const text = $json.text || $json.transcription || '';\n  return JSON.stringify({\n    success: true,\n    transcription: text,\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    word_count: text.split(/\\s+/).filter(w => w).length,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+        "options": {}
+      },
+      "id": "a0000020-0000-0000-0000-000000000020",
+      "name": "Set: Format Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2784,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## [Video to Text] - Multi-Source Transcription - v1\n\n**Trigger:** Webhook POST `/video-to-text`\n**Sources:** YouTube (RapidAPI MP3), Social Media (FastSaverAPI), Google Drive\n**Transcribers:** OpenAI Whisper | AssemblyAI | Deepgram Nova-2\n**Output:** JSON result POSTed to callback_url\n\n⚠️ **ASYNC API** — n8n runs in queue mode.\nEvery request returns {\"message\": \"Workflow was started\"} immediately.\nResults are POSTed to callback_url when done.\n\n### Request Body:\n```json\n{\n  \"url\": \"https://youtube.com/watch?v=xxx\",\n  \"source\": \"auto\",\n  \"transcriber\": \"assemblyai\",\n  \"gdrive_file_id\": \"\",\n  \"callback_url\": \"https://your-app.com/api/result\"\n}\n```\n\n### Callback Response:\n```json\n{\n  \"success\": true,\n  \"transcription\": \"Full text...\",\n  \"source_url\": \"...\",\n  \"source\": \"youtube\",\n  \"transcriber\": \"assemblyai\",\n  \"word_count\": 1234,\n  \"timestamp\": \"...\"\n}\n```\n\n### API Key\n`vtt_33872321dd87e4bd6275578fe674bf9102f7d4c96d4a62ee8ddbc54fc1368561`",
+        "height": 832,
+        "width": 580,
+        "color": 4
+      },
+      "id": "a0000027-0000-0000-0000-000000000027",
+      "name": "Sticky: Workflow Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## YouTube Path\n**RapidAPI youtube-mp36 → AssemblyAI / Deepgram / Whisper**\n1. Extract video ID from URL\n2. GET https://youtube-mp36.p.rapidapi.com/dl?id={videoId}\n3. Returns { link: \"https://...mp3\" }\n4. AssemblyAI: download binary → upload to AAI → poll\n5. Deepgram: send MP3 URL directly → sync response\n6. Whisper: DISABLED\n\n⚠️ YouTube IPs are blocked from n8n VPS — must use RapidAPI\n⚠️ RapidAPI temp URLs are IP-restricted — must download binary before sending to AssemblyAI",
+        "height": 336,
+        "width": 500,
+        "color": 6
+      },
+      "id": "a0000028-0000-0000-0000-000000000028",
+      "name": "Sticky: YouTube Section",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Social Media Path\nFastSaverAPI extracts audio from TikTok, Instagram, Facebook, Twitter, etc.\nFree tier: 200 points/month, 1 req/sec.",
+        "height": 120,
+        "width": 460,
+        "color": 6
+      },
+      "id": "a0000029-0000-0000-0000-000000000029",
+      "name": "Sticky: Social Media Section",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Google Drive Path\nDownloads file from Google Drive, then sends to chosen transcriber.",
+        "height": 212,
+        "width": 436,
+        "color": 6
+      },
+      "id": "a0000030-0000-0000-0000-000000000030",
+      "name": "Sticky: Google Drive Section",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        736,
+        1296
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### AssemblyAI Polling (async)\nSubmit transcript → Code node 15s delay → Poll status\n→ IF completed → continue, else → loop back\n\n⚠️ Uses Code node for delay (NOT Wait node)\nWait node closes webhook connection — Code node does not.\n\nBudget 60-120s per video.",
+        "height": 224,
+        "width": 660,
+        "color": 5
+      },
+      "id": "a0000031-0000-0000-0000-000000000031",
+      "name": "Sticky: Polling Warning",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        992
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Output: Callback Only\n\nIF callback_url provided → POST result JSON to callback_url\nIF no callback_url → workflow ends silently\n\nResult shape:\n{\n  success, transcription, source_url,\n  source, transcriber, word_count, timestamp\n}\n\nNo Google Docs — use callback_url in your web app.",
+        "height": 284,
+        "width": 508,
+        "color": 6
+      },
+      "id": "a0000032-0000-0000-0000-000000000032",
+      "name": "Sticky: Output Section",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3216,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "await new Promise(resolve => setTimeout(resolve, 15000));\nreturn $input.all();"
+      },
+      "id": "a0000033-0000-0000-0000-000000000033",
+      "name": "Wait: Poll Delay (YouTube)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        192
+      ],
+      "notes": "Wait 15s before polling AssemblyAI"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.assemblyai.com/v2/transcript/{{ $(\"AssemblyAI: Submit YouTube MP3\").first().json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "a0000034-0000-0000-0000-000000000034",
+      "name": "AssemblyAI: Poll Status (YouTube)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2016,
+        112
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2Tfzk1f7G8y7weLt",
+          "name": "DP: AssemblyAI API Key"
+        }
+      },
+      "notes": "Check if transcription is complete"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000035-0000-0000-0000-000000000035",
+      "name": "IF: YouTube Transcript Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        192
+      ],
+      "notes": "completed → Format Response, else → loop back"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-has-callback",
+              "leftValue": "={{ $('Set: Extract & Detect Source').first().json.callback_url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000036-0000-0000-0000-000000000036",
+      "name": "IF: Has Callback URL?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3008,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Set: Extract & Detect Source').first().json.callback_url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "a0000037-0000-0000-0000-000000000037",
+      "name": "POST: Send Callback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3232,
+        640
+      ],
+      "notes": "POST transcription result to caller callback_url"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "a0000038-0000-0000-0000-000000000038",
+      "name": "Download: YouTube MP3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        192
+      ],
+      "notes": "Download MP3 binary from RapidAPI temp URL"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.assemblyai.com/v2/upload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "a0000039-0000-0000-0000-000000000039",
+      "name": "AssemblyAI: Upload YouTube Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        192
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "2Tfzk1f7G8y7weLt",
+          "name": "DP: AssemblyAI API Key"
+        }
+      },
+      "notes": "Upload MP3 binary to AssemblyAI — returns upload_url"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ url: $(\"RapidAPI: YouTube to MP3 (Deepgram)\").first().json.link }) }}",
+        "options": {}
+      },
+      "id": "a0000040-0000-0000-0000-000000000040",
+      "name": "Deepgram: Transcribe YouTube URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2016,
+        592
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XN0IETiAq9yP0bY3",
+          "name": "DP: Deepgram API Key"
+        }
+      },
+      "notes": "Deepgram Nova-2: transcribe from MP3 URL directly (no upload needed)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "a0000041-0000-0000-0000-000000000041",
+      "name": "Deepgram: Transcribe Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2016,
+        976
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XN0IETiAq9yP0bY3",
+          "name": "DP: Deepgram API Key"
+        }
+      },
+      "notes": "Deepgram Nova-2: transcribe binary audio file"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+        "options": {}
+      },
+      "id": "a0000042-0000-0000-0000-000000000042",
+      "name": "Set: Format Deepgram (YouTube)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2240,
+        592
+      ],
+      "notes": "Extract transcript text from Deepgram response"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+        "options": {}
+      },
+      "id": "a0000043-0000-0000-0000-000000000043",
+      "name": "Set: Format Deepgram (Social)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2240,
+        976
+      ],
+      "notes": "Extract transcript text from Deepgram response"
+    },
+    {
+      "parameters": {
+        "url": "={{ (() => { const url = $(\"Set: Extract & Detect Source\").first().json.url; const match = url.match(new RegExp(\"(?:v=|youtu.be/)([a-zA-Z0-9_-]{11})\")); return \"https://youtube-mp36.p.rapidapi.com/dl?id=\" + (match ? match[1] : \"\"); })() }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-rapidapi-key",
+              "value": "b8599adad4mshaa463d039fabfd0p175df4jsn40d478261b9b"
+            },
+            {
+              "name": "x-rapidapi-host",
+              "value": "youtube-mp36.p.rapidapi.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a0000044-0000-0000-0000-000000000044",
+      "name": "RapidAPI: YouTube to MP3 (Deepgram)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1792,
+        592
+      ],
+      "notes": "Gets MP3 URL for Deepgram path (separate from AssemblyAI path)"
+    }
+  ],
+  "connections": {
+    "Webhook: Video to Text API": {
+      "main": [
+        [
+          {
+            "node": "Set: Extract & Detect Source",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Set: Extract & Detect Source": {
+      "main": [
+        [
+          {
+            "node": "Switch: Source Type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Switch: Source Type": {
+      "main": [
+        [
+          {
+            "node": "Switch: Transcriber (YouTube)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FastSaverAPI: Get Download URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Drive: Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Transcriber (YouTube)": {
+      "main": [
+        [
+          {
+            "node": "Whisper: Transcribe YouTube Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RapidAPI: YouTube to MP3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RapidAPI: YouTube to MP3 (Deepgram)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FastSaverAPI: Get Download URL": {
+      "main": [
+        [
+          {
+            "node": "Download Audio File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio File": {
+      "main": [
+        [
+          {
+            "node": "Switch: Transcriber (Social/GDrive)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive: Download File": {
+      "main": [
+        [
+          {
+            "node": "Switch: Transcriber (Social/GDrive)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Transcriber (Social/GDrive)": {
+      "main": [
+        [
+          {
+            "node": "Whisper: Transcribe Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AssemblyAI: Upload Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Deepgram: Transcribe Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Whisper: Transcribe Audio": {
+      "main": [
+        [
+          {
+            "node": "Set: Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AssemblyAI: Upload Audio": {
+      "main": [
+        [
+          {
+            "node": "AssemblyAI: Create Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AssemblyAI: Create Transcript": {
+      "main": [
+        [
+          {
+            "node": "Wait: Poll Delay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait: Poll Delay": {
+      "main": [
+        [
+          {
+            "node": "AssemblyAI: Poll Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AssemblyAI: Poll Status": {
+      "main": [
+        [
+          {
+            "node": "IF: Transcript Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Transcript Complete?": {
+      "main": [
+        [
+          {
+            "node": "Set: Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait: Poll Delay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Format Response": {
+      "main": [
+        [
+          {
+            "node": "IF: Has Callback URL?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Whisper: Transcribe YouTube Audio": {
+      "main": [
+        [
+          {
+            "node": "Set: Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RapidAPI: YouTube to MP3": {
+      "main": [
+        [
+          {
+            "node": "Download: YouTube MP3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AssemblyAI: Submit YouTube MP3": {
+      "main": [
+        [
+          {
+            "node": "Wait: Poll Delay (YouTube)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait: Poll Delay (YouTube)": {
+      "main": [
+        [
+          {
+            "node": "AssemblyAI: Poll Status (YouTube)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AssemblyAI: Poll Status (YouTube)": {
+      "main": [
+        [
+          {
+            "node": "IF: YouTube Transcript Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: YouTube Transcript Complete?": {
+      "main": [
+        [
+          {
+            "node": "Set: Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait: Poll Delay (YouTube)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Has Callback URL?": {
+      "main": [
+        [
+          {
+            "node": "POST: Send Callback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Download: YouTube MP3": {
+      "main": [
+        [
+          {
+            "node": "AssemblyAI: Upload YouTube Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AssemblyAI: Upload YouTube Audio": {
+      "main": [
+        [
+          {
+            "node": "AssemblyAI: Submit YouTube MP3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deepgram: Transcribe YouTube URL": {
+      "main": [
+        [
+          {
+            "node": "Set: Format Deepgram (YouTube)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Format Deepgram (YouTube)": {
+      "main": [
+        [
+          {
+            "node": "Set: Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deepgram: Transcribe Audio": {
+      "main": [
+        [
+          {
+            "node": "Set: Format Deepgram (Social)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Format Deepgram (Social)": {
+      "main": [
+        [
+          {
+            "node": "Set: Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RapidAPI: YouTube to MP3 (Deepgram)": {
+      "main": [
+        [
+          {
+            "node": "Deepgram: Transcribe YouTube URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "3f4fb65c-420c-4a88-baf6-20c9b0cf4402",
+  "activeVersionId": "3f4fb65c-420c-4a88-baf6-20c9b0cf4402",
+  "versionCounter": 192,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-27T04:56:46.990Z",
+      "createdAt": "2026-03-27T04:56:46.990Z",
+      "role": "workflow:owner",
+      "workflowId": "51GKzBSTM3iGhJH1",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-31T00:58:12.000Z",
+    "createdAt": "2026-03-31T00:19:16.932Z",
+    "versionId": "3f4fb65c-420c-4a88-baf6-20c9b0cf4402",
+    "workflowId": "51GKzBSTM3iGhJH1",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "video-to-text",
+          "authentication": "headerAuth",
+          "options": {}
+        },
+        "id": "a0000001-0000-0000-0000-000000000001",
+        "name": "Webhook: Video to Text API",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          0,
+          864
+        ],
+        "webhookId": "video-to-text-api",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "aXsApdZEwxno7Tkr",
+            "name": "Video to Text API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => {\nconst body = $json.body || {};\nconst url = body.url || '';\nconst source = body.source || 'auto';\nconst transcriber = body.transcriber || 'assemblyai';\nconst gdrive_file_id = body.gdrive_file_id || '';\nconst callback_url = body.callback_url || '';\n\nlet detectedSource = source;\nif (source === 'auto' && url) {\n  if (url.includes('youtube.com') || url.includes('youtu.be')) {\n    detectedSource = 'youtube';\n  } else if (url.includes('drive.google.com')) {\n    detectedSource = 'gdrive';\n  } else {\n    detectedSource = 'social';\n  }\n}\nif (gdrive_file_id) detectedSource = 'gdrive';\n\nreturn JSON.stringify({ url, source: detectedSource, transcriber, gdrive_file_id, callback_url });\n})() }}",
+          "options": {}
+        },
+        "id": "a0000002-0000-0000-0000-000000000002",
+        "name": "Set: Extract & Detect Source",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          224,
+          864
+        ]
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "cond-youtube",
+                      "leftValue": "={{ $json.source }}",
+                      "rightValue": "youtube",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "YouTube"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "cond-social",
+                      "leftValue": "={{ $json.source }}",
+                      "rightValue": "social",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Social Media"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "cond-gdrive",
+                      "leftValue": "={{ $json.source }}",
+                      "rightValue": "gdrive",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Google Drive"
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra"
+          }
+        },
+        "id": "a0000003-0000-0000-0000-000000000003",
+        "name": "Switch: Source Type",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          448,
+          832
+        ]
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "cond-whisper",
+                      "leftValue": "={{ $json.transcriber }}",
+                      "rightValue": "whisper",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Whisper"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "cond-assemblyai",
+                      "leftValue": "={{ $json.transcriber }}",
+                      "rightValue": "assemblyai",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "AssemblyAI"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "cond-deepgram-yt",
+                      "leftValue": "={{ $json.transcriber }}",
+                      "rightValue": "deepgram",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Deepgram"
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra"
+          }
+        },
+        "id": "a0000004-0000-0000-0000-000000000004",
+        "name": "Switch: Transcriber (YouTube)",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          656,
+          528
+        ],
+        "notesInFlow": true,
+        "notes": "YouTube path: choose transcriber"
+      },
+      {
+        "parameters": {
+          "url": "={{ (() => { const url = $(\"Set: Extract & Detect Source\").first().json.url; const match = url.match(new RegExp(\"(?:v=|youtu.be/)([a-zA-Z0-9_-]{11})\")); return \"https://youtube-mp36.p.rapidapi.com/dl?id=\" + (match ? match[1] : \"\"); })() }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "x-rapidapi-key",
+                "value": "b8599adad4mshaa463d039fabfd0p175df4jsn40d478261b9b"
+              },
+              {
+                "name": "x-rapidapi-host",
+                "value": "youtube-mp36.p.rapidapi.com"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "a0000005-0000-0000-0000-000000000005",
+        "name": "RapidAPI: YouTube to MP3",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          896,
+          192
+        ],
+        "notesInFlow": true,
+        "notes": "Gets direct MP3 download URL from YouTube via RapidAPI (500 free req/month)"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.assemblyai.com/v2/transcript",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ audio_url: $(\"AssemblyAI: Upload YouTube Audio\").first().json.upload_url, speech_models: [\"universal-2\"] }) }}",
+          "options": {}
+        },
+        "id": "a0000006-0000-0000-0000-000000000006",
+        "name": "AssemblyAI: Submit YouTube MP3",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1568,
+          192
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "2Tfzk1f7G8y7weLt",
+            "name": "DP: AssemblyAI API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.openai.com/v1/audio/transcriptions",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "openAiApi",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "model",
+                "value": "whisper-1"
+              },
+              {
+                "parameterType": "formBinaryData",
+                "name": "file",
+                "inputDataFieldName": "data"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "a0000009-0000-0000-0000-000000000009",
+        "name": "Whisper: Transcribe YouTube Audio",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2240,
+          400
+        ],
+        "notesInFlow": true,
+        "credentials": {
+          "openAiApi": {
+            "id": "JQ6ARVQIEbbwoWxD",
+            "name": "DP: OpenAi Account"
+          }
+        },
+        "disabled": true,
+        "notes": "Whisper needs audio file — requires download first for YouTube"
+      },
+      {
+        "parameters": {
+          "url": "=https://fastsaverapi.com/api/v1/download?url={{ encodeURIComponent($('Set: Extract & Detect Source').first().json.url) }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "id": "a0000010-0000-0000-0000-000000000010",
+        "name": "FastSaverAPI: Get Download URL",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          672,
+          800
+        ],
+        "notesInFlow": true,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "3rAcXpBW5Rs40hha",
+            "name": "FastSaverAPI Key"
+          }
+        },
+        "notes": "Extract audio download URL from social media"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.result?.audio || $json.result?.video || $json.result?.url || '' }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "a0000011-0000-0000-0000-000000000011",
+        "name": "Download Audio File",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          896,
+          800
+        ],
+        "notesInFlow": true,
+        "notes": "Download the actual audio binary"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "id": "cond-whisper-social",
+                      "leftValue": "={{ $('Set: Extract & Detect Source').first().json.transcriber }}",
+                      "rightValue": "whisper",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Whisper"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "id": "cond-aai-social",
+                      "leftValue": "={{ $('Set: Extract & Detect Source').first().json.transcriber }}",
+                      "rightValue": "assemblyai",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "AssemblyAI"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": false,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "id": "cond-deepgram-social",
+                      "leftValue": "={{ $(\"Set: Extract & Detect Source\").first().json.transcriber }}",
+                      "rightValue": "deepgram",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "Deepgram"
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra"
+          }
+        },
+        "id": "a0000012-0000-0000-0000-000000000012",
+        "name": "Switch: Transcriber (Social/GDrive)",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          1120,
+          944
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.openai.com/v1/audio/transcriptions",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "openAiApi",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "model",
+                "value": "whisper-1"
+              },
+              {
+                "parameterType": "formBinaryData",
+                "name": "file",
+                "inputDataFieldName": "data"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "a0000013-0000-0000-0000-000000000013",
+        "name": "Whisper: Transcribe Audio",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2240,
+          784
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "JQ6ARVQIEbbwoWxD",
+            "name": "DP: OpenAi Account"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.assemblyai.com/v2/upload",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "binaryData",
+          "inputDataFieldName": "data",
+          "options": {}
+        },
+        "id": "a0000014-0000-0000-0000-000000000014",
+        "name": "AssemblyAI: Upload Audio",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1360,
+          1328
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "2Tfzk1f7G8y7weLt",
+            "name": "DP: AssemblyAI API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.assemblyai.com/v2/transcript",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ audio_url: $json.upload_url, speech_models: ['universal-2'] }) }}",
+          "options": {}
+        },
+        "id": "a0000015-0000-0000-0000-000000000015",
+        "name": "AssemblyAI: Create Transcript",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1584,
+          1328
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "2Tfzk1f7G8y7weLt",
+            "name": "DP: AssemblyAI API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "await new Promise(resolve => setTimeout(resolve, 15000));\nreturn $input.all();"
+        },
+        "id": "a0000016-0000-0000-0000-000000000016",
+        "name": "Wait: Poll Delay",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1808,
+          1328
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=https://api.assemblyai.com/v2/transcript/{{ $('AssemblyAI: Create Transcript').first().json.id }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "id": "a0000017-0000-0000-0000-000000000017",
+        "name": "AssemblyAI: Poll Status",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2032,
+          1264
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "2Tfzk1f7G8y7weLt",
+            "name": "DP: AssemblyAI API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "cond-complete",
+                "leftValue": "={{ $json.status }}",
+                "rightValue": "completed",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000018-0000-0000-0000-000000000018",
+        "name": "IF: Transcript Complete?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          2256,
+          1328
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $('Set: Extract & Detect Source').first().json.gdrive_file_id }}"
+          },
+          "options": {}
+        },
+        "id": "a0000019-0000-0000-0000-000000000019",
+        "name": "Google Drive: Download File",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          896,
+          1072
+        ],
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "YO4qnGhKlEgotzkB",
+            "name": "DP: Google Drive Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const text = $json.text || $json.transcription || '';\n  return JSON.stringify({\n    success: true,\n    transcription: text,\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    word_count: text.split(/\\s+/).filter(w => w).length,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+          "options": {}
+        },
+        "id": "a0000020-0000-0000-0000-000000000020",
+        "name": "Set: Format Response",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2784,
+          656
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## [Video to Text] - Multi-Source Transcription - v1\n\n**Trigger:** Webhook POST `/video-to-text`\n**Sources:** YouTube (RapidAPI MP3), Social Media (FastSaverAPI), Google Drive\n**Transcribers:** OpenAI Whisper | AssemblyAI | Deepgram Nova-2\n**Output:** JSON result POSTed to callback_url\n\n⚠️ **ASYNC API** — n8n runs in queue mode.\nEvery request returns {\"message\": \"Workflow was started\"} immediately.\nResults are POSTed to callback_url when done.\n\n### Request Body:\n```json\n{\n  \"url\": \"https://youtube.com/watch?v=xxx\",\n  \"source\": \"auto\",\n  \"transcriber\": \"assemblyai\",\n  \"gdrive_file_id\": \"\",\n  \"callback_url\": \"https://your-app.com/api/result\"\n}\n```\n\n### Callback Response:\n```json\n{\n  \"success\": true,\n  \"transcription\": \"Full text...\",\n  \"source_url\": \"...\",\n  \"source\": \"youtube\",\n  \"transcriber\": \"assemblyai\",\n  \"word_count\": 1234,\n  \"timestamp\": \"...\"\n}\n```\n\n### API Key\n`vtt_33872321dd87e4bd6275578fe674bf9102f7d4c96d4a62ee8ddbc54fc1368561`",
+          "height": 832,
+          "width": 580,
+          "color": 4
+        },
+        "id": "a0000027-0000-0000-0000-000000000027",
+        "name": "Sticky: Workflow Overview",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -640,
+          496
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## YouTube Path\n**RapidAPI youtube-mp36 → AssemblyAI / Deepgram / Whisper**\n1. Extract video ID from URL\n2. GET https://youtube-mp36.p.rapidapi.com/dl?id={videoId}\n3. Returns { link: \"https://...mp3\" }\n4. AssemblyAI: download binary → upload to AAI → poll\n5. Deepgram: send MP3 URL directly → sync response\n6. Whisper: DISABLED\n\n⚠️ YouTube IPs are blocked from n8n VPS — must use RapidAPI\n⚠️ RapidAPI temp URLs are IP-restricted — must download binary before sending to AssemblyAI",
+          "height": 336,
+          "width": 500,
+          "color": 6
+        },
+        "id": "a0000028-0000-0000-0000-000000000028",
+        "name": "Sticky: YouTube Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          800,
+          -240
+        ]
+      },
+      {
+        "parameters": {
+          "content": "### Social Media Path\nFastSaverAPI extracts audio from TikTok, Instagram, Facebook, Twitter, etc.\nFree tier: 200 points/month, 1 req/sec.",
+          "height": 120,
+          "width": 460,
+          "color": 6
+        },
+        "id": "a0000029-0000-0000-0000-000000000029",
+        "name": "Sticky: Social Media Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          256,
+          208
+        ]
+      },
+      {
+        "parameters": {
+          "content": "### Google Drive Path\nDownloads file from Google Drive, then sends to chosen transcriber.",
+          "height": 212,
+          "width": 436,
+          "color": 6
+        },
+        "id": "a0000030-0000-0000-0000-000000000030",
+        "name": "Sticky: Google Drive Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          736,
+          1296
+        ]
+      },
+      {
+        "parameters": {
+          "content": "### AssemblyAI Polling (async)\nSubmit transcript → Code node 15s delay → Poll status\n→ IF completed → continue, else → loop back\n\n⚠️ Uses Code node for delay (NOT Wait node)\nWait node closes webhook connection — Code node does not.\n\nBudget 60-120s per video.",
+          "height": 224,
+          "width": 660,
+          "color": 5
+        },
+        "id": "a0000031-0000-0000-0000-000000000031",
+        "name": "Sticky: Polling Warning",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2512,
+          992
+        ]
+      },
+      {
+        "parameters": {
+          "content": "### Output: Callback Only\n\nIF callback_url provided → POST result JSON to callback_url\nIF no callback_url → workflow ends silently\n\nResult shape:\n{\n  success, transcription, source_url,\n  source, transcriber, word_count, timestamp\n}\n\nNo Google Docs — use callback_url in your web app.",
+          "height": 284,
+          "width": 508,
+          "color": 6
+        },
+        "id": "a0000032-0000-0000-0000-000000000032",
+        "name": "Sticky: Output Section",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3216,
+          336
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "await new Promise(resolve => setTimeout(resolve, 15000));\nreturn $input.all();"
+        },
+        "id": "a0000033-0000-0000-0000-000000000033",
+        "name": "Wait: Poll Delay (YouTube)",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1792,
+          192
+        ],
+        "notes": "Wait 15s before polling AssemblyAI"
+      },
+      {
+        "parameters": {
+          "url": "=https://api.assemblyai.com/v2/transcript/{{ $(\"AssemblyAI: Submit YouTube MP3\").first().json.id }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "id": "a0000034-0000-0000-0000-000000000034",
+        "name": "AssemblyAI: Poll Status (YouTube)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2016,
+          112
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "2Tfzk1f7G8y7weLt",
+            "name": "DP: AssemblyAI API Key"
+          }
+        },
+        "notes": "Check if transcription is complete"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "condition1",
+                "leftValue": "={{ $json.status }}",
+                "rightValue": "completed",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000035-0000-0000-0000-000000000035",
+        "name": "IF: YouTube Transcript Complete?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          2240,
+          192
+        ],
+        "notes": "completed → Format Response, else → loop back"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "cond-has-callback",
+                "leftValue": "={{ $('Set: Extract & Detect Source').first().json.callback_url }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000036-0000-0000-0000-000000000036",
+        "name": "IF: Has Callback URL?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          3008,
+          656
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Set: Extract & Detect Source').first().json.callback_url }}",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify($json) }}",
+          "options": {}
+        },
+        "id": "a0000037-0000-0000-0000-000000000037",
+        "name": "POST: Send Callback",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3232,
+          640
+        ],
+        "notes": "POST transcription result to caller callback_url"
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.link }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "a0000038-0000-0000-0000-000000000038",
+        "name": "Download: YouTube MP3",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1120,
+          192
+        ],
+        "notes": "Download MP3 binary from RapidAPI temp URL"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.assemblyai.com/v2/upload",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "binaryData",
+          "inputDataFieldName": "data",
+          "options": {}
+        },
+        "id": "a0000039-0000-0000-0000-000000000039",
+        "name": "AssemblyAI: Upload YouTube Audio",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1344,
+          192
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "2Tfzk1f7G8y7weLt",
+            "name": "DP: AssemblyAI API Key"
+          }
+        },
+        "notes": "Upload MP3 binary to AssemblyAI — returns upload_url"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ url: $(\"RapidAPI: YouTube to MP3 (Deepgram)\").first().json.link }) }}",
+          "options": {}
+        },
+        "id": "a0000040-0000-0000-0000-000000000040",
+        "name": "Deepgram: Transcribe YouTube URL",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2016,
+          592
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "XN0IETiAq9yP0bY3",
+            "name": "DP: Deepgram API Key"
+          }
+        },
+        "notes": "Deepgram Nova-2: transcribe from MP3 URL directly (no upload needed)"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "binaryData",
+          "inputDataFieldName": "data",
+          "options": {}
+        },
+        "id": "a0000041-0000-0000-0000-000000000041",
+        "name": "Deepgram: Transcribe Audio",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2016,
+          976
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "XN0IETiAq9yP0bY3",
+            "name": "DP: Deepgram API Key"
+          }
+        },
+        "notes": "Deepgram Nova-2: transcribe binary audio file"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+          "options": {}
+        },
+        "id": "a0000042-0000-0000-0000-000000000042",
+        "name": "Set: Format Deepgram (YouTube)",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2240,
+          592
+        ],
+        "notes": "Extract transcript text from Deepgram response"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+          "options": {}
+        },
+        "id": "a0000043-0000-0000-0000-000000000043",
+        "name": "Set: Format Deepgram (Social)",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2240,
+          976
+        ],
+        "notes": "Extract transcript text from Deepgram response"
+      },
+      {
+        "parameters": {
+          "url": "={{ (() => { const url = $(\"Set: Extract & Detect Source\").first().json.url; const match = url.match(new RegExp(\"(?:v=|youtu.be/)([a-zA-Z0-9_-]{11})\")); return \"https://youtube-mp36.p.rapidapi.com/dl?id=\" + (match ? match[1] : \"\"); })() }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "x-rapidapi-key",
+                "value": "b8599adad4mshaa463d039fabfd0p175df4jsn40d478261b9b"
+              },
+              {
+                "name": "x-rapidapi-host",
+                "value": "youtube-mp36.p.rapidapi.com"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "a0000044-0000-0000-0000-000000000044",
+        "name": "RapidAPI: YouTube to MP3 (Deepgram)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1792,
+          592
+        ],
+        "notes": "Gets MP3 URL for Deepgram path (separate from AssemblyAI path)"
+      }
+    ],
+    "connections": {
+      "Webhook: Video to Text API": {
+        "main": [
+          [
+            {
+              "node": "Set: Extract & Detect Source",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "Set: Extract & Detect Source": {
+        "main": [
+          [
+            {
+              "node": "Switch: Source Type",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "Switch: Source Type": {
+        "main": [
+          [
+            {
+              "node": "Switch: Transcriber (YouTube)",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "FastSaverAPI: Get Download URL",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Google Drive: Download File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch: Transcriber (YouTube)": {
+        "main": [
+          [
+            {
+              "node": "Whisper: Transcribe YouTube Audio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "RapidAPI: YouTube to MP3",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "RapidAPI: YouTube to MP3 (Deepgram)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FastSaverAPI: Get Download URL": {
+        "main": [
+          [
+            {
+              "node": "Download Audio File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Audio File": {
+        "main": [
+          [
+            {
+              "node": "Switch: Transcriber (Social/GDrive)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Drive: Download File": {
+        "main": [
+          [
+            {
+              "node": "Switch: Transcriber (Social/GDrive)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch: Transcriber (Social/GDrive)": {
+        "main": [
+          [
+            {
+              "node": "Whisper: Transcribe Audio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "AssemblyAI: Upload Audio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Deepgram: Transcribe Audio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Whisper: Transcribe Audio": {
+        "main": [
+          [
+            {
+              "node": "Set: Format Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AssemblyAI: Upload Audio": {
+        "main": [
+          [
+            {
+              "node": "AssemblyAI: Create Transcript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AssemblyAI: Create Transcript": {
+        "main": [
+          [
+            {
+              "node": "Wait: Poll Delay",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait: Poll Delay": {
+        "main": [
+          [
+            {
+              "node": "AssemblyAI: Poll Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AssemblyAI: Poll Status": {
+        "main": [
+          [
+            {
+              "node": "IF: Transcript Complete?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: Transcript Complete?": {
+        "main": [
+          [
+            {
+              "node": "Set: Format Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait: Poll Delay",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set: Format Response": {
+        "main": [
+          [
+            {
+              "node": "IF: Has Callback URL?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Whisper: Transcribe YouTube Audio": {
+        "main": [
+          [
+            {
+              "node": "Set: Format Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RapidAPI: YouTube to MP3": {
+        "main": [
+          [
+            {
+              "node": "Download: YouTube MP3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AssemblyAI: Submit YouTube MP3": {
+        "main": [
+          [
+            {
+              "node": "Wait: Poll Delay (YouTube)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait: Poll Delay (YouTube)": {
+        "main": [
+          [
+            {
+              "node": "AssemblyAI: Poll Status (YouTube)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AssemblyAI: Poll Status (YouTube)": {
+        "main": [
+          [
+            {
+              "node": "IF: YouTube Transcript Complete?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: YouTube Transcript Complete?": {
+        "main": [
+          [
+            {
+              "node": "Set: Format Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Wait: Poll Delay (YouTube)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: Has Callback URL?": {
+        "main": [
+          [
+            {
+              "node": "POST: Send Callback",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "Download: YouTube MP3": {
+        "main": [
+          [
+            {
+              "node": "AssemblyAI: Upload YouTube Audio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AssemblyAI: Upload YouTube Audio": {
+        "main": [
+          [
+            {
+              "node": "AssemblyAI: Submit YouTube MP3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deepgram: Transcribe YouTube URL": {
+        "main": [
+          [
+            {
+              "node": "Set: Format Deepgram (YouTube)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set: Format Deepgram (YouTube)": {
+        "main": [
+          [
+            {
+              "node": "Set: Format Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Deepgram: Transcribe Audio": {
+        "main": [
+          [
+            {
+              "node": "Set: Format Deepgram (Social)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set: Format Deepgram (Social)": {
+        "main": [
+          [
+            {
+              "node": "Set: Format Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "RapidAPI: YouTube to MP3 (Deepgram)": {
+        "main": [
+          [
+            {
+              "node": "Deepgram: Transcribe YouTube URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": "Version 3f4fb65c",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-31T00:58:12.759Z",
+        "id": 847,
+        "workflowId": "51GKzBSTM3iGhJH1",
+        "versionId": "3f4fb65c-420c-4a88-baf6-20c9b0cf4402",
+        "event": "activated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    ]
+  }
+}
