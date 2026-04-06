@@ -1,0 +1,2010 @@
+{
+  "updatedAt": "2026-04-02T05:45:29.865Z",
+  "createdAt": "2026-03-30T00:52:30.297Z",
+  "id": "XuEJUSibmhjQPGYh",
+  "name": "Google Ads Lead",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "labelIds": [
+            "Label_1912529792301078672"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -864,
+        -32
+      ],
+      "id": "7c03eeda-5d29-45c6-9980-0a2e8d5bf420",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Iacb6DlpUsfDqQMK",
+          "name": "WR: Gmail Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3de57300-fa50-4abc-ae75-dfff84d77ee9",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "889e6c1f-a91c-4528-a009-4029ff374c28",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        -32
+      ],
+      "id": "89db33cb-076a-4d00-9b04-2b8919d94f7f",
+      "name": "Set Leads"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wrapp2.windowrevival.com.au/api/leads-form/create",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_first_name\": \"{{ $json.firstName }}\",\n  \"client_last_name\": \"{{ $json.lastName }}\",\n  \"client_mobile\": \"{{ $json.mobileNumber }}\",\n  \"client_work_number\": \"{{ $json.phoneNumber }}\",\n  \"client_home_number\": \"\",\n  \"client_email\": \"{{ $json.emailAddress }}\",\n  \"client_address\": \"{{ $json.address }} {{ $json.suburb }}\",\n  \"client_suburb\": \"{{ $json.suburb }}\",\n  \"client_state\": \"{{ $json.state }}\",\n  \"client_postal\": \"{{ $json.postalCode }}\",\n  \"client_region\": \"{{ $json.state }}\",\n  \"enquiry_notes\": \"{{ $json.enquiry }}\",\n  \"other_contact_details\": \"\",\n  \"client_lead_source\": \"Google\",\n\n  \"opportunity_title\": \"{{ $json.suburb }} {{ $json.state }} {{ $json.postalCode }}\",\n  \"opportunity_how_hear_us\": \"Google\",\n  \"sales_pipeline\": \"New Lead - New Landing Page\",\n  \"assign_to\": \"windowrevival+1@gmail.com\",\n  \"opportunity_product_interest\": [\"Repairs\"],\n  \"opportunity_contact_name\": \"{{ $json.firstName }} {{ $json.lastName }}\",\n  \"opportunity_mobile_number\": \"{{ $json.mobileNumber }}\",\n  \"opportunity_work_number\": \"{{ $json.phoneNumber }}\",\n  \"opportunity_home_number\": \"\",\n  \"opportunity_address\": \"{{ $json.address }}\",\n  \"opportunity_state\": \"{{ $json.state }}\",\n  \"opportunity_suburb\": \"{{ $json.suburb }}\",\n  \"opportunity_postcode\": \"{{ $json.postalCode }}\",\n  \"opportunity_email\": \"{{ $json.emailAddress }}\",\n\n  \"opportunity_description\": \"{{ $json.enquiry }}\",\n  \"opportunity_next_action\": \"\",\n  \"opportunity_status\": \"Warm\",\n  \"opportunity_estimated_revenue\": 0,\n  \"opportunity_percent_chance\": \"30%\",\n  \"opportunity_follow_up_date\": \"{{\n    (() => {\n      const tz = 'Australia/Brisbane';\n      let date = new Date();\n\n      date.setDate(date.getDate() + 1);\n\n      while (date.getDay() === 0 || date.getDay() === 6) {\n        date.setDate(date.getDate() + 1);\n      }\n\n      const formatter = new Intl.DateTimeFormat('en-CA', {\n        timeZone: tz,\n        year: 'numeric',\n        month: '2-digit',\n        day: '2-digit'\n      });\n\n      const parts = formatter.formatToParts(date);\n      const yyyy = parts.find(p => p.type === 'year').value;\n      const mm = parts.find(p => p.type === 'month').value;\n      const dd = parts.find(p => p.type === 'day').value;\n\n      return `${yyyy}-${mm}-${dd} 08:00:00`;\n    })()\n  }}\",\n  \"projected_revenue\": 0,\n  \"net_promoter_score\": 0,\n  \"net_promoter_comment\": \"net promoter\",\n  \"opportunity_same_as_contact_details\": \"no\",\n  \"create_job\": \"no\",\n\n  \"job_event\": \"job_event\",\n  \"job_technician\": \"chris\", \n  \"job_start_date\": \"2026-03-26 7:00:00\", \n  \"job_end_date\": \"2026-03-26 16:00:00\", \n  \"projected_sales\": 1000, \n  \"actual_sales\": 1500, \n  \"duration\": 2, \n  \"man_job\": 2, \n  \"queue\": 2, \n  \"type\": \"Fixed\", \n  \"sms_status\": \"Send sms reminder\", \n  \"schedule_status\": \"To Be Confirmed\", \n  \"job_status\": \"Job Completed\", \n  \"services\": \"Repairs\",\n  \"job_description\": \"job_description\", \n  \"dsp_note\": \"dsp note\", \n  \"work_done\": \"work done\", \n  \"work_stil_to_be_done\": \"work still done\" \n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        496,
+        -128
+      ],
+      "id": "dbd3a652-4ba0-4c76-852b-c51a4ab2e273",
+      "name": "Create Opportunities",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "UTs7Hb7x8Xe72hTe",
+          "name": "WR: Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract the lead details from this input and return JSON only.\n\nInput ID:\n{{ $json.id }}\n\nRaw text:\n{{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a data extraction assistant.\n\nExtract these fields from the provided input:\n- id\n- first_name\n- last_name\n- email_address\n- mobile_number\n- phone_number\n- suburb\n- state\n- postal_code\n- address\n- message\n- quantity\n- IdLikeToGetMyProjectUnderway\n\nRules:\n1. Return valid JSON only.\n2. Do not include markdown, code fences, notes, or explanations.\n3. Use empty strings only when a value cannot be determined.\n4. The id field must be copied exactly from the provided input ID.\n5. Do not try to extract id from the raw text body.\n6. Ignore tracking links, headers, greetings, and unrelated text, but do not ignore useful contact numbers, quantity details, or project timing mentioned in the message.\n7. Split the full name into first_name and last_name.\n   - If there is only one name, put it in first_name and leave last_name empty.\n8. For email_address, return only the email value.\n9. For mobile_number:\n   - If the raw lead contains a field labeled Phone, treat that value as mobile_number by default.\n   - If the raw lead contains a field labeled Mobile, treat that value as mobile_number.\n   - mobile_number must be an Australian mobile number starting with 04.\n   - A valid Australian mobile number has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output mobile_number as digits only with no spaces, for example: 0417786747\n   - If the Phone or Mobile field contains a valid 04 number, always place it in mobile_number.\n   - Never place a valid 04 mobile number in phone_number.\n   - If no valid mobile number can be determined, return an empty string.\n10. For phone_number:\n   - phone_number is for landline numbers only.\n   - Only extract phone_number from the message when a landline is mentioned there.\n   - Do not copy the lead’s Phone field into phone_number if it is a mobile.\n   - A valid Brisbane / Queensland landline starts with 07 and has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output phone_number in this format: 07 1234 1234\n   - If no valid landline appears in the message, return an empty string.\n11. Do not put the same number in both mobile_number and phone_number.\n12. If only one number is found and it starts with 04, put it in mobile_number and leave phone_number empty.\n13. For suburb, return only the suburb value.\n14. For state:\n   - Extract the state value.\n   - Convert Australian abbreviations to full names:\n     - NSW = New South Wales\n     - QLD = Queensland\n     - VIC = Victoria\n     - SA = South Australia\n     - WA = Western Australia\n     - TAS = Tasmania\n     - NT = Northern Territory\n     - ACT = Australian Capital Territory\n   - Do not output state abbreviations.\n15. For postal_code:\n   - Extract it if explicitly present.\n   - If not explicitly present, infer it from suburb + Australian state when highly confident and unambiguous.\n   - If not confident, return an empty string.\n16. For message, return only the message content.\n17. For quantity:\n   - Extract the quantity from the message when it clearly refers to the number of items for the job, such as doors, windows, mirrors, tracks, panels, screens, rollers, or similar repair or replacement items.\n   - Prefer explicit numbers such as 1, 2, 3, 4.\n   - You may convert simple written numbers like one, two, three, four into digits.\n   - Return quantity as a string containing only the number.\n   - If no clear quantity is mentioned, return an empty string.\n18. For IdLikeToGetMyProjectUnderway:\n   - Extract the project timing or urgency from the message.\n   - Examples include: today, tomorrow, next week, this week, ASAP, urgently, this weekend, Monday, in two weeks.\n   - Return a short timing phrase only.\n   - If no timing or urgency is mentioned, return an empty string.\n19. Build address using these parts in this order:\n   - suburb\n   - state\n   - postal_code\n   - Australia\n20. Join address parts with a single space only.\n21. Do not add commas in address.\n22. Only include address parts that exist.\n23. Output exactly this structure:\n{\n  \"id\": \"\",\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email_address\": \"\",\n  \"mobile_number\": \"\",\n  \"phone_number\": \"\",\n  \"suburb\": \"\",\n  \"state\": \"\",\n  \"postal_code\": \"\",\n  \"address\": \"\",\n  \"message\": \"\",\n  \"quantity\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -368,
+        -32
+      ],
+      "id": "954052a5-bdda-431f-a256-cbbd06767537",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        192
+      ],
+      "id": "095b46e9-98aa-443a-b190-c5b14801e289",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "oQQrCQWqdo1CuRzx",
+          "name": "WRai: OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Set Leads').item.json.id }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        192
+      ],
+      "id": "3e3af3b4-70f7-40e0-b0d1-08e17fccb940",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"id\": \"string\", \n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"email_address\": \"string\",\n  \"mobile_number\": \"string\",\n  \"phone_number\": \"string\",\n  \"suburb\": \"string\",\n  \"state\": \"string\",\n  \"postal_code\": \"string\",\n  \"address\": \"string\",\n  \"message\": \"string\",\n  \"quantity\": \"string\",\n  \"IdLikeToGetMyProjectUnderway\" : \"string\" \n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        192
+      ],
+      "id": "346f4e27-ad49-44da-808e-5981c5a1d8a7",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "753455160209965106",
+          "mode": "list",
+          "cachedResultName": "Window Revival",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "912496260823519232",
+          "mode": "list",
+          "cachedResultName": "leads・new",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106/912496260823519232"
+        },
+        "content": "===========\nLead Type: {{ $json.leadType }}\nTimestamp: {{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\nId: {{ $json.id }}\nFirst Name: {{ $json.firstName }}\nLast Name: {{ $json.lastName }}\nMobile Number: {{ $json.mobileNumber }}\nPhone Number: {{ $json.phoneNumber }}\nEmail Address: {{ $json.emailAddress }}\nAddress: {{ $json.address }}\nState: {{ $json.state }}\nSuburb: {{ $json.suburb }}\n\nEnquiry: {{ $json.enquiry }}\n\nQuantity: {{ $json.quantity }}\nI'd Like to Get My Project Underway: {{ $json.IdLikeToGetMyProjectUnderway }}\nHow they heard about us?: {{ $json.howTheyHeardAboutUs }}\nLead Qualifier: {{ $json.leadQualifier }}\nReferred by: {{ $json.leadQualifier }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        720,
+        160
+      ],
+      "id": "9116b3a2-0f08-4fd2-bfa2-74c36847380b",
+      "name": "Send a message",
+      "webhookId": "d2e978df-db4f-4b19-b1e8-31948398a217",
+      "credentials": {
+        "discordBotApi": {
+          "id": "a0FDlWFh8PBA5Add",
+          "name": "WR: Discord Bot Account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        64
+      ],
+      "id": "204d3e0b-017f-4630-9294-635f739d2108",
+      "name": "add 5s",
+      "webhookId": "91a29289-ca11-42bf-866a-5228315e8ee9"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ",
+          "mode": "list",
+          "cachedResultName": "Leads Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "raw",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\n",
+            "Id": "={{ $json.id }}",
+            "Lead Type": "={{ $json.leadType }}",
+            "First Name": "={{ $json.firstName }}",
+            "Last Name": "={{ $json.lastName }}",
+            "Mobile Number": "={{ $json.mobileNumber }}",
+            "Email Address": "={{ $json.emailAddress }}",
+            "Phone Number": "={{ $json.phoneNumber }}",
+            "Address": "={{ $json.address }}",
+            "State": "={{ $json.state }}",
+            "Postal Code": "={{ $json.postalCode }}",
+            "Suburb": "={{ $json.suburb }}",
+            "Enquiry": "={{ $json.enquiry }}",
+            "Quantity": "={{ $json.quantity }}",
+            "I’d Like To Get My Project Underway": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+            "How they heard about us": "={{ $json.howTheyHeardAboutUs }}",
+            "Lead Qualifier": "={{ $json.leadQualifier }}",
+            "Referred By": "={{ $json.referredBy }}"
+          },
+          "matchingColumns": [
+            "Id"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Id",
+              "displayName": "Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Type",
+              "displayName": "Lead Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mobile Number",
+              "displayName": "Mobile Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suburb",
+              "displayName": "Suburb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Postal Code",
+              "displayName": "Postal Code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Enquiry",
+              "displayName": "Enquiry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "I’d Like To Get My Project Underway",
+              "displayName": "I’d Like To Get My Project Underway",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "How they heard about us",
+              "displayName": "How they heard about us",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Qualifier",
+              "displayName": "Lead Qualifier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referred By",
+              "displayName": "Referred By",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        -32
+      ],
+      "id": "dcc32c66-3b7d-49c7-93e8-02dd4adf01ec",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "S4FmXrss6MgN5rzt",
+          "name": "WR: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfe143c1-1c01-4b62-b292-ab210706031b",
+              "name": "Timestamp",
+              "value": "={{ $json.Timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "7c753874-2708-4658-9211-ab1a07be7f81",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7fd6c372-a574-46eb-b8a8-4ca5514c2bb4",
+              "name": "leadType",
+              "value": "={{ $json[\"Lead Type\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "319cbc2f-686c-4690-b0da-99edb563a4d9",
+              "name": "firstName",
+              "value": "={{ $json[\"First Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e318f933-3a86-4e92-8d45-fdd5c9d6db45",
+              "name": "lastName",
+              "value": "={{ $json[\"Last Name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "1033f6f6-ff3d-462c-a819-0253ba1097a9",
+              "name": "mobileNumber",
+              "value": "={{ $json[\"Mobile Number\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "42c58a65-dab0-4938-a047-f6beba67e9d3",
+              "name": "phoneNumber",
+              "value": "={{ $json[\"Phone Number\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "75060d69-eaa3-4924-b9f6-b7cf159502d4",
+              "name": "emailAddress",
+              "value": "={{ $json[\"Email Address\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "518ce6f1-f3a0-4e61-b483-c85feb63ae15",
+              "name": "postalCode",
+              "value": "={{ $json[\"Postal Code\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "2420ae52-e6a5-4d5e-889a-014ad00b28b2",
+              "name": "address",
+              "value": "={{ $json.Address }}",
+              "type": "string"
+            },
+            {
+              "id": "421623c8-2db6-4b40-a102-f6dc36ff61ed",
+              "name": "state",
+              "value": "={{ $json.State }}",
+              "type": "string"
+            },
+            {
+              "id": "7cc111a4-9134-4fe3-97eb-75b5e81c8d31",
+              "name": "suburb",
+              "value": "={{ $json.Suburb }}",
+              "type": "string"
+            },
+            {
+              "id": "fb3af799-02a3-4669-97b7-5616f9bc8d93",
+              "name": "enquiry",
+              "value": "={{ $json.Enquiry }}",
+              "type": "string"
+            },
+            {
+              "id": "e76aa2b3-3c3f-43d7-b9e2-8dfe2c4ecad3",
+              "name": "quantity",
+              "value": "={{ $json.Quantity }}",
+              "type": "string"
+            },
+            {
+              "id": "193cbe77-7015-40c3-95b1-eba1fd89481c",
+              "name": "leadQualifier",
+              "value": "={{ $json[\"Lead Qualifier\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "33a52d4e-10f1-4357-90d4-de70e6873925",
+              "name": "IdLikeToGetMyProjectUnderway",
+              "value": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+              "type": "string"
+            },
+            {
+              "id": "9c3726e2-0e35-4a55-8fb3-2cfc97653e48",
+              "name": "howTheyHeardAboutUs",
+              "value": "={{ $json[\"How they heard about us\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        -32
+      ],
+      "id": "e9c4af8d-5268-4d10-b157-df6733e49054",
+      "name": "Map Google ads Lead"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.output;\n\nconst parts = new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Australia/Brisbane',\n  day: '2-digit',\n  month: '2-digit',\n  year: 'numeric',\n  hour: '2-digit',\n  minute: '2-digit',\n  second: '2-digit',\n  hourCycle: 'h23'\n}).formatToParts(new Date());\n\nconst get = (type) => parts.find(p => p.type === type)?.value || '';\n\nconst timestamp = `${get('day')}/${get('month')}/${get('year')}, ${get('hour')}:${get('minute')}:${get('second')}`;\n\nreturn [\n  {\n    json: {\n      Timestamp: timestamp,\n      id: data.id,\n      \"Lead Type\": \"Google Ads Lead\",\n      \"First Name\": data.first_name,\n      \"Last Name\": data.last_name,\n      \"Mobile Number\": data.mobile_number,\n      \"Phone Number\": data.phone_number,\n      \"Email Address\": data.email_address,\n      \"Address\": data.address,\n      \"State\": data.state,\n      \"Suburb\": data.suburb,\n      \"Postal Code\": data.postal_code,\n      \"Enquiry\": data.message,\n      \"Quantity\": data.quantity,\n      \"IdLikeToGetMyProjectUnderway\": data.IdLikeToGetMyProjectUnderway,\n      \"How they heard about us\": \"Google\",\n      \"Lead Qualifier\": \"Good\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -32
+      ],
+      "id": "3a53c3dc-bba0-4f77-9f67-65a59ff0fbfa",
+      "name": "Parse Fields"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_169"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        352
+      ],
+      "id": "79c6e553-b104-4f7e-97d9-bbc29182e312",
+      "name": "Add label to message",
+      "webhookId": "b4633938-7cc0-4ae8-8754-c953339d4de8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Iacb6DlpUsfDqQMK",
+          "name": "WR: Gmail Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1mnodxa-7QBuIudvAqu76KxykBXJaH303Ih6OPWxMSdw",
+          "mode": "list",
+          "cachedResultName": "New Landing Page Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mnodxa-7QBuIudvAqu76KxykBXJaH303Ih6OPWxMSdw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mnodxa-7QBuIudvAqu76KxykBXJaH303Ih6OPWxMSdw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\n",
+            "Id": "={{ $json.id }}",
+            "Lead Type": "={{ $json.leadType }}",
+            "First Name": "={{ $json.firstName }}",
+            "Last Name": "={{ $json.lastName }}",
+            "Mobile Number": "={{ $json.mobileNumber }}",
+            "Email Address": "={{ $json.emailAddress }}",
+            "Phone Number": "={{ $json.phoneNumber }}",
+            "Address": "={{ $json.address }}",
+            "State": "={{ $json.state }}",
+            "Postal Code": "={{ $json.postalCode }}",
+            "Suburb": "={{ $json.suburb }}",
+            "Enquiry": "={{ $json.enquiry }}",
+            "Quantity": "={{ $json.quantity }}",
+            "I’d Like To Get My Project Underway": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+            "How they heard about us": "={{ $json.howTheyHeardAboutUs }}",
+            "Lead Qualifier": "={{ $json.leadQualifier }}",
+            "Referred By": "={{ $json.referredBy }}"
+          },
+          "matchingColumns": [
+            "Id"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Id",
+              "displayName": "Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Type",
+              "displayName": "Lead Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mobile Number",
+              "displayName": "Mobile Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suburb",
+              "displayName": "Suburb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Postal Code",
+              "displayName": "Postal Code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Enquiry",
+              "displayName": "Enquiry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "I’d Like To Get My Project Underway",
+              "displayName": "I’d Like To Get My Project Underway",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "How they heard about us",
+              "displayName": "How they heard about us",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Qualifier",
+              "displayName": "Lead Qualifier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referred By",
+              "displayName": "Referred By",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        736,
+        560
+      ],
+      "id": "80643b32-f20d-4984-ace4-17df6ad37f61",
+      "name": "New Landing Page Leads Data Logs",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "S4FmXrss6MgN5rzt",
+          "name": "WR: Google Sheets Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Opportunities": {
+      "main": [
+        []
+      ]
+    },
+    "Set Leads": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "add 5s": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "New Landing Page Leads Data Logs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Google ads Lead": {
+      "main": [
+        [
+          {
+            "node": "add 5s",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Opportunities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Fields": {
+      "main": [
+        [
+          {
+            "node": "Map Google ads Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Gmail Trigger": {
+      "Gmail Trigger": {
+        "lastTimeChecked": 1775458918,
+        "possibleDuplicates": [
+          "19d619ae2a8ecda2",
+          "19d5cef82d5cb22d"
+        ]
+      }
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
+  "activeVersionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
+  "versionCounter": 212,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-30T00:52:30.301Z",
+      "createdAt": "2026-03-30T00:52:30.301Z",
+      "role": "workflow:owner",
+      "workflowId": "XuEJUSibmhjQPGYh",
+      "projectId": "6TsYTzg0HY92xH2K",
+      "project": {
+        "updatedAt": "2025-11-14T08:33:27.896Z",
+        "createdAt": "2025-11-14T07:49:25.938Z",
+        "id": "6TsYTzg0HY92xH2K",
+        "name": "Christine Kam <windowrevival@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-01T14:10:28.000Z",
+    "createdAt": "2026-04-01T14:10:23.714Z",
+    "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
+    "workflowId": "XuEJUSibmhjQPGYh",
+    "nodes": [
+      {
+        "parameters": {
+          "pollTimes": {
+            "item": [
+              {
+                "mode": "everyMinute"
+              }
+            ]
+          },
+          "simple": false,
+          "filters": {
+            "labelIds": [
+              "Label_1912529792301078672"
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmailTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -864,
+          -32
+        ],
+        "id": "7c03eeda-5d29-45c6-9980-0a2e8d5bf420",
+        "name": "Gmail Trigger",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "Iacb6DlpUsfDqQMK",
+            "name": "WR: Gmail Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "3de57300-fa50-4abc-ae75-dfff84d77ee9",
+                "name": "id",
+                "value": "={{ $json.id }}",
+                "type": "string"
+              },
+              {
+                "id": "889e6c1f-a91c-4528-a009-4029ff374c28",
+                "name": "text",
+                "value": "={{ $json.text }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -640,
+          -32
+        ],
+        "id": "89db33cb-076a-4d00-9b04-2b8919d94f7f",
+        "name": "Set Leads"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://wrapp2.windowrevival.com.au/api/leads-form/create",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"client_first_name\": \"{{ $json.firstName }}\",\n  \"client_last_name\": \"{{ $json.lastName }}\",\n  \"client_mobile\": \"{{ $json.mobileNumber }}\",\n  \"client_work_number\": \"{{ $json.phoneNumber }}\",\n  \"client_home_number\": \"\",\n  \"client_email\": \"{{ $json.emailAddress }}\",\n  \"client_address\": \"{{ $json.address }} {{ $json.suburb }}\",\n  \"client_suburb\": \"{{ $json.suburb }}\",\n  \"client_state\": \"{{ $json.state }}\",\n  \"client_postal\": \"{{ $json.postalCode }}\",\n  \"client_region\": \"{{ $json.state }}\",\n  \"enquiry_notes\": \"{{ $json.enquiry }}\",\n  \"other_contact_details\": \"\",\n  \"client_lead_source\": \"Google\",\n\n  \"opportunity_title\": \"{{ $json.suburb }} {{ $json.state }} {{ $json.postalCode }}\",\n  \"opportunity_how_hear_us\": \"Google\",\n  \"sales_pipeline\": \"New Lead - New Landing Page\",\n  \"assign_to\": \"windowrevival+1@gmail.com\",\n  \"opportunity_product_interest\": [\"Repairs\"],\n  \"opportunity_contact_name\": \"{{ $json.firstName }} {{ $json.lastName }}\",\n  \"opportunity_mobile_number\": \"{{ $json.mobileNumber }}\",\n  \"opportunity_work_number\": \"{{ $json.phoneNumber }}\",\n  \"opportunity_home_number\": \"\",\n  \"opportunity_address\": \"{{ $json.address }}\",\n  \"opportunity_state\": \"{{ $json.state }}\",\n  \"opportunity_suburb\": \"{{ $json.suburb }}\",\n  \"opportunity_postcode\": \"{{ $json.postalCode }}\",\n  \"opportunity_email\": \"{{ $json.emailAddress }}\",\n\n  \"opportunity_description\": \"{{ $json.enquiry }}\",\n  \"opportunity_next_action\": \"\",\n  \"opportunity_status\": \"Warm\",\n  \"opportunity_estimated_revenue\": 0,\n  \"opportunity_percent_chance\": \"30%\",\n  \"opportunity_follow_up_date\": \"{{\n    (() => {\n      const tz = 'Australia/Brisbane';\n      let date = new Date();\n\n      date.setDate(date.getDate() + 1);\n\n      while (date.getDay() === 0 || date.getDay() === 6) {\n        date.setDate(date.getDate() + 1);\n      }\n\n      const formatter = new Intl.DateTimeFormat('en-CA', {\n        timeZone: tz,\n        year: 'numeric',\n        month: '2-digit',\n        day: '2-digit'\n      });\n\n      const parts = formatter.formatToParts(date);\n      const yyyy = parts.find(p => p.type === 'year').value;\n      const mm = parts.find(p => p.type === 'month').value;\n      const dd = parts.find(p => p.type === 'day').value;\n\n      return `${yyyy}-${mm}-${dd} 08:00:00`;\n    })()\n  }}\",\n  \"projected_revenue\": 0,\n  \"net_promoter_score\": 0,\n  \"net_promoter_comment\": \"net promoter\",\n  \"opportunity_same_as_contact_details\": \"no\",\n  \"create_job\": \"no\",\n\n  \"job_event\": \"job_event\",\n  \"job_technician\": \"chris\", \n  \"job_start_date\": \"2026-03-26 7:00:00\", \n  \"job_end_date\": \"2026-03-26 16:00:00\", \n  \"projected_sales\": 1000, \n  \"actual_sales\": 1500, \n  \"duration\": 2, \n  \"man_job\": 2, \n  \"queue\": 2, \n  \"type\": \"Fixed\", \n  \"sms_status\": \"Send sms reminder\", \n  \"schedule_status\": \"To Be Confirmed\", \n  \"job_status\": \"Job Completed\", \n  \"services\": \"Repairs\",\n  \"job_description\": \"job_description\", \n  \"dsp_note\": \"dsp note\", \n  \"work_done\": \"work done\", \n  \"work_stil_to_be_done\": \"work still done\" \n}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          496,
+          -128
+        ],
+        "id": "dbd3a652-4ba0-4c76-852b-c51a4ab2e273",
+        "name": "Create Opportunities",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "UTs7Hb7x8Xe72hTe",
+            "name": "WR: Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Extract the lead details from this input and return JSON only.\n\nInput ID:\n{{ $json.id }}\n\nRaw text:\n{{ $json.text }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "You are a data extraction assistant.\n\nExtract these fields from the provided input:\n- id\n- first_name\n- last_name\n- email_address\n- mobile_number\n- phone_number\n- suburb\n- state\n- postal_code\n- address\n- message\n- quantity\n- IdLikeToGetMyProjectUnderway\n\nRules:\n1. Return valid JSON only.\n2. Do not include markdown, code fences, notes, or explanations.\n3. Use empty strings only when a value cannot be determined.\n4. The id field must be copied exactly from the provided input ID.\n5. Do not try to extract id from the raw text body.\n6. Ignore tracking links, headers, greetings, and unrelated text, but do not ignore useful contact numbers, quantity details, or project timing mentioned in the message.\n7. Split the full name into first_name and last_name.\n   - If there is only one name, put it in first_name and leave last_name empty.\n8. For email_address, return only the email value.\n9. For mobile_number:\n   - If the raw lead contains a field labeled Phone, treat that value as mobile_number by default.\n   - If the raw lead contains a field labeled Mobile, treat that value as mobile_number.\n   - mobile_number must be an Australian mobile number starting with 04.\n   - A valid Australian mobile number has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output mobile_number as digits only with no spaces, for example: 0417786747\n   - If the Phone or Mobile field contains a valid 04 number, always place it in mobile_number.\n   - Never place a valid 04 mobile number in phone_number.\n   - If no valid mobile number can be determined, return an empty string.\n10. For phone_number:\n   - phone_number is for landline numbers only.\n   - Only extract phone_number from the message when a landline is mentioned there.\n   - Do not copy the lead’s Phone field into phone_number if it is a mobile.\n   - A valid Brisbane / Queensland landline starts with 07 and has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output phone_number in this format: 07 1234 1234\n   - If no valid landline appears in the message, return an empty string.\n11. Do not put the same number in both mobile_number and phone_number.\n12. If only one number is found and it starts with 04, put it in mobile_number and leave phone_number empty.\n13. For suburb, return only the suburb value.\n14. For state:\n   - Extract the state value.\n   - Convert Australian abbreviations to full names:\n     - NSW = New South Wales\n     - QLD = Queensland\n     - VIC = Victoria\n     - SA = South Australia\n     - WA = Western Australia\n     - TAS = Tasmania\n     - NT = Northern Territory\n     - ACT = Australian Capital Territory\n   - Do not output state abbreviations.\n15. For postal_code:\n   - Extract it if explicitly present.\n   - If not explicitly present, infer it from suburb + Australian state when highly confident and unambiguous.\n   - If not confident, return an empty string.\n16. For message, return only the message content.\n17. For quantity:\n   - Extract the quantity from the message when it clearly refers to the number of items for the job, such as doors, windows, mirrors, tracks, panels, screens, rollers, or similar repair or replacement items.\n   - Prefer explicit numbers such as 1, 2, 3, 4.\n   - You may convert simple written numbers like one, two, three, four into digits.\n   - Return quantity as a string containing only the number.\n   - If no clear quantity is mentioned, return an empty string.\n18. For IdLikeToGetMyProjectUnderway:\n   - Extract the project timing or urgency from the message.\n   - Examples include: today, tomorrow, next week, this week, ASAP, urgently, this weekend, Monday, in two weeks.\n   - Return a short timing phrase only.\n   - If no timing or urgency is mentioned, return an empty string.\n19. Build address using these parts in this order:\n   - suburb\n   - state\n   - postal_code\n   - Australia\n20. Join address parts with a single space only.\n21. Do not add commas in address.\n22. Only include address parts that exist.\n23. Output exactly this structure:\n{\n  \"id\": \"\",\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email_address\": \"\",\n  \"mobile_number\": \"\",\n  \"phone_number\": \"\",\n  \"suburb\": \"\",\n  \"state\": \"\",\n  \"postal_code\": \"\",\n  \"address\": \"\",\n  \"message\": \"\",\n  \"quantity\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\"\n}"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          -368,
+          -32
+        ],
+        "id": "954052a5-bdda-431f-a256-cbbd06767537",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-5-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          -416,
+          192
+        ],
+        "id": "095b46e9-98aa-443a-b190-c5b14801e289",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "oQQrCQWqdo1CuRzx",
+            "name": "WRai: OpenAi account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('Set Leads').item.json.id }}",
+          "contextWindowLength": 20
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          -288,
+          192
+        ],
+        "id": "3e3af3b4-70f7-40e0-b0d1-08e17fccb940",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"id\": \"string\", \n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"email_address\": \"string\",\n  \"mobile_number\": \"string\",\n  \"phone_number\": \"string\",\n  \"suburb\": \"string\",\n  \"state\": \"string\",\n  \"postal_code\": \"string\",\n  \"address\": \"string\",\n  \"message\": \"string\",\n  \"quantity\": \"string\",\n  \"IdLikeToGetMyProjectUnderway\" : \"string\" \n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          -160,
+          192
+        ],
+        "id": "346f4e27-ad49-44da-808e-5981c5a1d8a7",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "753455160209965106",
+            "mode": "list",
+            "cachedResultName": "Window Revival",
+            "cachedResultUrl": "https://discord.com/channels/753455160209965106"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "912496260823519232",
+            "mode": "list",
+            "cachedResultName": "leads・new",
+            "cachedResultUrl": "https://discord.com/channels/753455160209965106/912496260823519232"
+          },
+          "content": "===========\nLead Type: {{ $json.leadType }}\nTimestamp: {{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\nId: {{ $json.id }}\nFirst Name: {{ $json.firstName }}\nLast Name: {{ $json.lastName }}\nMobile Number: {{ $json.mobileNumber }}\nPhone Number: {{ $json.phoneNumber }}\nEmail Address: {{ $json.emailAddress }}\nAddress: {{ $json.address }}\nState: {{ $json.state }}\nSuburb: {{ $json.suburb }}\n\nEnquiry: {{ $json.enquiry }}\n\nQuantity: {{ $json.quantity }}\nI'd Like to Get My Project Underway: {{ $json.IdLikeToGetMyProjectUnderway }}\nHow they heard about us?: {{ $json.howTheyHeardAboutUs }}\nLead Qualifier: {{ $json.leadQualifier }}\nReferred by: {{ $json.leadQualifier }}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          720,
+          160
+        ],
+        "id": "9116b3a2-0f08-4fd2-bfa2-74c36847380b",
+        "name": "Send a message",
+        "webhookId": "d2e978df-db4f-4b19-b1e8-31948398a217",
+        "credentials": {
+          "discordBotApi": {
+            "id": "a0FDlWFh8PBA5Add",
+            "name": "WR: Discord Bot Account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          496,
+          64
+        ],
+        "id": "204d3e0b-017f-4630-9294-635f739d2108",
+        "name": "add 5s",
+        "webhookId": "91a29289-ca11-42bf-866a-5228315e8ee9"
+      },
+      {
+        "parameters": {
+          "operation": "appendOrUpdate",
+          "documentId": {
+            "__rl": true,
+            "value": "13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ",
+            "mode": "list",
+            "cachedResultName": "Leads Logs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "raw",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13lFnQiBUmo1W0oQoTNlcn94ouflhuRWlMYu9NQV7taQ/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\n",
+              "Id": "={{ $json.id }}",
+              "Lead Type": "={{ $json.leadType }}",
+              "First Name": "={{ $json.firstName }}",
+              "Last Name": "={{ $json.lastName }}",
+              "Mobile Number": "={{ $json.mobileNumber }}",
+              "Email Address": "={{ $json.emailAddress }}",
+              "Phone Number": "={{ $json.phoneNumber }}",
+              "Address": "={{ $json.address }}",
+              "State": "={{ $json.state }}",
+              "Postal Code": "={{ $json.postalCode }}",
+              "Suburb": "={{ $json.suburb }}",
+              "Enquiry": "={{ $json.enquiry }}",
+              "Quantity": "={{ $json.quantity }}",
+              "I’d Like To Get My Project Underway": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+              "How they heard about us": "={{ $json.howTheyHeardAboutUs }}",
+              "Lead Qualifier": "={{ $json.leadQualifier }}",
+              "Referred By": "={{ $json.referredBy }}"
+            },
+            "matchingColumns": [
+              "Id"
+            ],
+            "schema": [
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Id",
+                "displayName": "Id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Lead Type",
+                "displayName": "Lead Type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "First Name",
+                "displayName": "First Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Last Name",
+                "displayName": "Last Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Mobile Number",
+                "displayName": "Mobile Number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Phone Number",
+                "displayName": "Phone Number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Email Address",
+                "displayName": "Email Address",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Address",
+                "displayName": "Address",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "State",
+                "displayName": "State",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Suburb",
+                "displayName": "Suburb",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Postal Code",
+                "displayName": "Postal Code",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Enquiry",
+                "displayName": "Enquiry",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Quantity",
+                "displayName": "Quantity",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "I’d Like To Get My Project Underway",
+                "displayName": "I’d Like To Get My Project Underway",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "How they heard about us",
+                "displayName": "How they heard about us",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Lead Qualifier",
+                "displayName": "Lead Qualifier",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Referred By",
+                "displayName": "Referred By",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          720,
+          -32
+        ],
+        "id": "dcc32c66-3b7d-49c7-93e8-02dd4adf01ec",
+        "name": "Append or update row in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "S4FmXrss6MgN5rzt",
+            "name": "WR: Google Sheets Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "cfe143c1-1c01-4b62-b292-ab210706031b",
+                "name": "Timestamp",
+                "value": "={{ $json.Timestamp }}",
+                "type": "string"
+              },
+              {
+                "id": "7c753874-2708-4658-9211-ab1a07be7f81",
+                "name": "id",
+                "value": "={{ $json.id }}",
+                "type": "string"
+              },
+              {
+                "id": "7fd6c372-a574-46eb-b8a8-4ca5514c2bb4",
+                "name": "leadType",
+                "value": "={{ $json[\"Lead Type\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "319cbc2f-686c-4690-b0da-99edb563a4d9",
+                "name": "firstName",
+                "value": "={{ $json[\"First Name\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "e318f933-3a86-4e92-8d45-fdd5c9d6db45",
+                "name": "lastName",
+                "value": "={{ $json[\"Last Name\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "1033f6f6-ff3d-462c-a819-0253ba1097a9",
+                "name": "mobileNumber",
+                "value": "={{ $json[\"Mobile Number\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "42c58a65-dab0-4938-a047-f6beba67e9d3",
+                "name": "phoneNumber",
+                "value": "={{ $json[\"Phone Number\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "75060d69-eaa3-4924-b9f6-b7cf159502d4",
+                "name": "emailAddress",
+                "value": "={{ $json[\"Email Address\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "518ce6f1-f3a0-4e61-b483-c85feb63ae15",
+                "name": "postalCode",
+                "value": "={{ $json[\"Postal Code\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "2420ae52-e6a5-4d5e-889a-014ad00b28b2",
+                "name": "address",
+                "value": "={{ $json.Address }}",
+                "type": "string"
+              },
+              {
+                "id": "421623c8-2db6-4b40-a102-f6dc36ff61ed",
+                "name": "state",
+                "value": "={{ $json.State }}",
+                "type": "string"
+              },
+              {
+                "id": "7cc111a4-9134-4fe3-97eb-75b5e81c8d31",
+                "name": "suburb",
+                "value": "={{ $json.Suburb }}",
+                "type": "string"
+              },
+              {
+                "id": "fb3af799-02a3-4669-97b7-5616f9bc8d93",
+                "name": "enquiry",
+                "value": "={{ $json.Enquiry }}",
+                "type": "string"
+              },
+              {
+                "id": "e76aa2b3-3c3f-43d7-b9e2-8dfe2c4ecad3",
+                "name": "quantity",
+                "value": "={{ $json.Quantity }}",
+                "type": "string"
+              },
+              {
+                "id": "193cbe77-7015-40c3-95b1-eba1fd89481c",
+                "name": "leadQualifier",
+                "value": "={{ $json[\"Lead Qualifier\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "33a52d4e-10f1-4357-90d4-de70e6873925",
+                "name": "IdLikeToGetMyProjectUnderway",
+                "value": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+                "type": "string"
+              },
+              {
+                "id": "9c3726e2-0e35-4a55-8fb3-2cfc97653e48",
+                "name": "howTheyHeardAboutUs",
+                "value": "={{ $json[\"How they heard about us\"] }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          272,
+          -32
+        ],
+        "id": "e9c4af8d-5268-4d10-b157-df6733e49054",
+        "name": "Map Google ads Lead"
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $input.first().json.output;\n\nconst parts = new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Australia/Brisbane',\n  day: '2-digit',\n  month: '2-digit',\n  year: 'numeric',\n  hour: '2-digit',\n  minute: '2-digit',\n  second: '2-digit',\n  hourCycle: 'h23'\n}).formatToParts(new Date());\n\nconst get = (type) => parts.find(p => p.type === type)?.value || '';\n\nconst timestamp = `${get('day')}/${get('month')}/${get('year')}, ${get('hour')}:${get('minute')}:${get('second')}`;\n\nreturn [\n  {\n    json: {\n      Timestamp: timestamp,\n      id: data.id,\n      \"Lead Type\": \"Google Ads Lead\",\n      \"First Name\": data.first_name,\n      \"Last Name\": data.last_name,\n      \"Mobile Number\": data.mobile_number,\n      \"Phone Number\": data.phone_number,\n      \"Email Address\": data.email_address,\n      \"Address\": data.address,\n      \"State\": data.state,\n      \"Suburb\": data.suburb,\n      \"Postal Code\": data.postal_code,\n      \"Enquiry\": data.message,\n      \"Quantity\": data.quantity,\n      \"IdLikeToGetMyProjectUnderway\": data.IdLikeToGetMyProjectUnderway,\n      \"How they heard about us\": \"Google\",\n      \"Lead Qualifier\": \"Good\"\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          16,
+          -32
+        ],
+        "id": "3a53c3dc-bba0-4f77-9f67-65a59ff0fbfa",
+        "name": "Parse Fields"
+      },
+      {
+        "parameters": {
+          "operation": "addLabels",
+          "messageId": "={{ $json.id }}",
+          "labelIds": [
+            "Label_169"
+          ]
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          736,
+          352
+        ],
+        "id": "79c6e553-b104-4f7e-97d9-bbc29182e312",
+        "name": "Add label to message",
+        "webhookId": "b4633938-7cc0-4ae8-8754-c953339d4de8",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "Iacb6DlpUsfDqQMK",
+            "name": "WR: Gmail Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "appendOrUpdate",
+          "documentId": {
+            "__rl": true,
+            "value": "1mnodxa-7QBuIudvAqu76KxykBXJaH303Ih6OPWxMSdw",
+            "mode": "list",
+            "cachedResultName": "New Landing Page Leads",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mnodxa-7QBuIudvAqu76KxykBXJaH303Ih6OPWxMSdw/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mnodxa-7QBuIudvAqu76KxykBXJaH303Ih6OPWxMSdw/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\n",
+              "Id": "={{ $json.id }}",
+              "Lead Type": "={{ $json.leadType }}",
+              "First Name": "={{ $json.firstName }}",
+              "Last Name": "={{ $json.lastName }}",
+              "Mobile Number": "={{ $json.mobileNumber }}",
+              "Email Address": "={{ $json.emailAddress }}",
+              "Phone Number": "={{ $json.phoneNumber }}",
+              "Address": "={{ $json.address }}",
+              "State": "={{ $json.state }}",
+              "Postal Code": "={{ $json.postalCode }}",
+              "Suburb": "={{ $json.suburb }}",
+              "Enquiry": "={{ $json.enquiry }}",
+              "Quantity": "={{ $json.quantity }}",
+              "I’d Like To Get My Project Underway": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+              "How they heard about us": "={{ $json.howTheyHeardAboutUs }}",
+              "Lead Qualifier": "={{ $json.leadQualifier }}",
+              "Referred By": "={{ $json.referredBy }}"
+            },
+            "matchingColumns": [
+              "Id"
+            ],
+            "schema": [
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Id",
+                "displayName": "Id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Lead Type",
+                "displayName": "Lead Type",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "First Name",
+                "displayName": "First Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Last Name",
+                "displayName": "Last Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Mobile Number",
+                "displayName": "Mobile Number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Phone Number",
+                "displayName": "Phone Number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Email Address",
+                "displayName": "Email Address",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Address",
+                "displayName": "Address",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "State",
+                "displayName": "State",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Suburb",
+                "displayName": "Suburb",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Postal Code",
+                "displayName": "Postal Code",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Enquiry",
+                "displayName": "Enquiry",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Quantity",
+                "displayName": "Quantity",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "I’d Like To Get My Project Underway",
+                "displayName": "I’d Like To Get My Project Underway",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "How they heard about us",
+                "displayName": "How they heard about us",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Lead Qualifier",
+                "displayName": "Lead Qualifier",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Referred By",
+                "displayName": "Referred By",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          736,
+          560
+        ],
+        "id": "80643b32-f20d-4984-ace4-17df6ad37f61",
+        "name": "New Landing Page Leads Data Logs",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "S4FmXrss6MgN5rzt",
+            "name": "WR: Google Sheets Account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Gmail Trigger": {
+        "main": [
+          [
+            {
+              "node": "Set Leads",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Opportunities": {
+        "main": [
+          []
+        ]
+      },
+      "Set Leads": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Parse Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "add 5s": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Append or update row in sheet",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Add label to message",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "New Landing Page Leads Data Logs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Map Google ads Lead": {
+        "main": [
+          [
+            {
+              "node": "add 5s",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Create Opportunities",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Fields": {
+        "main": [
+          [
+            {
+              "node": "Map Google ads Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send a message": {
+        "main": [
+          []
+        ]
+      }
+    },
+    "authors": "Christine Kam",
+    "name": "Version ca5e1e14",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-01T14:10:28.015Z",
+        "id": 849,
+        "workflowId": "XuEJUSibmhjQPGYh",
+        "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
+        "event": "activated",
+        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      },
+      {
+        "createdAt": "2026-04-02T05:45:30.412Z",
+        "id": 851,
+        "workflowId": "XuEJUSibmhjQPGYh",
+        "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
+        "event": "activated",
+        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      },
+      {
+        "createdAt": "2026-04-02T05:45:29.896Z",
+        "id": 850,
+        "workflowId": "XuEJUSibmhjQPGYh",
+        "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
+        "event": "deactivated",
+        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    ]
+  }
+}
