@@ -1,0 +1,229 @@
+{
+  "updatedAt": "2026-03-25T21:31:33.000Z",
+  "createdAt": "2026-03-22T23:12:33.206Z",
+  "id": "TC9iNIHnvaMP97sF",
+  "name": "Don Portfolio Agent",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ask-don",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "52633e39-37f4-473f-a2a0-a312fe16a608",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -352
+      ],
+      "webhookId": "ask-don"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1UvO91g7zKOlWvgSqn8gK8HlAMoY1wQDk4FikLGrSOyU"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "Portfolio"
+        },
+        "options": {
+          "outputFormatting": {
+            "values": {
+              "general": "FORMATTED_VALUE"
+            }
+          }
+        }
+      },
+      "id": "5c3f15fe-5b15-4919-9edb-ea6f9748f7e1",
+      "name": "Get Portfolio Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        1040,
+        -352
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IgTz53yznufnsBXa",
+          "name": "WR: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1024, system: `You are Don Puerto's AI portfolio assistant.\\n\\n## Knowledge Base\\n${$('Get Portfolio Data').all().map(row => '- ' + row.json.category + '/' + row.json.topic + ': ' + row.json.content).join('\\n')}\\n\\n## Response Format\\nALWAYS return valid JSON in one of these formats:\\n\\nFor text responses:\\n{\"type\": \"text\", \"message\": \"Your answer here\"}\\n\\nFor listing projects:\\n{\"type\": \"projects\", \"message\": \"Intro text\", \"items\": [{\"name\": \"Project Name\", \"description\": \"Details\", \"tags\": [\"tool1\", \"tool2\"]}]}\\n\\nFor listing services:\\n{\"type\": \"services\", \"message\": \"Intro text\", \"items\": [{\"name\": \"Service Name\", \"description\": \"Details\"}]}\\n\\nFor contact/booking:\\n{\"type\": \"contact\", \"message\": \"Your message\", \"action\": \"connect\"}\\n\\n## Rules\\n1. ONLY answer questions about Don, his work, services, or projects\\n2. For unrelated questions: {\"type\": \"text\", \"message\": \"I'm here to help with questions about Don's services and work. What would you like to know?\"}\\n3. If info not in knowledge base: {\"type\": \"contact\", \"message\": \"I don't have that detail.\", \"action\": \"connect\"}\\n4. NEVER make up information about Don\\n5. Return ONLY valid JSON - no markdown, no explanation, no extra text`, messages: [{ role: 'user', content: $('Webhook').first().json.body.question }] }) }}",
+        "options": {}
+      },
+      "id": "acbcce82-a02f-46a8-8ff4-a1948fe50d62",
+      "name": "Claude API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1248,
+        -368
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3ri6jVKMrdN1vNPy",
+          "name": "WR: Facebook Header Auth Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.parse($json.content[0].text) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "ba065403-2c63-41fb-bf48-c88826709eb6",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1488,
+        -352
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "prompt"
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        -128
+      ],
+      "id": "0f539ce4-4b26-47df-ae61-18ee4b87eb3c",
+      "name": "Generate a prompt",
+      "credentials": {
+        "anthropicApi": {
+          "id": "SZoxNyrrJnKUXvLg",
+          "name": "DP: Anthropic Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Portfolio Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Portfolio Data": {
+      "main": [
+        [
+          {
+            "node": "Claude API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude API": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate a prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "f3269674-018c-4f50-aaa0-6d48e8bc3806",
+  "activeVersionId": null,
+  "versionCounter": 12,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-22T23:12:33.210Z",
+      "createdAt": "2026-03-22T23:12:33.210Z",
+      "role": "workflow:owner",
+      "workflowId": "TC9iNIHnvaMP97sF",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
