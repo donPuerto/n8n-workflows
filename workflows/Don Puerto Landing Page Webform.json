@@ -1,0 +1,963 @@
+{
+  "updatedAt": "2026-03-06T07:56:19.490Z",
+  "createdAt": "2026-03-06T06:48:40.942Z",
+  "id": "MHHgEwvxeDd2Sqyj",
+  "name": "Don Puerto Landing Page Webform",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "api/contact",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1280,
+        64
+      ],
+      "id": "d706d0f6-7389-48db-ad10-c9b0f616b780",
+      "name": "Webhook",
+      "webhookId": "2a56bb91-d1c0-4d46-a563-06a53559e908",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "NtGDhTMbs1BSCLzU",
+          "name": "DP: Header Auth Account - Don Puerto Landing Page Webform"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ensure body exists\nif (!$json.body || typeof $json.body !== \"object\") {\n  throw new Error(\"Invalid request: body is missing or not an object\");\n}\n\n// Destructure only what we need from body\nconst {\n  name = \"\",\n  email = \"\",\n  message = \"\",\n} = $json.body;\n\n// Return ONLY the body fields (clean)\nreturn [\n  {\n    name: String(name).trim(),\n    email: String(email).trim().toLowerCase(),\n    message: String(message).trim(),\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1056,
+        64
+      ],
+      "id": "3335e7f4-f81a-4e8a-abb0-eaa373b38a52",
+      "name": "Normalize incoming data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f48ba569-c4e1-45e2-9393-be4d5070679e",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "364747f4-3bda-4add-85bf-87ce8105a042",
+              "leftValue": "={{ $json.message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -832,
+        64
+      ],
+      "id": "dbcf417f-9059-4540-a81d-a1598ad8fb96",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "258a99bc-35ba-4a4b-b86f-111b2a3b4e2a",
+              "name": "body.name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "58b876ef-ad56-4b43-9d40-a965dc47a33b",
+              "name": "body.email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "3c499856-3e9f-4d78-9d8e-82392893dc41",
+              "name": "body.message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -608,
+        -32
+      ],
+      "id": "0fc9592b-f486-4149-982b-ff83f10b0687",
+      "name": "Map Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a JSON object with the following structure and nothing else:\n\n{\n  \"customer\": {\n    \"name\": \"<customer full name>\",\n    \"email\": \"<customer email>\",\n    \"message\": \"<customer original message>\"\n  },\n  \"reply\": {\n    \"subject\": \"<email subject line>\",\n    \"greeting\": \"<short greeting using first name>\",\n    \"body\": \"<main reply content>\",\n    \"closing\": \"<short friendly closing line>\",\n    \"signature\": {\n      \"name\": \"Don Puerto\",\n      \"title\": \"CEO & Marketing Manager\"\n    }\n  }\n}\n\nRules for the subject:\n- 4–10 words\n- Friendly and professional\n- Acknowledge message received\n- Vary wording naturally\n\nRules for the greeting:\n- Must address the customer by first name\n- Example: \"Hi John,\"\n\nRules for the body:\n- 2–3 short paragraphs worth of content\n- Acknowledge receipt of the inquiry\n- Thank the customer for reaching out\n- Inform them the team will follow up soon\n- Professional, friendly, human tone\n- Do NOT mention automation tools or systems\n\nRules for the closing:\n- One short friendly sentence\n- Example: \"Looking forward to connecting with you.\"\n\nRules for the signature:\n- Use exactly:\n  Name: Don Puerto\n  Title: CEO & Marketing Manager\n\nCustomer input:\nName: {{ $json.body.name }}\nEmail: {{ $json.body.email }}\nMessage: {{ $json.body.message }}\n",
+        "options": {
+          "systemMessage": "You are a helpful marketing agency assistant. Write short, friendly, professional replies.\nDo not mention automation tools. Do not promise timelines. Keep it human.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -384,
+        -32
+      ],
+      "id": "6c46755c-5ce5-4f6c-8e39-90fd11612aeb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -368,
+        192
+      ],
+      "id": "07a990ee-f9bc-4361-9bcc-f916c1c2503c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "JQ6ARVQIEbbwoWxD",
+          "name": "DP: OpenAi Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "1"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        192
+      ],
+      "id": "e58e51d9-b4cc-4316-9326-e9f8df6efae8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.customerEmail }}",
+        "subject": "={{ $json.emailSubject }}",
+        "emailType": "text",
+        "message": "={{ $json.replyText }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        160
+      ],
+      "id": "593111fc-ba4e-4363-acb1-eae6b2f6b19a",
+      "name": "Send a message",
+      "webhookId": "0edb7d9b-dce4-46a8-8f3d-b5e796782fbe",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RhxDT8POCR7oU2yl",
+          "name": "DP: Gmail Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ZYAdSSBzI8lcxxRefj8Yh2bGaliRM6AF_GsH_MbY-L8",
+          "mode": "list",
+          "cachedResultName": "Don Puerto Landing Page",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZYAdSSBzI8lcxxRefj8Yh2bGaliRM6AF_GsH_MbY-L8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Main",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZYAdSSBzI8lcxxRefj8Yh2bGaliRM6AF_GsH_MbY-L8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.timestampPH }}",
+            "Name": "={{ $json.customerName }}",
+            "Email": "={{ $json.customerEmail }}",
+            "Message ": "={{ $json.customerMessage }}",
+            "Replay Message": "={{ $json.replyText }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message ",
+              "displayName": "Message ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Replay Message",
+              "displayName": "Replay Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        -32
+      ],
+      "id": "4a51292c-0e2b-4e50-86f9-f754104b2dc0",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DBEwozLer2lI42WC",
+          "name": "DP: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"ok\": false,\n  \"message\": \"Workflow failed\",\n  \"debug\": {\n    \"node\": \"{{ $json._debugNode || $node.name }}\",\n    \"errorMessage\": \"{{ $json.message || $json.error?.message || 'unknown' }}\",\n    \"errorType\": \"{{ $json.error?.name || $json.name || 'Error' }}\",\n    \"stack\": \"{{ $json.error?.stack || '' }}\",\n    \"statusCode\": \"{{ $json.statusCode || $json.error?.statusCode || '' }}\"\n  }\n}\n",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -608,
+        160
+      ],
+      "id": "1fdf3822-5867-4b1a-b7c9-d80221f522e7",
+      "name": "Fail Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \n  \"ok\": true, \n  \"message\": \"Thanks! We received your inquiry.\" \n}\n",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        192,
+        -224
+      ],
+      "id": "0ef8f8b0-c3af-4e1e-acba-341a5b45ea88",
+      "name": "Success Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $json.output;\n\n// Safety check\nif (!raw) {\n  throw new Error(\"AI output is empty\");\n}\n\n// Make sure raw is a string\nraw = String(raw).trim();\n\n// Remove markdown code fences\nraw = raw.replace(/^```json\\s*/i, \"\").replace(/\\s*```$/, \"\").trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (err) {\n  throw new Error(\"Failed to parse AI JSON output: \" + err.message);\n}\n\n// Extract fields safely\nconst customer = parsed.customer || {};\nconst reply = parsed.reply || {};\n\n// Pull structured parts\nconst greeting = String(reply.greeting || \"\").trim();\nconst body = String(reply.body || \"\").trim();\nconst closing = String(reply.closing || \"\").trim();\nconst sig = reply.signature || {};\n\nconst sigName = String(sig.name || \"Don Puerto\").trim();\nconst sigTitle = String(sig.title || \"CEO & Marketing Manager\").trim();\n\n// Build clean TEXT email body\nlet replyText = [greeting, body, closing]\n  .filter(Boolean)\n  .join(\"\\n\\n\")\n  .replace(/\\r\\n/g, \"\\n\")\n  .replace(/\\n{3,}/g, \"\\n\\n\")\n  .trim();\n\n// Append signature\nreplyText = `${replyText}\n\nBest regards,\n${sigName}\n${sigTitle}`;\n\n// Philippines / Davao City timestamp\nconst timestampPH = new Intl.DateTimeFormat(\"en-PH\", {\n  timeZone: \"Asia/Manila\",\n  year: \"numeric\",\n  month: \"2-digit\",\n  day: \"2-digit\",\n  hour: \"2-digit\",\n  minute: \"2-digit\",\n  second: \"2-digit\",\n  hour12: false,\n}).format(new Date());\n\nreturn [\n  {\n    json: {\n      customerName: customer.name || \"\",\n      customerEmail: customer.email || \"\",\n      customerMessage: customer.message || \"\",\n      emailSubject: reply.subject || \"Thanks for reaching out\",\n      replyText,\n      timestampPH,\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -32
+      ],
+      "id": "3480271a-7fd9-4d08-9249-3b492b4407cd",
+      "name": "Parse AI Response"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize incoming data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize incoming data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Map Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Success Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "2cd10e79-3604-44c4-a47a-ec1f6716db8c",
+  "activeVersionId": "2cd10e79-3604-44c4-a47a-ec1f6716db8c",
+  "versionCounter": 24,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-06T06:48:40.945Z",
+      "createdAt": "2026-03-06T06:48:40.945Z",
+      "role": "workflow:owner",
+      "workflowId": "MHHgEwvxeDd2Sqyj",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-06T07:56:24.000Z",
+    "createdAt": "2026-03-06T07:52:07.105Z",
+    "versionId": "2cd10e79-3604-44c4-a47a-ec1f6716db8c",
+    "workflowId": "MHHgEwvxeDd2Sqyj",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "api/contact",
+          "authentication": "headerAuth",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -1280,
+          64
+        ],
+        "id": "d706d0f6-7389-48db-ad10-c9b0f616b780",
+        "name": "Webhook",
+        "webhookId": "2a56bb91-d1c0-4d46-a563-06a53559e908",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "NtGDhTMbs1BSCLzU",
+            "name": "DP: Header Auth Account - Don Puerto Landing Page Webform"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Ensure body exists\nif (!$json.body || typeof $json.body !== \"object\") {\n  throw new Error(\"Invalid request: body is missing or not an object\");\n}\n\n// Destructure only what we need from body\nconst {\n  name = \"\",\n  email = \"\",\n  message = \"\",\n} = $json.body;\n\n// Return ONLY the body fields (clean)\nreturn [\n  {\n    name: String(name).trim(),\n    email: String(email).trim().toLowerCase(),\n    message: String(message).trim(),\n  }\n];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1056,
+          64
+        ],
+        "id": "3335e7f4-f81a-4e8a-abb0-eaa373b38a52",
+        "name": "Normalize incoming data"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "f48ba569-c4e1-45e2-9393-be4d5070679e",
+                "leftValue": "={{ $json.email }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              },
+              {
+                "id": "364747f4-3bda-4add-85bf-87ce8105a042",
+                "leftValue": "={{ $json.message }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -832,
+          64
+        ],
+        "id": "dbcf417f-9059-4540-a81d-a1598ad8fb96",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "258a99bc-35ba-4a4b-b86f-111b2a3b4e2a",
+                "name": "body.name",
+                "value": "={{ $json.name }}",
+                "type": "string"
+              },
+              {
+                "id": "58b876ef-ad56-4b43-9d40-a965dc47a33b",
+                "name": "body.email",
+                "value": "={{ $json.email }}",
+                "type": "string"
+              },
+              {
+                "id": "3c499856-3e9f-4d78-9d8e-82392893dc41",
+                "name": "body.message",
+                "value": "={{ $json.message }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -608,
+          -32
+        ],
+        "id": "0fc9592b-f486-4149-982b-ff83f10b0687",
+        "name": "Map Fields"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Generate a JSON object with the following structure and nothing else:\n\n{\n  \"customer\": {\n    \"name\": \"<customer full name>\",\n    \"email\": \"<customer email>\",\n    \"message\": \"<customer original message>\"\n  },\n  \"reply\": {\n    \"subject\": \"<email subject line>\",\n    \"greeting\": \"<short greeting using first name>\",\n    \"body\": \"<main reply content>\",\n    \"closing\": \"<short friendly closing line>\",\n    \"signature\": {\n      \"name\": \"Don Puerto\",\n      \"title\": \"CEO & Marketing Manager\"\n    }\n  }\n}\n\nRules for the subject:\n- 4–10 words\n- Friendly and professional\n- Acknowledge message received\n- Vary wording naturally\n\nRules for the greeting:\n- Must address the customer by first name\n- Example: \"Hi John,\"\n\nRules for the body:\n- 2–3 short paragraphs worth of content\n- Acknowledge receipt of the inquiry\n- Thank the customer for reaching out\n- Inform them the team will follow up soon\n- Professional, friendly, human tone\n- Do NOT mention automation tools or systems\n\nRules for the closing:\n- One short friendly sentence\n- Example: \"Looking forward to connecting with you.\"\n\nRules for the signature:\n- Use exactly:\n  Name: Don Puerto\n  Title: CEO & Marketing Manager\n\nCustomer input:\nName: {{ $json.body.name }}\nEmail: {{ $json.body.email }}\nMessage: {{ $json.body.message }}\n",
+          "options": {
+            "systemMessage": "You are a helpful marketing agency assistant. Write short, friendly, professional replies.\nDo not mention automation tools. Do not promise timelines. Keep it human.\n"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          -384,
+          -32
+        ],
+        "id": "6c46755c-5ce5-4f6c-8e39-90fd11612aeb",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4.1-mini"
+          },
+          "builtInTools": {},
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.3,
+        "position": [
+          -368,
+          192
+        ],
+        "id": "07a990ee-f9bc-4361-9bcc-f916c1c2503c",
+        "name": "OpenAI Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "JQ6ARVQIEbbwoWxD",
+            "name": "DP: OpenAi Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "1"
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          -240,
+          192
+        ],
+        "id": "e58e51d9-b4cc-4316-9326-e9f8df6efae8",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.customerEmail }}",
+          "subject": "={{ $json.emailSubject }}",
+          "emailType": "text",
+          "message": "={{ $json.replyText }}",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          192,
+          160
+        ],
+        "id": "593111fc-ba4e-4363-acb1-eae6b2f6b19a",
+        "name": "Send a message",
+        "webhookId": "0edb7d9b-dce4-46a8-8f3d-b5e796782fbe",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "RhxDT8POCR7oU2yl",
+            "name": "DP: Gmail Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1ZYAdSSBzI8lcxxRefj8Yh2bGaliRM6AF_GsH_MbY-L8",
+            "mode": "list",
+            "cachedResultName": "Don Puerto Landing Page",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZYAdSSBzI8lcxxRefj8Yh2bGaliRM6AF_GsH_MbY-L8/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Main",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZYAdSSBzI8lcxxRefj8Yh2bGaliRM6AF_GsH_MbY-L8/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $json.timestampPH }}",
+              "Name": "={{ $json.customerName }}",
+              "Email": "={{ $json.customerEmail }}",
+              "Message ": "={{ $json.customerMessage }}",
+              "Replay Message": "={{ $json.replyText }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Name",
+                "displayName": "Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Email",
+                "displayName": "Email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Message ",
+                "displayName": "Message ",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "Replay Message",
+                "displayName": "Replay Message",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          192,
+          -32
+        ],
+        "id": "4a51292c-0e2b-4e50-86f9-f754104b2dc0",
+        "name": "Append row in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DBEwozLer2lI42WC",
+            "name": "DP: Google Sheets Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{\n  \"ok\": false,\n  \"message\": \"Workflow failed\",\n  \"debug\": {\n    \"node\": \"{{ $json._debugNode || $node.name }}\",\n    \"errorMessage\": \"{{ $json.message || $json.error?.message || 'unknown' }}\",\n    \"errorType\": \"{{ $json.error?.name || $json.name || 'Error' }}\",\n    \"stack\": \"{{ $json.error?.stack || '' }}\",\n    \"statusCode\": \"{{ $json.statusCode || $json.error?.statusCode || '' }}\"\n  }\n}\n",
+          "options": {
+            "responseCode": 500
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          -608,
+          160
+        ],
+        "id": "1fdf3822-5867-4b1a-b7c9-d80221f522e7",
+        "name": "Fail Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "{ \n  \"ok\": true, \n  \"message\": \"Thanks! We received your inquiry.\" \n}\n",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          192,
+          -224
+        ],
+        "id": "0ef8f8b0-c3af-4e1e-acba-341a5b45ea88",
+        "name": "Success Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "jsCode": "let raw = $json.output;\n\n// Safety check\nif (!raw) {\n  throw new Error(\"AI output is empty\");\n}\n\n// Make sure raw is a string\nraw = String(raw).trim();\n\n// Remove markdown code fences\nraw = raw.replace(/^```json\\s*/i, \"\").replace(/\\s*```$/, \"\").trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (err) {\n  throw new Error(\"Failed to parse AI JSON output: \" + err.message);\n}\n\n// Extract fields safely\nconst customer = parsed.customer || {};\nconst reply = parsed.reply || {};\n\n// Pull structured parts\nconst greeting = String(reply.greeting || \"\").trim();\nconst body = String(reply.body || \"\").trim();\nconst closing = String(reply.closing || \"\").trim();\nconst sig = reply.signature || {};\n\nconst sigName = String(sig.name || \"Don Puerto\").trim();\nconst sigTitle = String(sig.title || \"CEO & Marketing Manager\").trim();\n\n// Build clean TEXT email body\nlet replyText = [greeting, body, closing]\n  .filter(Boolean)\n  .join(\"\\n\\n\")\n  .replace(/\\r\\n/g, \"\\n\")\n  .replace(/\\n{3,}/g, \"\\n\\n\")\n  .trim();\n\n// Append signature\nreplyText = `${replyText}\n\nBest regards,\n${sigName}\n${sigTitle}`;\n\n// Philippines / Davao City timestamp\nconst timestampPH = new Intl.DateTimeFormat(\"en-PH\", {\n  timeZone: \"Asia/Manila\",\n  year: \"numeric\",\n  month: \"2-digit\",\n  day: \"2-digit\",\n  hour: \"2-digit\",\n  minute: \"2-digit\",\n  second: \"2-digit\",\n  hour12: false,\n}).format(new Date());\n\nreturn [\n  {\n    json: {\n      customerName: customer.name || \"\",\n      customerEmail: customer.email || \"\",\n      customerMessage: customer.message || \"\",\n      emailSubject: reply.subject || \"Thanks for reaching out\",\n      replyText,\n      timestampPH,\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -32,
+          -32
+        ],
+        "id": "3480271a-7fd9-4d08-9249-3b492b4407cd",
+        "name": "Parse AI Response"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Normalize incoming data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize incoming data": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Map Fields",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Fail Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Map Fields": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Parse AI Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse AI Response": {
+        "main": [
+          [
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Append row in sheet",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Success Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": "Version 2cd10e79",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-06T07:56:24.262Z",
+        "id": 290,
+        "workflowId": "MHHgEwvxeDd2Sqyj",
+        "versionId": "2cd10e79-3604-44c4-a47a-ec1f6716db8c",
+        "event": "activated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    ]
+  }
+}
