@@ -1,0 +1,384 @@
+{
+  "updatedAt": "2026-03-22T23:12:02.000Z",
+  "createdAt": "2026-03-17T12:24:58.751Z",
+  "id": "XQ0tKW5awu3FKWtd",
+  "name": "Portfolio Calendar Booking",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "33a2bf80-c35f-4c92-bba5-772799afaa02",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "38ee8320-b9a0-471f-bd6e-f07d49e55e51",
+      "name": "Webhook",
+      "webhookId": "33a2bf80-c35f-4c92-bba5-772799afaa02",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Role:\nYou are an appointment availability checker. Use the calendar to see if the requested time can be booked.\n\nInputs:\nNow: {{$now}}\nRequested time: {{$json.body.args.time}}\n\nCalendar rules:\nWorking hours: 8:00–21:00\nSlot length: 1 hour\nOnly offer times in the future.\n\nLogic:\n\n1. Validate the requested time (future, within working hours, 1-hour slot).\n2. Check calendar availability for the requested time.\n3. If available, confirm availability.\n4. If unavailable, suggest up to 2 nearby alternatives on the same day.\n5. If no same-day slots, suggest up to 3 times on the next weekday.\n\nResponse (natural, conversational):\nIf available: “Hey there, the time you requested — 10:00am on June 22 — is available. Would you like me to book it?”\nIf unavailable (same day): “That time isn’t available. I can do 11:00am or 1:00pm on June 22. Which works?”\nIf no same-day options (next weekday): “Nothing free that day. Next weekday options are 9:00am, 11:00am, or 2:00pm on June 23. Want one of these?”\n\nNotes:\nNever return past times.\nKeep replies short and clear.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "de1f3e1d-474b-4ad7-86fb-9ecc4a77f203",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        224
+      ],
+      "id": "bde3b505-9a4e-4471-a17f-e4d19fb73b5c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "JQ6ARVQIEbbwoWxD",
+          "name": "DP: OpenAi Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.call.call_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        224
+      ],
+      "id": "0f1f133b-9ed5-4a43-8783-eccc439eb407",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        688,
+        0
+      ],
+      "id": "85864f35-3591-4da6-be06-0e12d5706157",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "33a2bf80-c35f-4c92-bba5-772799afaa02",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        496
+      ],
+      "id": "e79a3111-04cd-4a32-a513-b05ee81bcab0",
+      "name": "Webhook1",
+      "webhookId": "33a2bf80-c35f-4c92-bba5-772799afaa02"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an appointment-booking AI agent. Your job is to use the Create an event in Google Calendar tool to collect the customer’s details and create a calendar event/booking.\n\nConfirmed time: {{ $json.body.args.time }}\n\nDuration: 1 hour. Use the confirmed time as the start time, then set the end time to one hour after the start.\n\nIf the event has been scheduled, provide your response in this format:\n\nOutput:\n“Hey there, the appointment on July 18th, 2025 has been scheduled. We’ll see you there.”\n\nSend email\n\nAfter creating the event in Google Calendar, call the Send Confirmation Email tool to email the customer confirming that their appointment has been booked. Use this tool only after the calendar event is created.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -112,
+        496
+      ],
+      "id": "b51df371-ecc6-41a5-8ec0-11748a86daf3",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        720
+      ],
+      "id": "86a3c192-fb6c-4db4-a0b8-b493a07baf50",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "JQ6ARVQIEbbwoWxD",
+          "name": "DP: OpenAi Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook1').item.json.body.call.call_id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        720
+      ],
+      "id": "0aac10ed-62ba-4ecf-89c8-6b48cd2539db",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Automation Bookings Hub"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "description": "=Name: {{ $('Webhook').item.json.body.args.name }}  Type: {{ $('Webhook').item.json.body.args.service_type }}  Time: {{ (() => {   const v = $json.time \n\n $json.body?.args?.time \n\n '';   if (!v) return '';   const hasTZ = /[Zz]\n[+-]\\d{2}:\\d{2}$/.test(v);   const iso = hasTZ ? v : v + '+10:00'; // assume Brisbane if no TZ   const d = new Date(iso);   const time = d.toLocaleTimeString('en-AU', {     timeZone: 'Australia/Brisbane', hour: 'numeric', minute: '2-digit'   });   const date = d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric'   });   return `${time}, ${date}`; })() }} Email: {{ $('Webhook').item.json.body.args.email }}",
+          "location": "Davao City Philippines",
+          "summary": "=Glam Salon: {{ $('Webhook').item.json.body.args.service_type }} for {{ $('Webhook').item.json.body?.args?.name?.trim().split(/\\s+/)[0] \n\n ''  }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        704
+      ],
+      "id": "301cfc6c-b2d9-4155-9ec7-90fb859beadb",
+      "name": "Create an event in Google Calendar1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "1TXl73FCExI5p2lV",
+          "name": "DP: Google Calendar Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        288,
+        496
+      ],
+      "id": "0e8241b3-e5aa-4c3a-8e6f-361701e0be8a",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Automation Bookings Hub"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        208
+      ],
+      "id": "47afa05e-04a2-4f58-8d84-c1dba3e27145",
+      "name": "Get availability in a calendar in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "1TXl73FCExI5p2lV",
+          "name": "DP: Google Calendar Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get availability in a calendar in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "06bfb3df-665a-447e-9e1a-6dde1c5dc2aa",
+  "activeVersionId": null,
+  "versionCounter": 41,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-17T12:24:58.755Z",
+      "createdAt": "2026-03-17T12:24:58.755Z",
+      "role": "workflow:owner",
+      "workflowId": "XQ0tKW5awu3FKWtd",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
