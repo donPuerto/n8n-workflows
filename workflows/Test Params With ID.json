@@ -1,0 +1,78 @@
+{
+  "updatedAt": "2026-04-05T07:10:28.747Z",
+  "createdAt": "2026-04-05T07:10:28.747Z",
+  "id": "HeZQKtjTacu9kGDA",
+  "name": "Test Params With ID",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "c257c0f7-8c2c-4f57-b60e-099ee6ed98e1",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "id": "2fb9d772-70dc-4511-96d0-5b2bc9f411e9",
+      "name": "Test Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Test Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true
+  },
+  "pinData": null,
+  "versionId": "26181c84-d58b-4a13-92aa-2dff8f6d407e",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-05T07:10:28.749Z",
+      "createdAt": "2026-04-05T07:10:28.749Z",
+      "role": "workflow:owner",
+      "workflowId": "HeZQKtjTacu9kGDA",
+      "projectId": "6TsYTzg0HY92xH2K",
+      "project": {
+        "updatedAt": "2025-11-14T08:33:27.896Z",
+        "createdAt": "2025-11-14T07:49:25.938Z",
+        "id": "6TsYTzg0HY92xH2K",
+        "name": "Christine Kam <windowrevival@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
