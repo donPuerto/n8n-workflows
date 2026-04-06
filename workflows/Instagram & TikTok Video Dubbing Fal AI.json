@@ -1,0 +1,582 @@
+{
+  "updatedAt": "2026-03-06T00:13:25.000Z",
+  "createdAt": "2026-03-06T00:13:25.420Z",
+  "id": "D7BU7tUnyNuzSlcW",
+  "name": "Instagram & TikTok Video Dubbing Fal AI",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "aca9a8e5-a40b-4f7e-b57c-54e7675f64ab",
+      "name": "When clicking ‘Execute workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -1408,
+        1008
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eac89c54-5ee2-4366-95cb-657da5967138",
+              "name": "video_url",
+              "type": "string",
+              "value": "VIDEO_URL"
+            },
+            {
+              "id": "1df84f40-4282-4976-888d-1021234880d1",
+              "name": "target_audio",
+              "type": "string",
+              "value": "es"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b65bff01-0608-43e6-b8ca-7386cfe51169",
+      "name": "Set params",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1120,
+        1008
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "## STEP 1 - Set params\n**Configure Input Parameters**  \n   In the *Set params* node, define:\n   - `video_url`: Direct URL to the source video.\n   - `target_audio`: Language code (e.g., `en`, `es`, `it`) for dubbing.",
+        "height": 464,
+        "width": 320,
+        "color": 7
+      },
+      "id": "e937386b-f809-470f-a432-7f29374bc566",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1216,
+        832
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## STEP 2- AL AI Elevenlabs Dubbing\nThe video file is sent to the Fal AI **ElevenLabs Dubbing API**, which initiates audio dubbing in the specified target language.",
+        "height": 464,
+        "width": 480,
+        "color": 7
+      },
+      "id": "684ce026-0acc-4390-a826-18c9632b3633",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -864,
+        832
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "id": "0213192c-ffed-4dc7-b97d-fe9e33609a3d",
+      "name": "Wait 30 sec.",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -272,
+        1008
+      ],
+      "webhookId": "c72a85bd-c06e-4235-b0bb-7f9736783ebd",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/elevenlabs/requests/{{ $json.request_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8934354b-8557-45d6-9699-2068bea16aa0",
+      "name": "Get final video url",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        336,
+        992
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.video.url }}",
+        "options": {}
+      },
+      "id": "4ac30337-ceaf-4990-903c-59c8df99366e",
+      "name": "Get final video file",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        576,
+        992
+      ],
+      "typeVersion": 4.3
+    },
+    {
+      "parameters": {
+        "content": "Set YOUR_USERNAME and TITLE for [Upload-Post]((https://www.upload-post.com/?linkId=lp_144414&sourceId=n3witalia&tenantId=upload-post-app))",
+        "height": 200,
+        "width": 468,
+        "color": 7
+      },
+      "id": "b7d907a3-7c6c-434f-a641-b5574d9c6df9",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        896,
+        816
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.postiz.com/public/v1/upload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bbf18eed-0554-436e-8493-cd325c50ce1b",
+      "name": "Upload to Postiz",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        944,
+        1104
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "content": "## STEP 4 - Upload video\nUpload video to TikTok and Instagram",
+        "height": 576,
+        "width": 576,
+        "color": 7
+      },
+      "id": "5eac4f26-1226-4dd8-b37e-8dd18449f48b",
+      "name": "Sticky Note8",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        848,
+        704
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Set Channel_ID and TITLE for [Postiz](https://affiliate.postiz.com/n3witalia) (TikTok, Instagram, Facebook, X, Youtube)",
+        "height": 200,
+        "width": 468,
+        "color": 7
+      },
+      "id": "0c7c3210-8d6b-49a5-aace-b38712eef845",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        896,
+        1040
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/elevenlabs/dubbing",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"video_url\": \"{{ $json.video_url }}\",\n  \"target_lang\": \"{{ $json.target_audio }}\"\n}",
+        "options": {}
+      },
+      "id": "c53f9368-1aa1-461f-9856-4119517a48f6",
+      "name": "Video Dubbing",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -672,
+        1008
+      ],
+      "typeVersion": 4.3
+    },
+    {
+      "parameters": {
+        "date": "={{ $now.format('yyyy-LL-dd') }}T{{ $now.format('HH:ii:ss') }}",
+        "posts": {
+          "post": [
+            {
+              "value": {
+                "contentItem": [
+                  {
+                    "image": {
+                      "imageItem": [
+                        {
+                          "id": "={{ $json.id }}",
+                          "path": "={{ $json.path }}"
+                        }
+                      ]
+                    },
+                    "content": "=XXX"
+                  }
+                ]
+              },
+              "settings": {
+                "setting": [
+                  {
+                    "key": "__type",
+                    "stringValue": "instagram"
+                  },
+                  {
+                    "key": "post_type",
+                    "stringValue": "post"
+                  }
+                ]
+              },
+              "integrationId": "XXX"
+            }
+          ]
+        },
+        "shortLink": true
+      },
+      "id": "4d5433c6-6cfa-4d23-8611-2b4d1a88d9d0",
+      "name": "Upload to Instagram",
+      "type": "n8n-nodes-postiz.postiz",
+      "position": [
+        1184,
+        1104
+      ],
+      "typeVersion": 1,
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.upload-post.com/api/upload",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "=XXX"
+            },
+            {
+              "name": "user",
+              "value": "YOUR_USERNAME"
+            },
+            {
+              "name": "platform[]",
+              "value": "tiktok"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "video",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb3b4ecf-9028-42a4-856e-23f69b52ff7c",
+      "name": "Upload to TikTok",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        928,
+        880
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/elevenlabs/requests/{{ $('Video Dubbing').item.json.request_id }}/status ",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "549e1d26-ed7c-4211-b3b8-1157ab67dd6c",
+      "name": "Get status",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -80,
+        1008
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "383d112e-2cc6-4dd4-8985-f09ce0bd1781",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "COMPLETED"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4375305f-f2c0-4c6f-85be-7f22295af709",
+      "name": "Completed?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        96,
+        1008
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "content": "## STEP 3- Get and Download video\nAfter the wait, it checks the status and retrieves the final dubbed file.",
+        "height": 464,
+        "width": 1152,
+        "color": 7
+      },
+      "id": "6cb317be-8a26-4482-82c5-05db1cc57873",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -352,
+        832
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Auto-Dub Viral Videos for Instagram & TikTok with ElevenLabs using Fal AI\nThis workflow automates the process of **dubbing videos** using Fal AI's **ElevenLabs** integration and publishing them directly to **Instagram and TikTok**.\n\nThis workflow is ideal for social media managers, content creators, and marketing teams who need to **quickly localize and publish video content** across multiple social platforms like Instagram and TikTok.\n\nUsing this workflow, you can take a video in one language (e.g., English) and automatically generate a dubbed version in another language (e.g., Spanish) for publishing on Instagram and TikTok.\n\nThe workflow supports multiple target languages through ElevenLabs, including but not limited to: English (en), Spanish (es), Italian (it), French (fr), German (de), and many others.\n\n### **How it works:**\n\nThis workflow automates dubbing and publishing videos across Instagram and TikTok. It starts with a manual trigger where the user provides a video URL and target language. The video is sent to Fal AI’s ElevenLabs API for audio dubbing, with periodic status checks until completion. Once the dubbed version is ready, it’s downloaded and uploaded simultaneously to TikTok via Upload-Post  and to Instagram via Postiz. Finally, the workflow triggers Postiz to publish the Instagram post with preconfigured metadata, completing the dubbing-to-publishing automation.\n\n### **Setup steps:**\n\nDefine input parameters (`video_url`, `target_audio`) in the *Set params* node. Configure credentials for Fal AI, Postiz, and Upload-Post APIs in n8n. Customize TikTok username/title and Instagram channel ID/content. Adjust the 30-second wait time based on typical video length. After setup, test the workflow by executing it in n8n to confirm successful dubbing, uploading, and publishing across both platforms.\n",
+        "height": 576,
+        "width": 1136
+      },
+      "id": "27336f5f-d7c8-4d73-8e35-2c53ba8fcb13",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1216,
+        224
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## MY NEW YOUTUBE CHANNEL\n👉 [Subscribe to my new **YouTube channel**](https://youtube.com/@n3witalia). Here I’ll share videos and Shorts with practical tutorials and **FREE templates for n8n**.\n\n[![image](https://n3wstorage.b-cdn.net/n3witalia/youtube-n8n-cover.jpg)](https://youtube.com/@n3witalia)",
+        "height": 736,
+        "width": 736,
+        "color": 7
+      },
+      "id": "5eea3ff8-56c6-4ed0-a12c-5835b75c3127",
+      "name": "Sticky Note9",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -48,
+        64
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Completed?": {
+      "main": [
+        [
+          {
+            "node": "Get final video url",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 30 sec.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get status": {
+      "main": [
+        [
+          {
+            "node": "Completed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set params": {
+      "main": [
+        [
+          {
+            "node": "Video Dubbing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 sec.": {
+      "main": [
+        [
+          {
+            "node": "Get status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Dubbing": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 sec.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Postiz": {
+      "main": [
+        [
+          {
+            "node": "Upload to Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get final video url": {
+      "main": [
+        [
+          {
+            "node": "Get final video file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get final video file": {
+      "main": [
+        [
+          {
+            "node": "Upload to TikTok",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload to Postiz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set params",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "edf32c4c-c205-4ba2-ab4d-71e1851d4ad8",
+  "activeVersionId": null,
+  "versionCounter": 2,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-06T00:13:25.424Z",
+      "createdAt": "2026-03-06T00:13:25.424Z",
+      "role": "workflow:owner",
+      "workflowId": "D7BU7tUnyNuzSlcW",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
