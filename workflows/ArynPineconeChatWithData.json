@@ -1,0 +1,2284 @@
+{
+  "updatedAt": "2026-02-18T11:31:36.921Z",
+  "createdAt": "2026-02-18T11:28:38.751Z",
+  "id": "FQP3FfrVGa1GvXTL",
+  "name": "ArynPineconeChatWithData",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "open-ai-3072",
+          "cachedResultName": "open-ai-3072"
+        },
+        "options": {}
+      },
+      "id": "8d740e27-c72c-4d5e-a682-d11cf5b8fa3e",
+      "name": "Pinecone Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        768,
+        288
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "binaryMode": "specificField",
+        "options": {}
+      },
+      "id": "45755435-e3f2-4535-955b-a2d5b3aa0f4c",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        880,
+        496
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "id": "3b9c2a8c-1913-4cdd-a096-8644b2ace290",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "position": [
+        1104,
+        608
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "company_documents_tool",
+        "description": "Retrieve information from any company documents",
+        "topK": 10
+      },
+      "id": "4371e818-181e-4cd4-944d-fe37a889acfc",
+      "name": "Vector Store Tool",
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "position": [
+        640,
+        1632
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "open-ai-3072",
+          "cachedResultName": "open-ai-3072"
+        },
+        "options": {}
+      },
+      "id": "4baa4119-34b5-4204-82db-430cb35c1710",
+      "name": "Pinecone Vector Store (Retrieval)",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        480,
+        1792
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "b63f819c-c746-420a-86c3-84c22c7b9239",
+      "name": "Download File From Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        496,
+        288
+      ],
+      "typeVersion": 3,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Chat with company documents\n\n### Available chat tool with customized css style\n",
+        "height": 576,
+        "width": 1216
+      },
+      "id": "610ccc7b-bd1d-45c3-8e04-6924dc42cf5e",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -80,
+        1424
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1-4lBhk3UPcaMSb1_7uE7-jsgRMqcP6M8",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1-4lBhk3UPcaMSb1_7uE7-jsgRMqcP6M8",
+          "cachedResultName": "PDF"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "id": "0a6c60cc-94f9-4c5d-98c7-3f952b793fa0",
+      "name": "Google Drive File Updated",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        -560,
+        992
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1-4lBhk3UPcaMSb1_7uE7-jsgRMqcP6M8",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1-4lBhk3UPcaMSb1_7uE7-jsgRMqcP6M8",
+          "cachedResultName": "PDF"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "id": "1a9e4b61-c9b1-4fdf-bc0d-b9a61384e06f",
+      "name": "Google Drive File Created",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        -560,
+        784
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "bcfeeb0b-dcc8-43a5-a7b2-1fd27656d42f",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        304,
+        1744
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "content": "## Add documents to vector store when updating or creating new documents in Google Drive",
+        "height": 592,
+        "width": 320,
+        "color": 4
+      },
+      "id": "a1f16129-338b-4cb3-a27d-c9718230cc31",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        576
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "='1-4lBhk3UPcaMSb1_7uE7-jsgRMqcP6M8' in parents and (mimeType = 'application/pdf' or mimeType = 'text/plain') and trashed = false",
+        "limit": 500,
+        "filter": {},
+        "options": {}
+      },
+      "id": "4bd63967-716b-4492-8f00-4879656db946",
+      "name": "Search files and folders",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -336,
+        80
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "21f83272-5382-457b-9740-457c45310e6b",
+      "name": "When clicking ‘Execute workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -784,
+        176
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "a1c9fa75-24fc-4fbb-914f-cf593e64cf61",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        1104,
+        288
+      ],
+      "webhookId": "d5ffe7ef-ddc4-4e54-8b02-3eab78a4c078",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi!\nHow cal I help you?",
+        "options": {
+          "allowFileUploads": true,
+          "allowedFilesMimeTypes": "application/pdf",
+          "inputPlaceholder": "Tell me what you need.",
+          "subtitle": "",
+          "title": "Finding documents...",
+          "customCss": "/* =========================================================\n   FONT\n   ========================================================= */\n@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');\n\n\n/* =========================================================\n   LIGHT THEME (DEFAULT)\n   ========================================================= */\n:root {\n  /* ---------- COLORS ---------- */\n  --chat--color-primary: #2563eb;\n  --chat--color-primary-shade-50: #1d4ed8;\n  --chat--color-primary-shade-100: #1e40af;\n\n  --chat--color-secondary: #10b981;\n  --chat--color-secondary-shade-50: #059669;\n\n  --chat--color-white: #ffffff;\n  --chat--color-light: #f8fafc;\n  --chat--color-light-shade-50: #e5e7eb;\n  --chat--color-light-shade-100: #d1d5db;\n\n  --chat--color-medium: #cbd5e1;\n  --chat--color-dark: #0f172a;\n  --chat--color-disabled: #cbd5e1;\n  --chat--color-typing: #475569;\n\n  /* ---------- TYPOGRAPHY ---------- */\n  --chat--font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;\n  --chat--message--font-size: 1rem;\n  --chat--message-line-height: 1.65;\n  --chat--heading--font-size: 1.3em;\n  --chat--subtitle--font-size: 0.95em;\n  --chat--input--font-size: 1rem;\n  --chat--input--line-height: 1.6;\n\n  /* ---------- LAYOUT ---------- */\n  --chat--spacing: 1.1rem;\n  --chat--border-radius: 0.75rem;\n\n  /* ---------- WINDOW ---------- */\n  --chat--window--width: 460px;\n  --chat--window--height: 680px;\n  --chat--window--border: 1px solid var(--chat--color-light-shade-50);\n\n  /* ---------- HEADER ---------- */\n  --chat--header--background: var(--chat--color-dark);\n  --chat--header--color: var(--chat--color-light);\n\n  /* ---------- BODY ---------- */\n  --chat--body--background: var(--chat--color-light);\n\n  /* ---------- MESSAGES ---------- */\n  --chat--message--bot--background: var(--chat--color-white);\n  --chat--message--bot--color: var(--chat--color-dark);\n  --chat--message--bot--border: 1px solid var(--chat--color-light-shade-50);\n\n  --chat--message--user--background: var(--chat--color-secondary);\n  --chat--message--user--color: var(--chat--color-white);\n\n  /* ---------- INPUT ---------- */\n  --chat--input--background: var(--chat--color-white);\n  --chat--input--text-color: var(--chat--color-dark);\n  --chat--input--placeholder--color: #94a3b8;\n}\n\n\n/* =========================================================\n   DARK MODE (AUTOMATIC)\n   ========================================================= */\n@media (prefers-color-scheme: dark) {\n  :root {\n    --chat--color-white: #020617;\n    --chat--color-light: #020617;\n    --chat--color-light-shade-50: #1e293b;\n    --chat--color-light-shade-100: #334155;\n\n    --chat--color-dark: #e5e7eb;\n    --chat--color-medium: #475569;\n    --chat--color-typing: #94a3b8;\n\n    --chat--body--background: #020617;\n\n    --chat--header--background: #020617;\n    --chat--header--color: #e5e7eb;\n\n    --chat--message--bot--background: #020617;\n    --chat--message--bot--color: #e5e7eb;\n    --chat--message--bot--border: 1px solid #1e293b;\n\n    --chat--message--user--background: #10b981;\n    --chat--message--user--color: #020617;\n\n    /* INPUT – FIX DEFINITIVO */\n    --chat--input--background: #020617;\n    --chat--input--text-color: #e5e7eb;\n    --chat--input--placeholder--color: #64748b;\n  }\n}\n\n\n/* =========================================================\n   BASE ELEMENTS\n   ========================================================= */\n.chat-message {\n  max-width: 70%;\n  font-family: var(--chat--font-family);\n  font-size: var(--chat--message--font-size);\n  line-height: var(--chat--message-line-height);\n  letter-spacing: 0.01em;\n}\n\n.chat-message.bot {\n  font-weight: 500;\n}\n\n.chat-message.user {\n  font-weight: 400;\n}\n\n.chat-header,\n.chat-header * {\n  font-family: var(--chat--font-family);\n  font-weight: 600;\n}\n\n\n/* =========================================================\n   INPUT – VISIBILITY GUARANTEED\n   ========================================================= */\n.chat-input,\ntextarea,\ninput {\n  font-family: var(--chat--font-family);\n  font-size: var(--chat--input--font-size);\n  line-height: var(--chat--input--line-height);\n  color: var(--chat--input--text-color);\n  background-color: var(--chat--input--background);\n  caret-color: var(--chat--input--text-color);\n}\n\n.chat-input::placeholder,\ntextarea::placeholder,\ninput::placeholder {\n  color: var(--chat--input--placeholder--color);\n}\n\n\n/* =========================================================\n   RAG – SOURCE / DOCUMENT BADGE\n   ========================================================= */\n.rag-source {\n  display: inline-block;\n  margin-left: 0.4rem;\n  padding: 0.15rem 0.5rem;\n  font-size: 0.75rem;\n  font-weight: 600;\n  border-radius: 999px;\n  background: rgba(37, 99, 235, 0.1);\n  color: var(--chat--color-primary);\n}\n\n\n/* =========================================================\n   RAG – DOCUMENT TYPE ICONS\n   ========================================================= */\n.rag-doc {\n  font-weight: 500;\n}\n\n.rag-doc::before {\n  margin-right: 0.35rem;\n}\n\n.rag-doc.pdf::before { content: \"📄\"; }\n.rag-doc.sheet::before { content: \"📊\"; }\n.rag-doc.text::before { content: \"📑\"; }\n\n\n/* =========================================================\n   RAG – CONFIDENCE / MATCH SCORE\n   ========================================================= */\n.rag-confidence {\n  display: inline-flex;\n  align-items: center;\n  margin-left: 0.5rem;\n  padding: 0.15rem 0.45rem;\n  font-size: 0.75rem;\n  font-weight: 600;\n  border-radius: 999px;\n  background: rgba(15, 23, 42, 0.06);\n  color: #334155;\n}\n\n.rag-confidence::before {\n  content: \"match\";\n  margin-right: 0.3rem;\n  opacity: 0.7;\n}\n\n.rag-confidence.high {\n  background: rgba(16, 185, 129, 0.15);\n  color: #065f46;\n}\n\n.rag-confidence.medium {\n  background: rgba(234, 179, 8, 0.15);\n  color: #92400e;\n}\n\n.rag-confidence.low {\n  background: rgba(239, 68, 68, 0.15);\n  color: #7f1d1d;\n}\n\n\n/* =========================================================\n   RAG – NUMERIC CITATIONS (PAPER STYLE)\n   ========================================================= */\n.rag-ref {\n  display: inline-block;\n  margin-left: 0.15rem;\n  padding: 0 0.35rem;\n  font-size: 0.75rem;\n  font-weight: 600;\n  border-radius: 4px;\n  color: var(--chat--color-primary);\n  text-decoration: none;\n  border: 1px solid currentColor;\n}\n\n.rag-ref:hover {\n  background: var(--chat--color-primary);\n  color: #ffffff;\n}\n\n\n/* =========================================================\n   RAG – INLINE DOCUMENT PREVIEW\n   ========================================================= */\n.rag-preview {\n  margin-top: 0.75rem;\n  border-radius: 0.5rem;\n  overflow: hidden;\n  border: 1px solid var(--chat--color-light-shade-50);\n}\n\n.rag-preview summary {\n  padding: 0.5rem 0.75rem;\n  font-size: 0.85rem;\n  font-weight: 600;\n  cursor: pointer;\n  background: var(--chat--color-light);\n}\n\n.rag-preview summary:hover {\n  background: var(--chat--color-light-shade-50);\n}\n\n.rag-preview iframe {\n  width: 100%;\n  height: 320px;\n  border: none;\n}\n\n\n/* =========================================================\n   CODE BLOCKS\n   ========================================================= */\n.chat-message pre {\n  margin-top: 0.75rem;\n  padding: 0.75rem;\n  border-radius: 0.5rem;\n  background: rgba(0, 0, 0, 0.05);\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  font-size: 0.9em;\n}\n\n@media (prefers-color-scheme: dark) {\n  .chat-message pre {\n    background: rgba(255, 255, 255, 0.06);\n  }\n}\n",
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "0ba6f649-5c10-4213-979d-07a4e56b4171",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        -48,
+        1536
+      ],
+      "webhookId": "f357c0d5-b9a1-4c8f-b124-e00925e93a07",
+      "typeVersion": 1.4
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5.2",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "0ce30123-9253-4431-9ab9-7f8942cdbf0d",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        128,
+        1696
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5.2",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "20ac4d87-9db8-4ae2-bc83-1a52794311b7",
+      "name": "OpenAI Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        944,
+        1760
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {}
+      },
+      "id": "d2c3fe83-5647-4445-a962-38fea35b4217",
+      "name": "Embeddings OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        704,
+        1888
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {}
+      },
+      "id": "7c97137b-ac20-4603-8993-cab988c96140",
+      "name": "Embeddings OpenAI1",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        704,
+        496
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "sendTo": "user@example.com",
+        "subject": "=Flow terminated {{ $workflow.name }}",
+        "message": "Il flusso è terminato con successo.",
+        "options": {}
+      },
+      "id": "a175b075-4c16-4824-b0da-ad7794f3bd48",
+      "name": "Send a message",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        80,
+        48
+      ],
+      "webhookId": "026edd91-80fc-4df5-aa70-5ea6455399d7",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "06ff0a04-a971-42e3-b284-d077bfec99d9",
+      "name": "Download File From Google Drive1",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        384,
+        880
+      ],
+      "typeVersion": 3,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "open-ai-3072",
+          "cachedResultName": "open-ai-3072"
+        },
+        "options": {}
+      },
+      "id": "14a05b08-c41c-435c-aa92-32125c4a7706",
+      "name": "Pinecone Vector Store1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        704,
+        864
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {}
+      },
+      "id": "8f455767-d738-41da-b395-c9d94597cf8a",
+      "name": "Embeddings OpenAI2",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        624,
+        1056
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "binaryMode": "specificField",
+        "options": {}
+      },
+      "id": "01cf4ca6-96eb-43cc-b403-c3cf3e9efc97",
+      "name": "Default Data Loader1",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        800,
+        1040
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "id": "1f1110db-48ce-4503-904c-c88aa07ccb65",
+      "name": "Recursive Character Text Splitter1",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "position": [
+        832,
+        1216
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## RAG with Google Drive, Pinecone, and OpenAI\n\nThis workflow builds a living knowledge base from your Google Drive and lets users chat with company documents in real time. Files are continuously indexed into a vector database, so answers stay aligned with the latest versions without manual re-uploads or brittle sync jobs. The result is a clean RAG (Retrieval-Augmented Generation) loop: documents in, vectors out, answers grounded in sources.\n\n### How it works\n\nOn the ingestion side, the workflow monitors a specific Google Drive folder for file creation, updates, and deletions.\nWhen a file is created or updated, it is downloaded, parsed, split into chunks, embedded with OpenAI embeddings, and stored in a Pinecone index. Chunking with overlap ensures good semantic recall without bloating the index.\n\nWhen a file is deleted from Google Drive, the workflow proactively removes the corresponding vectors from Pinecone. This prevents orphaned embeddings, stale answers, and the classic RAG failure mode where the model confidently cites documents that no longer exist.\n\nOn the query side, a chat trigger sends user questions to an AI Agent. The agent retrieves the most relevant vectors from Pinecone and passes them to an OpenAI chat model. A short windowed memory keeps conversational continuity without contaminating retrieval. Answers are generated strictly from retrieved content, with optional references to source files.\n\n### Setup steps\n\nConfigure the Google Drive triggers (created, updated, deleted) on a target folder and apply file-type filters. Set up a Pinecone index compatible with your embedding model and connect OpenAI for embeddings and chat. Tune the text splitter for chunk size and overlap. Finally, wire the Vector Store Tool to the AI Agent and enable the chat trigger. Once active, the system stays aligned with Drive automatically—add, update, or delete files, and Pinecone follows suit.",
+        "height": 768,
+        "width": 736,
+        "color": 3
+      },
+      "id": "02c5da1a-c04a-4a19-9615-1f31550ecd26",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1584,
+        112
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open-ai-3072-71cwk85.svc.aped-4627-b74a.pinecone.io/vectors/delete",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Api-Key",
+              "value": "[Your API KEY]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"deleteAll\": true\n}\n",
+        "options": {}
+      },
+      "id": "21d566f6-23a7-46fb-b415-ef119b7b2375",
+      "name": "Pinecone – Delete All Vectors",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -576,
+        144
+      ],
+      "typeVersion": 4.3,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "batchSize": 30,
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "d98bbd47-5592-4eb9-b433-a86e5ceb0005",
+      "name": "Loop Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -128,
+        112
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "content": "## Embedding entire folder\n\n### Upload all documents from a folder ",
+        "height": 816,
+        "width": 1520,
+        "color": 4
+      },
+      "id": "c59dbc89-7019-4c37-b673-112369ce20f0",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        -64
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an assistant that helps users retrieve information from documents stored in a RAG archive.\nWhere possible, include the name or names of the files in which the information was found.",
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "71f686d9-df33-4976-b945-a6e52ec85388",
+      "name": "Documents finder",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        224,
+        1536
+      ],
+      "typeVersion": 1.7
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "1c62b8c9-a70c-44cc-8842-d5c8e180fc61",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "=application/pdf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "16e4f971-7f5f-435a-bf84-91ff27e60d73",
+      "name": "Filter PDF files",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        -320,
+        784
+      ],
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "d2c881b9-de6f-4e5c-9884-a9188c8d38b7",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "=application/pdf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e4036313-3b2a-413f-90e8-80afb2872ae9",
+      "name": "Filter PDF files1",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        -304,
+        992
+      ],
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b75f6b19-729d-41dd-a9c3-37851ea9b2dc",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $items().length > 0 }}\n",
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "43893b32-7f0d-4bca-9de0-dfecc081ec06",
+      "name": "If length > 0",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        64,
+        784
+      ],
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 3,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "b75f6b19-729d-41dd-a9c3-37851ea9b2dc",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $items().length > 0 }}\n",
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "ecefa06f-9529-4bbb-9e86-1670cc89abdb",
+      "name": "If length > 0_",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        64,
+        992
+      ],
+      "typeVersion": 2.3
+    },
+    {
+      "parameters": {
+        "content": "## Embedding documents information into Pinecone vector database\n",
+        "height": 576,
+        "width": 736,
+        "color": 6
+      },
+      "id": "2ce35cfb-8665-4f91-9634-1cf6d2f88b27",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        544,
+        800
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant. Only use the Pinecone Vector Store Tool to retrieve data about Pinecone releases. Include the file name and file url in citations wherever referenced in output."
+        }
+      },
+      "id": "f798e4ef-035e-4f13-aa0d-326c3f1fb553",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        2688,
+        4320
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Contains data about Pinecone releases.",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "n8n-dense-index",
+          "cachedResultName": "n8n-dense-index"
+        },
+        "topK": 20,
+        "useReranker": true,
+        "options": {
+          "pineconeNamespace": "release-notes-namespace"
+        }
+      },
+      "id": "7276eff6-cc47-4218-8723-0c45f7460c6d",
+      "name": "Pinecone Vector Store Tool",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        2976,
+        4464
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "content": "![Pinecone logo](https://www.pinecone.io/images/pinecone-logo-for-n8n-templates.png)\n\n\n## Try it out\n\nThis n8n workflow template lets you chat with your Google Drive documents (.docx, .json, .md, .txt, .pdf) using OpenAI and Pinecone vector database. It retrieves relevant context from your files in real time so you can get accurate, context-aware answers about your proprietary data—without the need to train your own LLM.\n#### Not interested in chunking and embedding your own data or figuring out which search method to use?\n\nTry our n8n quickstart for Pinecone Assistant [here](https://docs.pinecone.io/guides/assistant/quickstart/n8n-quickstart) or check out the full workflow to chat with your Google Drive documents [here](https://n8n.io/workflows/9942-rag-powered-document-chat-with-google-drive-openai-and-pinecone-assistant/).\n\n### Prerequisites\n\n* A [Pinecone account](https://app.pinecone.io/) and [API key](https://app.pinecone.io/organizations/-/projects/-/keys)\n* A GCP project with [Google Drive API enabled and configured](https://docs.n8n.io/integrations/builtin/credentials/google/oauth-single-service/)\n* An [Open AI account](https://auth.openai.com/create-account) and [API key](https://platform.openai.com/settings/organization/api-keys)\n* A [Cohere account](https://dashboard.cohere.com/welcome/register) and [API key](https://dashboard.cohere.com/api-keys)\n\n### Setup\n\n1. Create a Pinecone index in the Pinecone Console [here](https://app.pinecone.io/organizations/-/projects/-/indexes) \n\t1. Name your index `n8n-dense-index`\n\t2. Select OpenAI's `text-embedding-3-small`\n\t3. Set the Dimension to `1536`\n\t4. Leave everything else as default\n\t5. If you use a different index name, update the related nodes to reflect this change\n2. Setup your Pinecone API key, Google Drive OAuth2 API, Open AI, and Cohere credentials in n8n\n3. Download these files and add them to a Drive folder named `n8n-pinecone-demo` in the root of your My Drive\n\t1. https://docs.pinecone.io/release-notes/2022.md\n\t2. https://docs.pinecone.io/release-notes/2023.md\n\t3. https://docs.pinecone.io/release-notes/2024.md\n\t4. https://docs.pinecone.io/release-notes/2025.md\n\t5. https://docs.pinecone.io/release-notes/2026.md\n4. Activate the workflow or test it with a manual execution to ingest the documents\n5. Enter the chat prompts to chat with the Pinecone release notes\n\t1. `What support does Pinecone have for MCP?`\n\t2. `When was fetch by metadata released?`\n\n### Ideas for customizing this workflow\n\n- Use your own data and adjust the chunking strategy\n- Update the AI Agent System Message to reflect how the Pinecone Vector Store Tool will be used. Be sure to include info on what data can be retrieved using that tool.\n- Update the Pinecone Vector Store Tool Description to reflect what data you are storing in the Pinecone index\n### Need help?\n\nYou can find help by asking in the [Pinecone Discord community](https://discord.gg/tJ8V62S3sH) or [filing an issue](https://github.com/pinecone-io/n8n-templates/issues/new/choose) on this repo.",
+        "height": 1488,
+        "width": 604
+      },
+      "id": "ba643f44-c79e-4270-a3f2-3776f9129c49",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1616,
+        3376
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "topN": 5
+      },
+      "id": "900c77dc-1e58-492d-a3ad-3092a105cd3c",
+      "name": "Cohere Reranker",
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "position": [
+        3072,
+        4704
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "separator": "<Update label=\"",
+        "chunkSize": 2000,
+        "chunkOverlap": 500
+      },
+      "id": "cccb5b15-f214-42a5-abab-b47dd4a4e8a0",
+      "name": "Character Text Splitter - markdown",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterCharacterTextSplitter",
+      "position": [
+        3088,
+        3808
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1gsyG6CMIIVkLU9fHpmrrf3GVja6VFDrO",
+          "cachedResultUrl": "",
+          "cachedResultName": "n8n-pinecone-demo"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "c120bf0a-13a9-4d6e-aace-dbf5e789341e",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        2368,
+        3472
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "id": "2b9da9d3-9061-4cd4-badb-4b45e1d66c41",
+      "name": "Download file",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        2576,
+        3472
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "n8n-dense-index",
+          "cachedResultName": "n8n-dense-index"
+        },
+        "options": {
+          "pineconeNamespace": "release-notes-namespace"
+        }
+      },
+      "id": "0a654225-7d26-49c6-8552-0e03dd081945",
+      "name": "Pinecone Vector Store2",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        2848,
+        3472
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "id": "c3d11897-e4a8-44d0-85c8-f0bb07570c03",
+      "name": "Embeddings OpenAI3",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        2624,
+        3968
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "505d0b6e-f2f4-481a-8683-4c314565e04b",
+      "name": "OpenAI Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2592,
+        4592
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "binaryMode": "specificField",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "external_file_id",
+                "value": "={{ $json.id }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "83e578c8-ae25-4d3b-8f62-933bba4634fe",
+      "name": "Default Data Loader2",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        2992,
+        3648
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "## 1. Download, chunk, embed, and upsert Pinecone release notes to Pinecone index",
+        "height": 608,
+        "width": 1184,
+        "color": 7
+      },
+      "id": "f4c4b791-32fe-48de-9de0-9abad2239285",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2256,
+        3376
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 2. Chat with the Pinecone release notes",
+        "height": 672,
+        "width": 1184,
+        "color": 7
+      },
+      "id": "5e0423e0-5eb1-4335-a31c-793a3c629031",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2256,
+        4192
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## What chunking strategy should I use?\n\nIn the case of the Pinecone release notes, these are markdown files with separators like this:\n\n```\n<Update label=\"2025-12-12\" tags={[\"General\"]}>\n  ### Upgrade from Starter to Standard trial\n\n  Organizations on the Starter plan can now upgrade to a Standard plan trial at any time. The Standard trial provides 21 days and \\$300 in credits to test Pinecone at scale, with access to Standard plan features such as higher limits. For more information, see [Standard plan trial](/guides/organizations/manage-billing/standard-trial).\n</Update>\n```\n\nEach release is contained in an `Update` tag and each feature indicated by `###`. We expect our queries to be as granular as features in a release, so we try to chunk by release without breaking up features. We want chunks to be big enough to contain meaningful information but not so big that the meaning is diluted or it can't fit within the context window of the embedding model. Here, we use the Character Text Splitter and split on `<Update label=\"` with a chunk size about as big as a release and an overlap in case info spills to the next chunk.\n\nNote: We could also choose to use the Recursive Text Splitter to break paragraphs, sentences and words based on markdown syntax, depending on a given chunk size. This was less accurate for the example queries based on the shape of the data and expected queries.\n\nYou can read more about choosing a chunking strategy [here](https://www.pinecone.io/learn/chunking-strategies/).",
+        "height": 608,
+        "width": 576,
+        "color": 6
+      },
+      "id": "58ab090d-2e31-418b-b7f1-00e5bba90b2f",
+      "name": "Sticky Note8",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3488,
+        3376
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://unstructured:8000/general/v0/general",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "strategy",
+              "value": "fast"
+            },
+            {
+              "name": "languages",
+              "value": "[\"eng\"]"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "chunking_strategy",
+              "value": "by_title"
+            },
+            {
+              "name": "max_characters",
+              "value": "3000"
+            },
+            {
+              "name": "new_after_n_chars",
+              "value": "1800"
+            },
+            {
+              "name": "combine_under_n_chars",
+              "value": "1200"
+            },
+            {
+              "name": "overlap",
+              "value": "300"
+            },
+            {
+              "name": "include_orig_elements",
+              "value": "false"
+            },
+            {
+              "name": "unique_element_ids",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "aeefb519-172b-4538-8252-d6398ee20207",
+      "name": "Unstructured Extract",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3104,
+        1984
+      ],
+      "typeVersion": 4
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Helpers ---------------------------------------------------------------\n\n/** Extract an array of Unstructured elements from various possible shapes */\nfunction extractElements(obj) {\n  if (!obj || typeof obj !== \"object\") return [];\n  // Some HTTP Request nodes return data under json.body / json.response / json.data\n  const candidates = [obj, obj.body, obj.response, obj.data];\n  for (const c of candidates) {\n    if (Array.isArray(c)) return c;\n  }\n  // Single element fallback: an object with .type and .text\n  if (obj.type && typeof obj.text === \"string\") return [obj];\n  return [];\n}\n\n// --- Main ------------------------------------------------------------------\n\nconst rawItems = $input.all();\n\nlet elements = [];\nfor (const item of rawItems) {\n  const base = item?.json ?? {};\n  const found = extractElements(base);\n  if (found.length === 0) {\n    // Extra fallbacks: sometimes APIs return { result: [...] } or { elements: [...] }\n    const fallback =\n      (Array.isArray(base?.result) && base.result) ||\n      (Array.isArray(base?.elements) && base.elements) ||\n      [];\n    elements.push(...fallback);\n  } else {\n    elements.push(...found);\n  }\n}\n\n// Defensive flatten & null filtering\nelements = elements.flat().filter(Boolean);\n\n// Transform Unstructured elements -> Documents\nconst docs = [];\nfor (const element of elements) {\n  const txt = (element?.text ?? \"\").trim();\n  if (!txt) continue; // skip empty strings only\n\n  const md = element?.metadata || {};\n  // Remove very heavy fields that shouldn't be indexed\n  if (\"orig_elements\" in md) delete md.orig_elements;\n\n  docs.push({\n    element_id: element.element_id,\n    type: element.type,\n    text: txt,\n    filename: md.filename,\n    page_number: md.page_number\n  });\n}\n\n// Emit one item per document for the Default Data Loader\nreturn docs.map(d => ({ json: d }));"
+      },
+      "id": "e6a77b10-ae07-40b0-8c13-1c4f330f765a",
+      "name": "Map Data",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        3328,
+        1984
+      ],
+      "typeVersion": 2,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "text-embedding-3-small"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.texts }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "76e6502f-6871-4c18-bb97-ba4276728212",
+      "name": "HTTP OpenAI Embeddings",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3760,
+        1984
+      ],
+      "executeOnce": false,
+      "typeVersion": 4,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nif (!items.length) {\n  return [{ json: { texts: [], metas: [] } }];\n}\n\nreturn [{\n  json: {\n    texts: items.map(i => i.json.text ?? ''),\n    metas: items.map(i => {\n      const meta = i.json || {};\n      return meta;\n    }),\n  }\n}];"
+      },
+      "id": "5beb9270-88b7-478a-9a90-56c5f3196f99",
+      "name": "Pack",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        3552,
+        1984
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "const embsObj = $json;\nconst embsArr = embsObj?.data || [];\n\nlet metas = embsObj?.metas;\nif (!Array.isArray(metas)) {\n  metas = $item(0).$node[\"Pack\"]?.json?.metas;\n}\nif (!Array.isArray(metas)) metas = [];\n\nconst n = Math.min(embsArr.length, metas.length);\nconst out = [];\n\nfor (let i = 0; i < n; i++) {\n  const m = metas[i] || {};\n  const emb = embsArr[i]?.embedding || [];\n\n  out.push({\n    json: {\n      element_id: m.element_id,\n      type: m.type,\n      filename: m.filename,\n      page_number: m.page_number,\n      text: m.text,\n      embedding: emb\n    }\n  });\n}\n\nreturn out;"
+      },
+      "id": "9e40b46b-e6a8-4d1e-ae3d-85c02f77ccc9",
+      "name": "Re-expand",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        3984,
+        1984
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://test.pinecone.io/vectors/upsert",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "pineconeApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "namespace",
+              "value": "default"
+            },
+            {
+              "name": "vectors",
+              "value": "={{ $input.all().map(i => ({ id: i.json.id, values: i.json.values, metadata: i.json.metadata })) }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {}
+        }
+      },
+      "id": "84ac8aec-02fe-46e4-86b8-209df7c2eb70",
+      "name": "Pinecone Upsert",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        4432,
+        1984
+      ],
+      "typeVersion": 4
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "663631bf-bfe7-409d-af6b-fe98ef4b1fbe",
+      "name": "Question & Answer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        3280,
+        2352
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {},
+      "id": "893c3b10-1a82-4191-ad40-44fd0c2cebe1",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        3392,
+        2560
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1567a322-058c-4145-bb80-52157c1a728b",
+              "name": "id",
+              "type": "string",
+              "value": "={{ $json.element_id }}"
+            },
+            {
+              "id": "06feabfb-fac2-4b34-92d7-c86d02174ec6",
+              "name": "=values",
+              "type": "array",
+              "value": "={{ $json.embedding }}"
+            },
+            {
+              "id": "6f4da657-2332-41f1-8fb4-70cf12791e08",
+              "name": "metadata",
+              "type": "object",
+              "value": "={{ {\n  element_id: $json.element_id,\n  type: $json.type,\n  filename: $json.filename,\n  page: $json.page_number,\n  text: $json.text\n} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "644cdf85-bdcd-48c5-a16a-0286a2b5c5f8",
+      "name": "Prepare Data for Upsert",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        4208,
+        1984
+      ],
+      "typeVersion": 3.4,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$json[\"id\"]}}"
+        },
+        "options": {}
+      },
+      "id": "4eb7ebef-97b3-4524-bc38-c2b53fe02db7",
+      "name": "Google Drive Download",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        2880,
+        1984
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## Try it out!\nThis n8n template monitors a Google Drive folder, converts PDF documents into clean text chunks with Unstructured, generates OpenAI embeddings and upserts vectors into Pinecone.\n\n## How it works\n1) Google Drive Trigger detects new files in a selected folder and downloads them.\n2) The files are sent to Unstructured where they are split into smaller pieces (chunks).\n3) The chunks are prepared to be sent to OpenAI where they are converted into vectors (embeddings).\n4) The embeddings are recombined with their original data and the payload is prepared for upsert into the Pinecone index.\n\n## Set up steps\n1) In Pinecone, create an index with 1536 dimensions and configure it for `text-embedding-3-small`.\n2) Copy the host url and paste it on the 'Pinecone Upsert' node. It should look something like this: https://{your-index-name}.pinecone.io/vectors/upsert.\n3) Add Google Drive, OpenAI and Pinecone credentials in n8n.\n4) Populate Pinecone database by clicking the 'Test workflow' button or by uploading a file into a Google Drive folder.\n5) Click the 'Open chat' button and ask a question related to the file's information.",
+        "height": 600,
+        "width": 560
+      },
+      "id": "901a031b-6a4b-4823-b9e1-2f75d7616b70",
+      "name": "Sticky — Template Overview (Global)",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1840,
+        1888
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Chat with file",
+        "height": 667,
+        "width": 614,
+        "color": 7
+      },
+      "id": "1c905319-a50f-47bb-9878-58bc37a0db11",
+      "name": "Sticky Note9",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3200,
+        2240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "7b758e13-c10c-46b4-ba23-f5c9b764ae72",
+      "name": "OpenAI Chat Model3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        3264,
+        2560
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "ai_paper",
+        "toolDescription": "Call this tool to retrieve facts from the AI article",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "id",
+          "value": "test"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": "default"
+        }
+      },
+      "id": "72e235bb-8e88-4930-9ff1-0970fbfeb5da",
+      "name": "Pinecone Vector Store3",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        3504,
+        2560
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "7584eefd-1c1f-479a-90f7-d41b4f35dafc",
+      "name": "Embeddings OpenAI4",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        3584,
+        2768
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "content": "## Load data into Pinecone database",
+        "height": 300,
+        "width": 2180,
+        "color": 7
+      },
+      "id": "59c203ba-5c8d-4ed5-994a-a6e6802951c4",
+      "name": "Sticky Note10",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2480,
+        1888
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "mode": "list",
+          "value": "15EtBxkQ5kDWr3ky1kTPMwjjUz3DqWiqH",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/15EtBxkQ5kDWr3ky1kTPMwjjUz3DqWiqH",
+          "cachedResultName": "wiki"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "26781018-f6ff-40df-a860-a92666940eb2",
+      "name": "Google Drive Trigger1",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "position": [
+        2672,
+        1984
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "batchSize": "={{ $json.Key.length }}",
+        "options": {}
+      },
+      "id": "9c61b73e-e55c-440f-950b-7532f207c9e1",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        6688,
+        2960
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "fileKey": "={{ $json.Key }}"
+      },
+      "id": "1df5aab9-57a8-4056-aa19-a3d468edec0d",
+      "name": "Download Files from AWS",
+      "type": "n8n-nodes-base.awsS3",
+      "position": [
+        6960,
+        2960
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "options": {
+          "folderKey": ""
+        }
+      },
+      "id": "dd900ba1-c374-4f11-b341-3fdccffcc851",
+      "name": "Get Files from S3",
+      "type": "n8n-nodes-base.awsS3",
+      "position": [
+        6464,
+        2960
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {},
+      "id": "ce1549da-4d5c-4647-bb4e-bfd6374ab383",
+      "name": "Aryn",
+      "type": "@aryn-ai/n8n-nodes-aryn.aryn",
+      "position": [
+        7168,
+        2960
+      ],
+      "typeVersion": 0,
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "7cf6540f-b0a5-4123-8e48-ceba877fa769",
+      "name": "Embeddings OpenAI5",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        7360,
+        3120
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "30e3930f-ee2d-4a3e-bcfb-f0df8651f193",
+      "name": "Default Data Loader3",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        7664,
+        3104
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {
+          "splitCode": "python"
+        }
+      },
+      "id": "888e84db-a993-4c08-8cb0-e12eca879bf6",
+      "name": "Recursive Character Text Splitter2",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "position": [
+        7520,
+        3120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "cc565215-50b8-453f-bad4-de3b4972e7eb",
+      "name": "AI Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        6672,
+        3312
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "5486ab4e-2938-465b-92ab-bed263386111",
+      "name": "OpenAI Chat Model4",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        6672,
+        3504
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Contains data about Pinecone releases.",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "n8n",
+          "cachedResultName": "n8n"
+        },
+        "topK": 100,
+        "options": {}
+      },
+      "id": "2d413367-e6fe-4f89-86bd-bfd08c4be6a9",
+      "name": "Pinecone Vector Store Tool1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        7024,
+        3296
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "mode": "list",
+          "value": "n8n",
+          "cachedResultName": "n8n"
+        },
+        "options": {}
+      },
+      "id": "6a9eb45d-0893-4007-a39f-0d968151b356",
+      "name": "Pinecone Vector Store4",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        7472,
+        2960
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "content": "## Build an awesome RAG system using Aryn DocParse to extract text, images, tables and properties from your documents in your ingestion pipeline\n \n### How it works\n1. Provide your S3 bucket containing documents such as PDFs and MS Word in the \"Get Files from S3\" node.  You will need to provide AWS credentials that will allow the node to access the bucket and download the files in the specified location.\n2. Choose document processing options in the Aryn node.  The main options are for text and table extraction.  You can also provide a JSON schema for property extraction.  You can refer to https://docs.aryn.ai/docparse/processing_options for details on these options.  You will also need an Aryn API key which you can obtain by going to https://aryn.ai/signup.  Please note that use of vision models for OCR and table extraction is restricted to paid tiers.\n3. The resulting content of parsing and extraction is then chunked and ingested into Pinecone.\n4. Once at least one document has been ingested into a Pinecone index, you can start asking questions about anything that may be found in ingested documents in the chat box.\n\n### Setup steps\n1. For data retrieval, you will need a \"folder\" in a bucket on AWS S3 as well as valid AWS credentials with permission to fetch those files.\n2. For document parsing, you will need to obtain an Aryn API key.  You can sign up for free at https://aryn.ai/signup.\n3. For the Pinecone vector database, head over to https://pinecone.io and create an account and create a sample index for free.  You will also need to generate an API key.\n4. For the AI agent and RAG, you will also need an OpenAI API key.  Please go to https://openai.com and get a free API key.",
+        "height": 528,
+        "width": 912
+      },
+      "id": "b9777fe8-6d34-4080-978b-f9d914863d36",
+      "name": "Sticky Note11",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6128,
+        2336
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Document parsing and ingestion\n",
+        "height": 416,
+        "width": 1888,
+        "color": 7
+      },
+      "id": "b455c128-ebae-474a-b00b-508234790491",
+      "name": "Sticky Note12",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6112,
+        2864
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## RAG\n",
+        "height": 336,
+        "width": 912,
+        "color": 7
+      },
+      "id": "5e3ea36c-ae31-456f-abde-ac1ed79118f0",
+      "name": "Sticky Note13",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6400,
+        3296
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Items": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download File From Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If length > 0": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If length > 0_": {
+      "main": [
+        [
+          {
+            "node": "Download File From Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter PDF files": {
+      "main": [
+        [
+          {
+            "node": "If length > 0",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store (Retrieval)",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter PDF files1": {
+      "main": [
+        [
+          {
+            "node": "If length > 0_",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Documents finder",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Documents finder",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Documents finder",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Loop Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Created": {
+      "main": [
+        [
+          {
+            "node": "Filter PDF files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive File Updated": {
+      "main": [
+        [
+          {
+            "node": "Filter PDF files1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Documents finder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File From Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone – Delete All Vectors": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File From Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store (Retrieval)": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Tool",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Pinecone – Delete All Vectors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cohere Reranker": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Pinecone Vector Store Tool",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Character Text Splitter - markdown": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader2",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Pinecone Vector Store Tool",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader2": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store2",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pack": {
+      "main": [
+        [
+          {
+            "node": "HTTP OpenAI Embeddings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Data": {
+      "main": [
+        [
+          {
+            "node": "Pack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Re-expand": {
+      "main": [
+        [
+          {
+            "node": "Prepare Data for Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unstructured Extract": {
+      "main": [
+        [
+          {
+            "node": "Map Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Download": {
+      "main": [
+        [
+          {
+            "node": "Unstructured Extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP OpenAI Embeddings": {
+      "main": [
+        [
+          {
+            "node": "Re-expand",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Data for Upsert": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store3": {
+      "ai_tool": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store3",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Google Drive Download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aryn": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Download Files from AWS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Files from S3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Files from AWS": {
+      "main": [
+        [
+          {
+            "node": "Aryn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI5": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store Tool1",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Pinecone Vector Store4",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader3": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store4",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter2": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader3",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "5e440119-13e6-40f0-a632-f0396d579eb3",
+  "activeVersionId": null,
+  "versionCounter": 11,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-18T11:28:38.757Z",
+      "createdAt": "2026-02-18T11:28:38.757Z",
+      "role": "workflow:owner",
+      "workflowId": "FQP3FfrVGa1GvXTL",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
