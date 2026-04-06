@@ -1,0 +1,78 @@
+{
+  "updatedAt": "2026-04-05T07:10:45.213Z",
+  "createdAt": "2026-04-05T07:10:45.213Z",
+  "id": "72Dweeo7gfWjgQyx",
+  "name": "Test Merge Params",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "f185d9bb-28f4-45e5-aec2-b02b7e8791b7",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "id": "71ae2723-3eff-4cdf-bdb0-5a5910e01ef7",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true
+  },
+  "pinData": null,
+  "versionId": "d5ff6b48-9edf-43a5-950b-8aed1e86cb4c",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-05T07:10:45.215Z",
+      "createdAt": "2026-04-05T07:10:45.215Z",
+      "role": "workflow:owner",
+      "workflowId": "72Dweeo7gfWjgQyx",
+      "projectId": "6TsYTzg0HY92xH2K",
+      "project": {
+        "updatedAt": "2025-11-14T08:33:27.896Z",
+        "createdAt": "2025-11-14T07:49:25.938Z",
+        "id": "6TsYTzg0HY92xH2K",
+        "name": "Christine Kam <windowrevival@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
