@@ -1,0 +1,138 @@
+{
+  "updatedAt": "2026-03-06T00:21:11.496Z",
+  "createdAt": "2026-03-06T00:20:54.028Z",
+  "id": "V4jaxlkOmWTUFX6W",
+  "name": "Auto-save Instagram leads to Google Sheets",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "📋 **SETUP REQUIRED:**\n\n1. **Create Google Sheet:**\n   - Make new sheet with these column headers:\n   - A1: Name | B1: Email | C1: Phone\n   - D1: Message | E1: Source | F1: Date\n\n2. **Get Sheet ID:**\n   - Copy from URL: docs.google.com/spreadsheets/d/[SHEET_ID]/edit\n   - Replace YOUR_GOOGLE_SHEET_ID in Google Sheets node\n\n3. **Connect Instagram Form:**\n   - Use webhook URL from this node\n   - Form fields: name, email, phone, message",
+        "height": 508,
+        "width": 712
+      },
+      "id": "5283f1c4-f282-487d-9665-63963aa93370",
+      "name": "Setup Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        -32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "instagram-leads",
+        "options": {}
+      },
+      "id": "958efedb-56cd-4d74-bec0-afe973000766",
+      "name": "Instagram Lead Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -80,
+        304
+      ],
+      "webhookId": "instagram-leads-webhook",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize Instagram lead data\nconst body = $input.first().json.body || $input.first().json;\n\n// Common Instagram lead fields - adapt based on your form structure\nconst normalizedData = {\n  name: body.name || body.full_name || body.firstName + ' ' + body.lastName || 'Unknown',\n  email: body.email || body.email_address || '',\n  phone: body.phone || body.phone_number || '',\n  message: body.message || body.comments || '',\n  source: 'Instagram',\n  timestamp: new Date().toISOString(),\n  raw_data: JSON.stringify(body)\n};\n\nconsole.log('Normalized Instagram Lead Data:', normalizedData);\n\nreturn {\n  json: normalizedData\n};"
+      },
+      "id": "7474217e-4f0f-4992-88e1-4d5f17bccef3",
+      "name": "Normalize Lead Data",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        128,
+        304
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "YOUR_GOOGLE_SHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "Sheet1"
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "id": "8cd3bc17-c4d8-433b-97fa-a43a58537136",
+      "name": "Save to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        320,
+        304
+      ],
+      "typeVersion": 4
+    }
+  ],
+  "connections": {
+    "Normalize Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Lead Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "cbf8b38d-d4db-45bb-9076-85103615291d",
+  "activeVersionId": null,
+  "versionCounter": 6,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-06T00:20:54.031Z",
+      "createdAt": "2026-03-06T00:20:54.031Z",
+      "role": "workflow:owner",
+      "workflowId": "V4jaxlkOmWTUFX6W",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
