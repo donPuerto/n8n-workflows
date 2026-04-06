@@ -1,0 +1,1406 @@
+{
+  "updatedAt": "2026-03-19T07:16:51.998Z",
+  "createdAt": "2026-03-17T13:58:23.578Z",
+  "id": "Do4yTrqCVQyM9noy",
+  "name": "[Portfolio] Booking - Cancel Event and Send Cancellation",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cancel-booking",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        112
+      ],
+      "id": "wh-cancel-booking",
+      "name": "Receive Cancel Request",
+      "webhookId": "cancel-booking-001"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ ($json.body.args?.attendee_email ?? $json.body.attendee_email) || ($json.body.args?.email ?? $json.body.email) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        112
+      ],
+      "id": "if-validate-cancel",
+      "name": "Validate Input"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, code: 'MISSING_FIELDS', message: 'event_id and attendee_email are required.', retryable: false }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        208
+      ],
+      "id": "resp-val-err",
+      "name": "Validation Error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1",
+              "name": "calendar_id",
+              "value": "={{ $json.body.calendar_id || 'e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com' }}",
+              "type": "string"
+            },
+            {
+              "id": "f2",
+              "name": "event_id",
+              "value": "={{ ($json.body.args?.event_id ?? $json.body.event_id) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f3",
+              "name": "attendee_email",
+              "value": "={{ ($json.body.args?.attendee_email ?? $json.body.attendee_email) || ($json.body.args?.email ?? $json.body.email) }}",
+              "type": "string"
+            },
+            {
+              "id": "f4",
+              "name": "attendee_name",
+              "value": "={{ ($json.body.args?.attendee_name ?? $json.body.attendee_name) || ($json.body.args?.name ?? $json.body.name) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f5",
+              "name": "customer_id",
+              "value": "={{ ($json.body.args?.customer_id ?? $json.body.customer_id) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f6",
+              "name": "cancellation_reason",
+              "value": "={{ ($json.body.args?.cancellation_reason ?? $json.body.cancellation_reason) || 'Cancelled via AI call' }}",
+              "type": "string"
+            },
+            {
+              "id": "f7",
+              "name": "cancelled_by",
+              "value": "={{ ($json.body.args?.cancelled_by ?? $json.body.cancelled_by) || 'customer' }}",
+              "type": "string"
+            },
+            {
+              "id": "f8",
+              "name": "send_email",
+              "value": "={{ ($json.body.args?.send_email ?? $json.body.send_email) !== false }}",
+              "type": "boolean"
+            },
+            {
+              "id": "f9",
+              "name": "strategy",
+              "value": "={{ ($json.body.args?.strategy ?? $json.body.strategy) || 'hard_delete' }}",
+              "type": "string"
+            },
+            {
+              "id": "f10",
+              "name": "timezone",
+              "value": "={{ ($json.body.args?.timezone ?? $json.body.timezone) || 'Asia/Manila' }}",
+              "type": "string"
+            },
+            {
+              "id": "f_bid",
+              "name": "booking_id",
+              "value": "={{ ($json.body.args?.booking_id ?? $json.body.booking_id) || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        16
+      ],
+      "id": "set-cancel-data",
+      "name": "Normalize Cancel Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "ex1",
+              "leftValue": "={{ $json.found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        16
+      ],
+      "id": "if-event-exists",
+      "name": "Event Exists?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, code: \"EVENT_NOT_FOUND\", message: \"No booking found for this email.\" }) }}",
+        "options": {
+          "responseCode": 404
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        112
+      ],
+      "id": "resp-not-found",
+      "name": "Event Not Found"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d1",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.event_id }}"
+            },
+            {
+              "id": "d2",
+              "name": "event_summary",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.event_summary }}"
+            },
+            {
+              "id": "d3",
+              "name": "booking_id",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.booking_id }}"
+            },
+            {
+              "id": "d4",
+              "name": "start_dateTime",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.start_dateTime }}"
+            },
+            {
+              "id": "d5",
+              "name": "attendee_email",
+              "type": "string",
+              "value": "={{ $('Normalize Cancel Data').first().json.attendee_email }}"
+            },
+            {
+              "id": "d6",
+              "name": "attendee_name",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.attendee_name || '' }}"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        -80
+      ],
+      "id": "set-event-snapshot",
+      "name": "Capture Event Details Before Deletion"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $('Normalize Cancel Data').first().json.strategy }}",
+              "rightValue": "soft_cancel",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        -80
+      ],
+      "id": "if-strategy",
+      "name": "Soft Cancel?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Normalize Cancel Data').first().json.calendar_id }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $('Capture Event Details Before Deletion').first().json.event_id }}",
+        "updateFields": {
+          "description": "={{ 'Cancelled on ' + $now.toISOString() + ' by ' + $('Normalize Cancel Data').first().json.cancelled_by + '. Reason: ' + $('Normalize Cancel Data').first().json.cancellation_reason }}",
+          "summary": "={{ '[CANCELLED] ' + $json.event_title }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1792,
+        -176
+      ],
+      "id": "gcal-soft-cancel",
+      "name": "Soft Cancel (Update Title)",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "1TXl73FCExI5p2lV",
+          "name": "DP: Google Calendar Account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Normalize Cancel Data').first().json.calendar_id }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $('Capture Event Details Before Deletion').first().json.event_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1792,
+        16
+      ],
+      "id": "gcal-hard-delete",
+      "name": "Hard Delete Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "1TXl73FCExI5p2lV",
+          "name": "DP: Google Calendar Account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Normalize Cancel Data').first().json.attendee_email }}",
+        "subject": "={{ 'Booking Cancelled — ' + ($('Capture Event Details Before Deletion').first().json.booking_id || 'Cancelled') }}",
+        "message": "={{ '<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;\">' + '<h2 style=\"color:#ef4444;\">Booking Cancelled</h2>' + '<p>Hi ' + ($('Capture Event Details Before Deletion').first().json.attendee_name || 'there') + ',</p>' + '<p>Your appointment has been cancelled.</p>' + '<table style=\"border-collapse:collapse;width:100%;max-width:500px;\">' + '<tr><td style=\"padding:8px;font-weight:bold;\">Booking</td><td style=\"padding:8px;\">' + ($('Capture Event Details Before Deletion').first().json.event_summary || '') + '</td></tr>' + '<tr><td style=\"padding:8px;font-weight:bold;\">Was Scheduled</td><td style=\"padding:8px;\">' + ($('Capture Event Details Before Deletion').first().json.start_dateTime || '') + '</td></tr>' + '</table>' + '<p>Want to rebook? Just call us again.</p></div>' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2240,
+        -152
+      ],
+      "id": "gmail-cancellation",
+      "name": "Send Cancellation Email",
+      "webhookId": "3e806fea-c946-4420-bbe5-1ab4dabbaf1b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RhxDT8POCR7oU2yl",
+          "name": "DP: Gmail Account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { success: true, action: \"cancelled\" } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        -80
+      ],
+      "id": "code-build-resp",
+      "name": "Build Response",
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, booking_id: $('Capture Event Details Before Deletion').first().json.booking_id || '', event_id: $('Capture Event Details Before Deletion').first().json.event_id || '', action: 'cancelled', message: 'Booking cancelled successfully.' }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2912,
+        -80
+      ],
+      "id": "resp-success",
+      "name": "Success Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Normalize Cancel Data').first().json;\nconst bookingId = data.booking_id;\nconst email = data.attendee_email;\nconst eventIdDirect = data.event_id;\n\nif (eventIdDirect) return [{ json: { event_id: eventIdDirect, found: true, booking_id: bookingId } }];\n\nconst events = $input.all().filter(item => {\n  if (!item.json?.id) return false;\n  const desc = (item.json.description || '').toLowerCase();\n  if (bookingId && desc.includes(bookingId.toLowerCase())) return true;\n  if (email && desc.includes(email.toLowerCase())) return true;\n  return false;\n});\n\nif (!events.length) return [{ json: { event_id: '', found: false, booking_id: '' } }];\n\nconst ev = events[events.length - 1];\nlet foundBookingId = bookingId;\nif (!foundBookingId) {\n  const descMatch = (ev.json.description || '').match(/Booking ID:\\s*(BK-[A-Z0-9]+)/i);\n  if (descMatch) foundBookingId = descMatch[1];\n}\n\nreturn [{ json: {\n  event_id: ev.json.id,\n  found: true,\n  event_summary: ev.json.summary || '',\n  booking_id: foundBookingId || '',\n  start_dateTime: ev.json.start?.dateTime || '',\n  end_dateTime: ev.json.end?.dateTime || '',\n  description: ev.json.description || '',\n  attendee_name: (ev.json.description || '').match(/Name:\\s*(.+)/i)?.[1]?.trim() || ''\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        16
+      ],
+      "id": "code-find-event-f",
+      "name": "Find Event by Email"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1WDhHh6uZJ3soUEuqDG0yNaLK4X64z6q8ouI7gBv_ncA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Main",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDhHh6uZJ3soUEuqDG0yNaLK4X64z6q8ouI7gBv_ncA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Booking Id"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2464,
+        -152
+      ],
+      "id": "sheets-update-cancel",
+      "name": "Update Sheet (Cancelled)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DBEwozLer2lI42WC",
+          "name": "DP: Google Sheets Account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "id": "gcal-find-events",
+      "name": "Lookup Booking in Sheet",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        748,
+        16
+      ],
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Automation Bookings Hub"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $now.toISO() }}",
+        "timeMax": "={{ $now.plus({months: 6}).toISO() }}",
+        "options": {
+          "singleEvents": true
+        }
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "1TXl73FCExI5p2lV",
+          "name": "DP: Google Calendar Account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const norm = $('Normalize Cancel Data').first().json;\nconst find = $('Find Event by Email').first().json;\nconst bookingId = norm.booking_id || find.booking_id || '';\nreturn [{ json: {\n  'Booking Id': bookingId,\n  'Updated Date': new Date().toISOString().split('T')[0],\n  'Booking Status': 'cancelled'\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2264,
+        -152
+      ],
+      "id": "prep_sheet_f",
+      "name": "Prepare Sheet Update"
+    }
+  ],
+  "connections": {
+    "Receive Cancel Request": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Normalize Cancel Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Cancel Data": {
+      "main": [
+        [
+          {
+            "node": "Lookup Booking in Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event Exists?": {
+      "main": [
+        [
+          {
+            "node": "Capture Event Details Before Deletion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Event Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capture Event Details Before Deletion": {
+      "main": [
+        [
+          {
+            "node": "Soft Cancel?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Soft Cancel?": {
+      "main": [
+        [
+          {
+            "node": "Soft Cancel (Update Title)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Hard Delete Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Soft Cancel (Update Title)": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Cancellation Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Sheet (Cancelled)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hard Delete Event": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Cancellation Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Sheet Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Event by Email": {
+      "main": [
+        [
+          {
+            "node": "Event Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Booking in Sheet": {
+      "main": [
+        [
+          {
+            "node": "Find Event by Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Sheet Update": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet (Cancelled)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "149acb60-e46f-49f6-854b-6e1b50bd0985",
+  "activeVersionId": "149acb60-e46f-49f6-854b-6e1b50bd0985",
+  "versionCounter": 137,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-17T13:58:23.580Z",
+      "createdAt": "2026-03-17T13:58:23.580Z",
+      "role": "workflow:owner",
+      "workflowId": "Do4yTrqCVQyM9noy",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-17T15:13:49.246Z",
+      "createdAt": "2026-03-17T15:13:49.246Z",
+      "id": "d7mqfOtooEEoFB3C",
+      "name": "Workflow-F"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-19T07:16:51.999Z",
+    "createdAt": "2026-03-19T07:16:51.999Z",
+    "versionId": "149acb60-e46f-49f6-854b-6e1b50bd0985",
+    "workflowId": "Do4yTrqCVQyM9noy",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "cancel-booking",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          112
+        ],
+        "id": "wh-cancel-booking",
+        "name": "Receive Cancel Request",
+        "webhookId": "cancel-booking-001"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "caseSensitive": true
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ ($json.body.args?.attendee_email ?? $json.body.attendee_email) || ($json.body.args?.email ?? $json.body.email) }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          112
+        ],
+        "id": "if-validate-cancel",
+        "name": "Validate Input"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: false, code: 'MISSING_FIELDS', message: 'event_id and attendee_email are required.', retryable: false }) }}",
+          "options": {
+            "responseCode": 400
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          208
+        ],
+        "id": "resp-val-err",
+        "name": "Validation Error"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "f1",
+                "name": "calendar_id",
+                "value": "={{ $json.body.calendar_id || 'e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com' }}",
+                "type": "string"
+              },
+              {
+                "id": "f2",
+                "name": "event_id",
+                "value": "={{ ($json.body.args?.event_id ?? $json.body.event_id) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "f3",
+                "name": "attendee_email",
+                "value": "={{ ($json.body.args?.attendee_email ?? $json.body.attendee_email) || ($json.body.args?.email ?? $json.body.email) }}",
+                "type": "string"
+              },
+              {
+                "id": "f4",
+                "name": "attendee_name",
+                "value": "={{ ($json.body.args?.attendee_name ?? $json.body.attendee_name) || ($json.body.args?.name ?? $json.body.name) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "f5",
+                "name": "customer_id",
+                "value": "={{ ($json.body.args?.customer_id ?? $json.body.customer_id) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "f6",
+                "name": "cancellation_reason",
+                "value": "={{ ($json.body.args?.cancellation_reason ?? $json.body.cancellation_reason) || 'Cancelled via AI call' }}",
+                "type": "string"
+              },
+              {
+                "id": "f7",
+                "name": "cancelled_by",
+                "value": "={{ ($json.body.args?.cancelled_by ?? $json.body.cancelled_by) || 'customer' }}",
+                "type": "string"
+              },
+              {
+                "id": "f8",
+                "name": "send_email",
+                "value": "={{ ($json.body.args?.send_email ?? $json.body.send_email) !== false }}",
+                "type": "boolean"
+              },
+              {
+                "id": "f9",
+                "name": "strategy",
+                "value": "={{ ($json.body.args?.strategy ?? $json.body.strategy) || 'hard_delete' }}",
+                "type": "string"
+              },
+              {
+                "id": "f10",
+                "name": "timezone",
+                "value": "={{ ($json.body.args?.timezone ?? $json.body.timezone) || 'Asia/Manila' }}",
+                "type": "string"
+              },
+              {
+                "id": "f_bid",
+                "name": "booking_id",
+                "value": "={{ ($json.body.args?.booking_id ?? $json.body.booking_id) || '' }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          448,
+          16
+        ],
+        "id": "set-cancel-data",
+        "name": "Normalize Cancel Data"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "caseSensitive": true
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "ex1",
+                "leftValue": "={{ $json.found }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1120,
+          16
+        ],
+        "id": "if-event-exists",
+        "name": "Event Exists?"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: false, code: \"EVENT_NOT_FOUND\", message: \"No booking found for this email.\" }) }}",
+          "options": {
+            "responseCode": 404
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1344,
+          112
+        ],
+        "id": "resp-not-found",
+        "name": "Event Not Found"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "d1",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.event_id }}"
+              },
+              {
+                "id": "d2",
+                "name": "event_summary",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.event_summary }}"
+              },
+              {
+                "id": "d3",
+                "name": "booking_id",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.booking_id }}"
+              },
+              {
+                "id": "d4",
+                "name": "start_dateTime",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.start_dateTime }}"
+              },
+              {
+                "id": "d5",
+                "name": "attendee_email",
+                "type": "string",
+                "value": "={{ $('Normalize Cancel Data').first().json.attendee_email }}"
+              },
+              {
+                "id": "d6",
+                "name": "attendee_name",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.attendee_name || '' }}"
+              }
+            ]
+          },
+          "options": {
+            "dotNotation": false
+          }
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1344,
+          -80
+        ],
+        "id": "set-event-snapshot",
+        "name": "Capture Event Details Before Deletion"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "caseSensitive": true
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $('Normalize Cancel Data').first().json.strategy }}",
+                "rightValue": "soft_cancel",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1568,
+          -80
+        ],
+        "id": "if-strategy",
+        "name": "Soft Cancel?"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $('Normalize Cancel Data').first().json.calendar_id }}",
+            "mode": "id"
+          },
+          "eventId": "={{ $('Capture Event Details Before Deletion').first().json.event_id }}",
+          "updateFields": {
+            "description": "={{ 'Cancelled on ' + $now.toISOString() + ' by ' + $('Normalize Cancel Data').first().json.cancelled_by + '. Reason: ' + $('Normalize Cancel Data').first().json.cancellation_reason }}",
+            "summary": "={{ '[CANCELLED] ' + $json.event_title }}"
+          }
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          1792,
+          -176
+        ],
+        "id": "gcal-soft-cancel",
+        "name": "Soft Cancel (Update Title)",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "1TXl73FCExI5p2lV",
+            "name": "DP: Google Calendar Account"
+          }
+        },
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "operation": "delete",
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $('Normalize Cancel Data').first().json.calendar_id }}",
+            "mode": "id"
+          },
+          "eventId": "={{ $('Capture Event Details Before Deletion').first().json.event_id }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          1792,
+          16
+        ],
+        "id": "gcal-hard-delete",
+        "name": "Hard Delete Event",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "1TXl73FCExI5p2lV",
+            "name": "DP: Google Calendar Account"
+          }
+        },
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $('Normalize Cancel Data').first().json.attendee_email }}",
+          "subject": "={{ 'Booking Cancelled — ' + ($('Capture Event Details Before Deletion').first().json.booking_id || 'Cancelled') }}",
+          "message": "={{ '<div style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;\">' + '<h2 style=\"color:#ef4444;\">Booking Cancelled</h2>' + '<p>Hi ' + ($('Capture Event Details Before Deletion').first().json.attendee_name || 'there') + ',</p>' + '<p>Your appointment has been cancelled.</p>' + '<table style=\"border-collapse:collapse;width:100%;max-width:500px;\">' + '<tr><td style=\"padding:8px;font-weight:bold;\">Booking</td><td style=\"padding:8px;\">' + ($('Capture Event Details Before Deletion').first().json.event_summary || '') + '</td></tr>' + '<tr><td style=\"padding:8px;font-weight:bold;\">Was Scheduled</td><td style=\"padding:8px;\">' + ($('Capture Event Details Before Deletion').first().json.start_dateTime || '') + '</td></tr>' + '</table>' + '<p>Want to rebook? Just call us again.</p></div>' }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          2240,
+          -152
+        ],
+        "id": "gmail-cancellation",
+        "name": "Send Cancellation Email",
+        "webhookId": "3e806fea-c946-4420-bbe5-1ab4dabbaf1b",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "RhxDT8POCR7oU2yl",
+            "name": "DP: Gmail Account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "return [{ json: { success: true, action: \"cancelled\" } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2688,
+          -80
+        ],
+        "id": "code-build-resp",
+        "name": "Build Response",
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: true, booking_id: $('Capture Event Details Before Deletion').first().json.booking_id || '', event_id: $('Capture Event Details Before Deletion').first().json.event_id || '', action: 'cancelled', message: 'Booking cancelled successfully.' }) }}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2912,
+          -80
+        ],
+        "id": "resp-success",
+        "name": "Success Response"
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $('Normalize Cancel Data').first().json;\nconst bookingId = data.booking_id;\nconst email = data.attendee_email;\nconst eventIdDirect = data.event_id;\n\nif (eventIdDirect) return [{ json: { event_id: eventIdDirect, found: true, booking_id: bookingId } }];\n\nconst events = $input.all().filter(item => {\n  if (!item.json?.id) return false;\n  const desc = (item.json.description || '').toLowerCase();\n  if (bookingId && desc.includes(bookingId.toLowerCase())) return true;\n  if (email && desc.includes(email.toLowerCase())) return true;\n  return false;\n});\n\nif (!events.length) return [{ json: { event_id: '', found: false, booking_id: '' } }];\n\nconst ev = events[events.length - 1];\nlet foundBookingId = bookingId;\nif (!foundBookingId) {\n  const descMatch = (ev.json.description || '').match(/Booking ID:\\s*(BK-[A-Z0-9]+)/i);\n  if (descMatch) foundBookingId = descMatch[1];\n}\n\nreturn [{ json: {\n  event_id: ev.json.id,\n  found: true,\n  event_summary: ev.json.summary || '',\n  booking_id: foundBookingId || '',\n  start_dateTime: ev.json.start?.dateTime || '',\n  end_dateTime: ev.json.end?.dateTime || '',\n  description: ev.json.description || '',\n  attendee_name: (ev.json.description || '').match(/Name:\\s*(.+)/i)?.[1]?.trim() || ''\n} }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          16
+        ],
+        "id": "code-find-event-f",
+        "name": "Find Event by Email"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentId": {
+            "__rl": true,
+            "value": "1WDhHh6uZJ3soUEuqDG0yNaLK4X64z6q8ouI7gBv_ncA",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Main",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDhHh6uZJ3soUEuqDG0yNaLK4X64z6q8ouI7gBv_ncA/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "autoMapInputData",
+            "value": {},
+            "matchingColumns": [
+              "Booking Id"
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [
+          2464,
+          -152
+        ],
+        "id": "sheets-update-cancel",
+        "name": "Update Sheet (Cancelled)",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DBEwozLer2lI42WC",
+            "name": "DP: Google Sheets Account"
+          }
+        },
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      },
+      {
+        "id": "gcal-find-events",
+        "name": "Lookup Booking in Sheet",
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          748,
+          16
+        ],
+        "parameters": {
+          "operation": "getAll",
+          "calendar": {
+            "__rl": true,
+            "value": "e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com",
+            "mode": "list",
+            "cachedResultName": "Automation Bookings Hub"
+          },
+          "returnAll": true,
+          "timeMin": "={{ $now.toISO() }}",
+          "timeMax": "={{ $now.plus({months: 6}).toISO() }}",
+          "options": {
+            "singleEvents": true
+          }
+        },
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "1TXl73FCExI5p2lV",
+            "name": "DP: Google Calendar Account"
+          }
+        },
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "jsCode": "const norm = $('Normalize Cancel Data').first().json;\nconst find = $('Find Event by Email').first().json;\nconst bookingId = norm.booking_id || find.booking_id || '';\nreturn [{ json: {\n  'Booking Id': bookingId,\n  'Updated Date': new Date().toISOString().split('T')[0],\n  'Booking Status': 'cancelled'\n} }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2264,
+          -152
+        ],
+        "id": "prep_sheet_f",
+        "name": "Prepare Sheet Update"
+      }
+    ],
+    "connections": {
+      "Receive Cancel Request": {
+        "main": [
+          [
+            {
+              "node": "Validate Input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Input": {
+        "main": [
+          [
+            {
+              "node": "Normalize Cancel Data",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Validation Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Cancel Data": {
+        "main": [
+          [
+            {
+              "node": "Lookup Booking in Sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Event Exists?": {
+        "main": [
+          [
+            {
+              "node": "Capture Event Details Before Deletion",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Event Not Found",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Capture Event Details Before Deletion": {
+        "main": [
+          [
+            {
+              "node": "Soft Cancel?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Soft Cancel?": {
+        "main": [
+          [
+            {
+              "node": "Soft Cancel (Update Title)",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Hard Delete Event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Soft Cancel (Update Title)": {
+        "main": [
+          [
+            {
+              "node": "Success Response",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send Cancellation Email",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Update Sheet (Cancelled)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Hard Delete Event": {
+        "main": [
+          [
+            {
+              "node": "Success Response",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send Cancellation Email",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Prepare Sheet Update",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Event by Email": {
+        "main": [
+          [
+            {
+              "node": "Event Exists?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Lookup Booking in Sheet": {
+        "main": [
+          [
+            {
+              "node": "Find Event by Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Sheet Update": {
+        "main": [
+          [
+            {
+              "node": "Update Sheet (Cancelled)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-19T07:16:52.037Z",
+        "id": 737,
+        "workflowId": "Do4yTrqCVQyM9noy",
+        "versionId": "149acb60-e46f-49f6-854b-6e1b50bd0985",
+        "event": "activated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      },
+      {
+        "createdAt": "2026-03-19T07:16:52.026Z",
+        "id": 736,
+        "workflowId": "Do4yTrqCVQyM9noy",
+        "versionId": "149acb60-e46f-49f6-854b-6e1b50bd0985",
+        "event": "deactivated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    ]
+  }
+}
