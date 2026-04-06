@@ -1,0 +1,1458 @@
+{
+  "updatedAt": "2026-03-19T07:16:51.771Z",
+  "createdAt": "2026-03-17T13:57:14.638Z",
+  "id": "WUODV2nmzBq8KUhQ",
+  "name": "[Portfolio] Booking - Update Event and Send Updated Confirmation",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "update-booking",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "wh-update-booking",
+      "name": "Receive Update Request",
+      "webhookId": "update-booking-001"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ ($json.body.args?.attendee_email ?? $json.body.attendee_email) || ($json.body.args?.email ?? $json.body.email) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ ($json.body.args?.new_start ?? $json.body.new_start) || ($json.body.args?.new_date ?? $json.body.new_date) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "if-validate-update",
+      "name": "Validate Input"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, code: 'MISSING_FIELDS', message: 'event_id, new_start, and attendee_email are required.', retryable: false }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        304
+      ],
+      "id": "resp-val-err",
+      "name": "Validation Error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "u1",
+              "name": "calendar_id",
+              "value": "={{ $json.body.calendar_id || 'e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com' }}",
+              "type": "string"
+            },
+            {
+              "id": "u2",
+              "name": "event_id",
+              "value": "={{ ($json.body.args?.event_id ?? $json.body.event_id) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "u3",
+              "name": "new_start",
+              "value": "={{ ($json.body.args?.new_start ?? $json.body.new_start) || (($json.body.args?.new_date ?? $json.body.new_date) + 'T' + (($json.body.args?.new_time ?? $json.body.new_time) || '10:00') + ':00+08:00') }}",
+              "type": "string"
+            },
+            {
+              "id": "u4",
+              "name": "new_end",
+              "value": "={{ ($json.body.args?.new_end ?? $json.body.new_end) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "u5",
+              "name": "timezone",
+              "value": "={{ ($json.body.args?.timezone ?? $json.body.timezone) || 'Asia/Manila' }}",
+              "type": "string"
+            },
+            {
+              "id": "u6",
+              "name": "updated_title",
+              "value": "={{ ($json.body.args?.updated_title ?? $json.body.updated_title) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "u7",
+              "name": "updated_description",
+              "value": "={{ ($json.body.args?.updated_description ?? $json.body.updated_description) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "u8",
+              "name": "updated_location",
+              "value": "={{ ($json.body.args?.updated_location ?? $json.body.updated_location) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "u9",
+              "name": "attendee_email",
+              "value": "={{ ($json.body.args?.attendee_email ?? $json.body.attendee_email) || ($json.body.args?.email ?? $json.body.email) }}",
+              "type": "string"
+            },
+            {
+              "id": "u10",
+              "name": "attendee_name",
+              "value": "={{ ($json.body.args?.attendee_name ?? $json.body.attendee_name) || ($json.body.args?.name ?? $json.body.name) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "u11",
+              "name": "service_type",
+              "value": "={{ ($json.body.args?.service_type ?? $json.body.service_type) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "u12",
+              "name": "reason_for_change",
+              "value": "={{ ($json.body.args?.reason_for_change ?? $json.body.reason_for_change) || 'Rescheduled via AI call' }}",
+              "type": "string"
+            },
+            {
+              "id": "u13",
+              "name": "duration_min",
+              "value": "={{ ($json.body.args?.preferred_duration_minutes ?? $json.body.preferred_duration_minutes) || 60 }}",
+              "type": "number"
+            },
+            {
+              "id": "e_bid",
+              "name": "booking_id",
+              "value": "={{ ($json.body.args?.booking_id ?? $json.body.booking_id) || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "set-update-data",
+      "name": "Normalize Update Data"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Automation Bookings Hub",
+          "cachedResultUrl": ""
+        },
+        "returnAll": true,
+        "timeMin": "={{ $now.toISO() }}",
+        "timeMax": "={{ $now.plus({months: 6}).toISO() }}",
+        "options": {
+          "singleEvents": true
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "gcal-get-event",
+      "name": "Find Events on Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "1TXl73FCExI5p2lV",
+          "name": "DP: Google Calendar Account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "ex1",
+              "leftValue": "={{ $json.found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "if-event-exists",
+      "name": "Event Exists?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, code: \"EVENT_NOT_FOUND\", message: \"No calendar event matched the provided event_id.\", details: { event_id: $json.event_id || \"\" }, retryable: false }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "content-type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1324,
+        304
+      ],
+      "id": "resp-not-found",
+      "name": "Event Not Found"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1",
+              "name": "event_id",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.event_id }}"
+            },
+            {
+              "id": "c2",
+              "name": "old_start",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.start_dateTime }}"
+            },
+            {
+              "id": "c3",
+              "name": "old_end",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.end_dateTime }}"
+            },
+            {
+              "id": "c4",
+              "name": "old_title",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.event_summary }}"
+            },
+            {
+              "id": "c5",
+              "name": "old_location",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.location }}"
+            },
+            {
+              "id": "c6",
+              "name": "booking_id",
+              "type": "string",
+              "value": "={{ $('Find Event by Email').first().json.booking_id }}"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1324,
+        0
+      ],
+      "id": "set-old-details",
+      "name": "Capture Old Details"
+    },
+    {
+      "parameters": {
+        "jsCode": "const updateData = $('Normalize Update Data').first().json;\nconst oldDetails = $('Capture Old Details').first().json;\nconst eventData = $('Find Event by Email').first().json;\nconst newStart = new Date(updateData.new_start);\nconst durationMin = Number(updateData.duration_min) || 60;\nconst newEnd = updateData.new_end ? new Date(updateData.new_end) : new Date(newStart.getTime() + durationMin * 60000);\n\nconst origDesc = eventData.description || '';\nconst updatedDesc = origDesc + '\\nRescheduled: ' + new Date().toISOString().split('T')[0];\nconst updatedSummary = updateData.updated_title || eventData.event_summary || oldDetails.old_title || 'Appointment';\n\nconst formatTime = (isoStr) => {\n  if (!isoStr) return 'N/A';\n  const d = new Date(isoStr);\n  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' })\n    + ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' });\n};\n\nreturn [{\n  json: {\n    ...oldDetails,\n    new_start_iso: newStart.toISOString(),\n    new_end_iso: newEnd.toISOString(),\n    updated_description: updatedDesc,\n    updated_summary: updatedSummary,\n    email_old_time: formatTime(oldDetails.old_start),\n    email_new_time: formatTime(newStart.toISOString()),\n    email_name: updateData.attendee_name || eventData.attendee_name || oldDetails.attendee_name || 'Valued Client',\n    email_reason: updateData.reason_for_change || 'as requested',\n    booking_id: oldDetails.booking_id || eventData.booking_id || updateData.booking_id || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1548,
+        0
+      ],
+      "id": "code-calc-end",
+      "name": "Calculate New End Time"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Normalize Update Data').first().json.calendar_id }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $('Capture Old Details').first().json.event_id }}",
+        "updateFields": {
+          "description": "={{ $json.updated_description }}",
+          "end": "={{ $json.new_end_iso }}",
+          "start": "={{ $json.new_start_iso }}",
+          "summary": "={{ $json.updated_summary }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1772,
+        0
+      ],
+      "id": "gcal-update",
+      "name": "Update Calendar Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "1TXl73FCExI5p2lV",
+          "name": "DP: Google Calendar Account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1980,
+        0
+      ],
+      "id": "if-updated",
+      "name": "Update Succeeded?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n    success: false,\n    code: \"CALENDAR_UPDATE_FAILED\",\n    message: $json.error || \"Failed to update calendar event.\",\n    retryable: true\n  }) }}",
+        "options": {
+          "responseCode": 502
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2204,
+        304
+      ],
+      "id": "resp-update-failed",
+      "name": "Update Failed"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Normalize Update Data').first().json.attendee_email }}",
+        "subject": "={{ 'Booking Rescheduled — ' + $('Calculate New End Time').first().json.booking_id }}",
+        "message": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n<h2 style=\"color: #2563eb;\">Booking Rescheduled</h2>\n<p>Hi {{ $('Calculate New End Time').first().json.email_name }},</p>\n<p>Your booking has been rescheduled {{ $('Calculate New End Time').first().json.email_reason }}.</p>\n<table style=\"width: 100%; border-collapse: collapse; margin: 20px 0;\">\n<tr><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;\">Booking ID</td><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb;\">{{ $('Calculate New End Time').first().json.booking_id }}</td></tr>\n<tr><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;\">Previous Time</td><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb;\">{{ $('Calculate New End Time').first().json.email_old_time }}</td></tr>\n<tr><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;\">New Time</td><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb;\">{{ $('Calculate New End Time').first().json.email_new_time }}</td></tr>\n</table>\n<p>If you have any questions, please don't hesitate to reach out.</p>\n<p>Best regards,<br>Don Puerto</p>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2204,
+        0
+      ],
+      "id": "gmail-updated",
+      "name": "Send Updated Confirmation Email",
+      "webhookId": "85e60551-3a52-47b4-a597-58a7d8996ba1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RhxDT8POCR7oU2yl",
+          "name": "DP: Gmail Account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const updateData = $('Normalize Update Data').first().json;\nconst oldDetails = $('Capture Old Details').first().json;\nconst calResult = $('Update Calendar Event').first().json;\nlet emailSent = false;\ntry {\n  const emailOutput = $('Send Updated Confirmation Email').first().json;\n  emailSent = !!(emailOutput.id || emailOutput.threadId);\n} catch(e) { emailSent = false; }\nreturn [{ json: {\n  success: true, partial: !emailSent,\n  event_id: oldDetails.event_id, booking_id: oldDetails.booking_id,\n  old_start: oldDetails.old_start, old_end: oldDetails.old_end,\n  new_start: calResult.start ? calResult.start.dateTime : updateData.new_start,\n  new_end: calResult.end ? calResult.end.dateTime : updateData.new_end,\n  timezone: updateData.timezone, email_sent: emailSent,\n  message: emailSent ? 'OK' : 'Email failed'\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2648,
+        0
+      ],
+      "id": "code-build-resp",
+      "name": "Build Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, event_id: $('Capture Old Details').first().json.event_id || '', booking_id: $('Capture Old Details').first().json.booking_id || $('Find Event by Email').first().json.booking_id || '', old_start: $('Capture Old Details').first().json.old_start || '', old_end: $('Capture Old Details').first().json.old_end || '', new_start: $('Update Calendar Event').first().json.start ? $('Update Calendar Event').first().json.start.dateTime : $('Normalize Update Data').first().json.new_start, new_end: $('Update Calendar Event').first().json.end ? $('Update Calendar Event').first().json.end.dateTime : $('Normalize Update Data').first().json.new_end, timezone: $('Normalize Update Data').first().json.timezone || 'Asia/Manila', message: 'Booking rescheduled successfully.' }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2872,
+        0
+      ],
+      "id": "resp-success",
+      "name": "Success Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Normalize Update Data').first().json;\nconst bookingId = data.booking_id;\nconst email = data.attendee_email;\nconst eventIdDirect = data.event_id;\n\nif (eventIdDirect) return [{ json: { event_id: eventIdDirect, found: true, booking_id: bookingId } }];\n\nconst events = $input.all().filter(item => {\n  if (!item.json?.id) return false;\n  const desc = (item.json.description || '').toLowerCase();\n  if (bookingId && desc.includes(bookingId.toLowerCase())) return true;\n  if (email && desc.includes(email.toLowerCase())) return true;\n  return false;\n});\n\nif (!events.length) return [{ json: { event_id: '', found: false, booking_id: '' } }];\n\nconst ev = events[events.length - 1];\nlet foundBookingId = bookingId;\nif (!foundBookingId) {\n  const descMatch = (ev.json.description || '').match(/Booking ID:\\s*(BK-[A-Z0-9]+)/i);\n  if (descMatch) foundBookingId = descMatch[1];\n}\n\nreturn [{ json: {\n  event_id: ev.json.id,\n  found: true,\n  event_summary: ev.json.summary || '',\n  booking_id: foundBookingId || '',\n  start_dateTime: ev.json.start?.dateTime || '',\n  end_dateTime: ev.json.end?.dateTime || '',\n  location: ev.json.location || '',\n  description: ev.json.description || ''\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        892,
+        0
+      ],
+      "id": "code-find-event-e",
+      "name": "Find Event by Email"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1WDhHh6uZJ3soUEuqDG0yNaLK4X64z6q8ouI7gBv_ncA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Main",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDhHh6uZJ3soUEuqDG0yNaLK4X64z6q8ouI7gBv_ncA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Booking Id"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2424,
+        0
+      ],
+      "id": "sheets-update-reschedule",
+      "name": "Update Sheet (Rescheduled)",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DBEwozLer2lI42WC",
+          "name": "DP: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const norm = $('Normalize Update Data').first().json;\nconst find = $('Find Event by Email').first().json;\nconst bookingId = norm.booking_id || find.booking_id || '';\nconst newStart = norm.new_start || '';\nreturn [{ json: {\n  'Booking Id': bookingId,\n  'Updated Date': new Date().toISOString().split('T')[0],\n  'Booking Date': newStart.split('T')[0] || '',\n  'Booking Time': newStart.split('T')[1] ? newStart.split('T')[1].substring(0, 5) : '',\n  'Booking Status': 'rescheduled'\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        0
+      ],
+      "id": "prep_sheet_e",
+      "name": "Prepare Sheet Update"
+    }
+  ],
+  "connections": {
+    "Receive Update Request": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Normalize Update Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Update Data": {
+      "main": [
+        [
+          {
+            "node": "Find Events on Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event Exists?": {
+      "main": [
+        [
+          {
+            "node": "Capture Old Details",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Event Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capture Old Details": {
+      "main": [
+        [
+          {
+            "node": "Calculate New End Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate New End Time": {
+      "main": [
+        [
+          {
+            "node": "Update Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Update Succeeded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Succeeded?": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Updated Confirmation Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Sheet Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Events on Calendar": {
+      "main": [
+        [
+          {
+            "node": "Find Event by Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Event by Email": {
+      "main": [
+        [
+          {
+            "node": "Event Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Sheet Update": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet (Rescheduled)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "ec7e8dab-e0b1-4ec2-8889-30ef9ba1aa25",
+  "activeVersionId": "ec7e8dab-e0b1-4ec2-8889-30ef9ba1aa25",
+  "versionCounter": 185,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-17T13:57:14.640Z",
+      "createdAt": "2026-03-17T13:57:14.640Z",
+      "role": "workflow:owner",
+      "workflowId": "WUODV2nmzBq8KUhQ",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-17T15:14:19.048Z",
+      "createdAt": "2026-03-17T15:14:19.048Z",
+      "id": "DZ9HIMW97RA1ezvn",
+      "name": "Workflow-E"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-19T07:16:51.772Z",
+    "createdAt": "2026-03-19T07:16:51.772Z",
+    "versionId": "ec7e8dab-e0b1-4ec2-8889-30ef9ba1aa25",
+    "workflowId": "WUODV2nmzBq8KUhQ",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "update-booking",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "wh-update-booking",
+        "name": "Receive Update Request",
+        "webhookId": "update-booking-001"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "caseSensitive": true
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ ($json.body.args?.attendee_email ?? $json.body.attendee_email) || ($json.body.args?.email ?? $json.body.email) }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              },
+              {
+                "id": "c2",
+                "leftValue": "={{ ($json.body.args?.new_start ?? $json.body.new_start) || ($json.body.args?.new_date ?? $json.body.new_date) }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          0
+        ],
+        "id": "if-validate-update",
+        "name": "Validate Input"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: false, code: 'MISSING_FIELDS', message: 'event_id, new_start, and attendee_email are required.', retryable: false }) }}",
+          "options": {
+            "responseCode": 400
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          304
+        ],
+        "id": "resp-val-err",
+        "name": "Validation Error"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "u1",
+                "name": "calendar_id",
+                "value": "={{ $json.body.calendar_id || 'e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com' }}",
+                "type": "string"
+              },
+              {
+                "id": "u2",
+                "name": "event_id",
+                "value": "={{ ($json.body.args?.event_id ?? $json.body.event_id) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "u3",
+                "name": "new_start",
+                "value": "={{ ($json.body.args?.new_start ?? $json.body.new_start) || (($json.body.args?.new_date ?? $json.body.new_date) + 'T' + (($json.body.args?.new_time ?? $json.body.new_time) || '10:00') + ':00+08:00') }}",
+                "type": "string"
+              },
+              {
+                "id": "u4",
+                "name": "new_end",
+                "value": "={{ ($json.body.args?.new_end ?? $json.body.new_end) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "u5",
+                "name": "timezone",
+                "value": "={{ ($json.body.args?.timezone ?? $json.body.timezone) || 'Asia/Manila' }}",
+                "type": "string"
+              },
+              {
+                "id": "u6",
+                "name": "updated_title",
+                "value": "={{ ($json.body.args?.updated_title ?? $json.body.updated_title) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "u7",
+                "name": "updated_description",
+                "value": "={{ ($json.body.args?.updated_description ?? $json.body.updated_description) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "u8",
+                "name": "updated_location",
+                "value": "={{ ($json.body.args?.updated_location ?? $json.body.updated_location) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "u9",
+                "name": "attendee_email",
+                "value": "={{ ($json.body.args?.attendee_email ?? $json.body.attendee_email) || ($json.body.args?.email ?? $json.body.email) }}",
+                "type": "string"
+              },
+              {
+                "id": "u10",
+                "name": "attendee_name",
+                "value": "={{ ($json.body.args?.attendee_name ?? $json.body.attendee_name) || ($json.body.args?.name ?? $json.body.name) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "u11",
+                "name": "service_type",
+                "value": "={{ ($json.body.args?.service_type ?? $json.body.service_type) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "u12",
+                "name": "reason_for_change",
+                "value": "={{ ($json.body.args?.reason_for_change ?? $json.body.reason_for_change) || 'Rescheduled via AI call' }}",
+                "type": "string"
+              },
+              {
+                "id": "u13",
+                "name": "duration_min",
+                "value": "={{ ($json.body.args?.preferred_duration_minutes ?? $json.body.preferred_duration_minutes) || 60 }}",
+                "type": "number"
+              },
+              {
+                "id": "e_bid",
+                "name": "booking_id",
+                "value": "={{ ($json.body.args?.booking_id ?? $json.body.booking_id) || '' }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          448,
+          0
+        ],
+        "id": "set-update-data",
+        "name": "Normalize Update Data"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "calendar": {
+            "__rl": true,
+            "value": "e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com",
+            "mode": "list",
+            "cachedResultName": "Automation Bookings Hub",
+            "cachedResultUrl": ""
+          },
+          "returnAll": true,
+          "timeMin": "={{ $now.toISO() }}",
+          "timeMax": "={{ $now.plus({months: 6}).toISO() }}",
+          "options": {
+            "singleEvents": true
+          }
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          672,
+          0
+        ],
+        "id": "gcal-get-event",
+        "name": "Find Events on Calendar",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "1TXl73FCExI5p2lV",
+            "name": "DP: Google Calendar Account"
+          }
+        },
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "caseSensitive": true
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "ex1",
+                "leftValue": "={{ $json.found }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1100,
+          0
+        ],
+        "id": "if-event-exists",
+        "name": "Event Exists?"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: false, code: \"EVENT_NOT_FOUND\", message: \"No calendar event matched the provided event_id.\", details: { event_id: $json.event_id || \"\" }, retryable: false }) }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "content-type",
+                  "value": "application/json"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1324,
+          304
+        ],
+        "id": "resp-not-found",
+        "name": "Event Not Found"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "c1",
+                "name": "event_id",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.event_id }}"
+              },
+              {
+                "id": "c2",
+                "name": "old_start",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.start_dateTime }}"
+              },
+              {
+                "id": "c3",
+                "name": "old_end",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.end_dateTime }}"
+              },
+              {
+                "id": "c4",
+                "name": "old_title",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.event_summary }}"
+              },
+              {
+                "id": "c5",
+                "name": "old_location",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.location }}"
+              },
+              {
+                "id": "c6",
+                "name": "booking_id",
+                "type": "string",
+                "value": "={{ $('Find Event by Email').first().json.booking_id }}"
+              }
+            ]
+          },
+          "options": {
+            "dotNotation": false
+          }
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1324,
+          0
+        ],
+        "id": "set-old-details",
+        "name": "Capture Old Details"
+      },
+      {
+        "parameters": {
+          "jsCode": "const updateData = $('Normalize Update Data').first().json;\nconst oldDetails = $('Capture Old Details').first().json;\nconst eventData = $('Find Event by Email').first().json;\nconst newStart = new Date(updateData.new_start);\nconst durationMin = Number(updateData.duration_min) || 60;\nconst newEnd = updateData.new_end ? new Date(updateData.new_end) : new Date(newStart.getTime() + durationMin * 60000);\n\nconst origDesc = eventData.description || '';\nconst updatedDesc = origDesc + '\\nRescheduled: ' + new Date().toISOString().split('T')[0];\nconst updatedSummary = updateData.updated_title || eventData.event_summary || oldDetails.old_title || 'Appointment';\n\nconst formatTime = (isoStr) => {\n  if (!isoStr) return 'N/A';\n  const d = new Date(isoStr);\n  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' })\n    + ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' });\n};\n\nreturn [{\n  json: {\n    ...oldDetails,\n    new_start_iso: newStart.toISOString(),\n    new_end_iso: newEnd.toISOString(),\n    updated_description: updatedDesc,\n    updated_summary: updatedSummary,\n    email_old_time: formatTime(oldDetails.old_start),\n    email_new_time: formatTime(newStart.toISOString()),\n    email_name: updateData.attendee_name || eventData.attendee_name || oldDetails.attendee_name || 'Valued Client',\n    email_reason: updateData.reason_for_change || 'as requested',\n    booking_id: oldDetails.booking_id || eventData.booking_id || updateData.booking_id || ''\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1548,
+          0
+        ],
+        "id": "code-calc-end",
+        "name": "Calculate New End Time"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "calendar": {
+            "__rl": true,
+            "value": "={{ $('Normalize Update Data').first().json.calendar_id }}",
+            "mode": "id"
+          },
+          "eventId": "={{ $('Capture Old Details').first().json.event_id }}",
+          "updateFields": {
+            "description": "={{ $json.updated_description }}",
+            "end": "={{ $json.new_end_iso }}",
+            "start": "={{ $json.new_start_iso }}",
+            "summary": "={{ $json.updated_summary }}"
+          }
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          1772,
+          0
+        ],
+        "id": "gcal-update",
+        "name": "Update Calendar Event",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "1TXl73FCExI5p2lV",
+            "name": "DP: Google Calendar Account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "caseSensitive": true
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json.id }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1980,
+          0
+        ],
+        "id": "if-updated",
+        "name": "Update Succeeded?"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({\n    success: false,\n    code: \"CALENDAR_UPDATE_FAILED\",\n    message: $json.error || \"Failed to update calendar event.\",\n    retryable: true\n  }) }}",
+          "options": {
+            "responseCode": 502
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2204,
+          304
+        ],
+        "id": "resp-update-failed",
+        "name": "Update Failed"
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $('Normalize Update Data').first().json.attendee_email }}",
+          "subject": "={{ 'Booking Rescheduled — ' + $('Calculate New End Time').first().json.booking_id }}",
+          "message": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n<h2 style=\"color: #2563eb;\">Booking Rescheduled</h2>\n<p>Hi {{ $('Calculate New End Time').first().json.email_name }},</p>\n<p>Your booking has been rescheduled {{ $('Calculate New End Time').first().json.email_reason }}.</p>\n<table style=\"width: 100%; border-collapse: collapse; margin: 20px 0;\">\n<tr><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;\">Booking ID</td><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb;\">{{ $('Calculate New End Time').first().json.booking_id }}</td></tr>\n<tr><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;\">Previous Time</td><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb;\">{{ $('Calculate New End Time').first().json.email_old_time }}</td></tr>\n<tr><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;\">New Time</td><td style=\"padding: 8px; border-bottom: 1px solid #e5e7eb;\">{{ $('Calculate New End Time').first().json.email_new_time }}</td></tr>\n</table>\n<p>If you have any questions, please don't hesitate to reach out.</p>\n<p>Best regards,<br>Don Puerto</p>\n</div>",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          2204,
+          0
+        ],
+        "id": "gmail-updated",
+        "name": "Send Updated Confirmation Email",
+        "webhookId": "85e60551-3a52-47b4-a597-58a7d8996ba1",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "RhxDT8POCR7oU2yl",
+            "name": "DP: Gmail Account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const updateData = $('Normalize Update Data').first().json;\nconst oldDetails = $('Capture Old Details').first().json;\nconst calResult = $('Update Calendar Event').first().json;\nlet emailSent = false;\ntry {\n  const emailOutput = $('Send Updated Confirmation Email').first().json;\n  emailSent = !!(emailOutput.id || emailOutput.threadId);\n} catch(e) { emailSent = false; }\nreturn [{ json: {\n  success: true, partial: !emailSent,\n  event_id: oldDetails.event_id, booking_id: oldDetails.booking_id,\n  old_start: oldDetails.old_start, old_end: oldDetails.old_end,\n  new_start: calResult.start ? calResult.start.dateTime : updateData.new_start,\n  new_end: calResult.end ? calResult.end.dateTime : updateData.new_end,\n  timezone: updateData.timezone, email_sent: emailSent,\n  message: emailSent ? 'OK' : 'Email failed'\n} }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2648,
+          0
+        ],
+        "id": "code-build-resp",
+        "name": "Build Response"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: true, event_id: $('Capture Old Details').first().json.event_id || '', booking_id: $('Capture Old Details').first().json.booking_id || $('Find Event by Email').first().json.booking_id || '', old_start: $('Capture Old Details').first().json.old_start || '', old_end: $('Capture Old Details').first().json.old_end || '', new_start: $('Update Calendar Event').first().json.start ? $('Update Calendar Event').first().json.start.dateTime : $('Normalize Update Data').first().json.new_start, new_end: $('Update Calendar Event').first().json.end ? $('Update Calendar Event').first().json.end.dateTime : $('Normalize Update Data').first().json.new_end, timezone: $('Normalize Update Data').first().json.timezone || 'Asia/Manila', message: 'Booking rescheduled successfully.' }) }}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          2872,
+          0
+        ],
+        "id": "resp-success",
+        "name": "Success Response"
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $('Normalize Update Data').first().json;\nconst bookingId = data.booking_id;\nconst email = data.attendee_email;\nconst eventIdDirect = data.event_id;\n\nif (eventIdDirect) return [{ json: { event_id: eventIdDirect, found: true, booking_id: bookingId } }];\n\nconst events = $input.all().filter(item => {\n  if (!item.json?.id) return false;\n  const desc = (item.json.description || '').toLowerCase();\n  if (bookingId && desc.includes(bookingId.toLowerCase())) return true;\n  if (email && desc.includes(email.toLowerCase())) return true;\n  return false;\n});\n\nif (!events.length) return [{ json: { event_id: '', found: false, booking_id: '' } }];\n\nconst ev = events[events.length - 1];\nlet foundBookingId = bookingId;\nif (!foundBookingId) {\n  const descMatch = (ev.json.description || '').match(/Booking ID:\\s*(BK-[A-Z0-9]+)/i);\n  if (descMatch) foundBookingId = descMatch[1];\n}\n\nreturn [{ json: {\n  event_id: ev.json.id,\n  found: true,\n  event_summary: ev.json.summary || '',\n  booking_id: foundBookingId || '',\n  start_dateTime: ev.json.start?.dateTime || '',\n  end_dateTime: ev.json.end?.dateTime || '',\n  location: ev.json.location || '',\n  description: ev.json.description || ''\n} }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          892,
+          0
+        ],
+        "id": "code-find-event-e",
+        "name": "Find Event by Email"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentId": {
+            "__rl": true,
+            "value": "1WDhHh6uZJ3soUEuqDG0yNaLK4X64z6q8ouI7gBv_ncA",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Main",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDhHh6uZJ3soUEuqDG0yNaLK4X64z6q8ouI7gBv_ncA/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "autoMapInputData",
+            "value": {},
+            "matchingColumns": [
+              "Booking Id"
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [
+          2424,
+          0
+        ],
+        "id": "sheets-update-reschedule",
+        "name": "Update Sheet (Rescheduled)",
+        "onError": "continueRegularOutput",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "DBEwozLer2lI42WC",
+            "name": "DP: Google Sheets Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const norm = $('Normalize Update Data').first().json;\nconst find = $('Find Event by Email').first().json;\nconst bookingId = norm.booking_id || find.booking_id || '';\nconst newStart = norm.new_start || '';\nreturn [{ json: {\n  'Booking Id': bookingId,\n  'Updated Date': new Date().toISOString().split('T')[0],\n  'Booking Date': newStart.split('T')[0] || '',\n  'Booking Time': newStart.split('T')[1] ? newStart.split('T')[1].substring(0, 5) : '',\n  'Booking Status': 'rescheduled'\n} }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2224,
+          0
+        ],
+        "id": "prep_sheet_e",
+        "name": "Prepare Sheet Update"
+      }
+    ],
+    "connections": {
+      "Receive Update Request": {
+        "main": [
+          [
+            {
+              "node": "Validate Input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Input": {
+        "main": [
+          [
+            {
+              "node": "Normalize Update Data",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Validation Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Update Data": {
+        "main": [
+          [
+            {
+              "node": "Find Events on Calendar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Event Exists?": {
+        "main": [
+          [
+            {
+              "node": "Capture Old Details",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Event Not Found",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Capture Old Details": {
+        "main": [
+          [
+            {
+              "node": "Calculate New End Time",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calculate New End Time": {
+        "main": [
+          [
+            {
+              "node": "Update Calendar Event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Calendar Event": {
+        "main": [
+          [
+            {
+              "node": "Update Succeeded?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Succeeded?": {
+        "main": [
+          [
+            {
+              "node": "Success Response",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send Updated Confirmation Email",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Prepare Sheet Update",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Update Failed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Events on Calendar": {
+        "main": [
+          [
+            {
+              "node": "Find Event by Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Event by Email": {
+        "main": [
+          [
+            {
+              "node": "Event Exists?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Sheet Update": {
+        "main": [
+          [
+            {
+              "node": "Update Sheet (Rescheduled)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-19T07:16:51.815Z",
+        "id": 735,
+        "workflowId": "WUODV2nmzBq8KUhQ",
+        "versionId": "ec7e8dab-e0b1-4ec2-8889-30ef9ba1aa25",
+        "event": "activated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      },
+      {
+        "createdAt": "2026-03-19T07:16:51.803Z",
+        "id": 734,
+        "workflowId": "WUODV2nmzBq8KUhQ",
+        "versionId": "ec7e8dab-e0b1-4ec2-8889-30ef9ba1aa25",
+        "event": "deactivated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    ]
+  }
+}
