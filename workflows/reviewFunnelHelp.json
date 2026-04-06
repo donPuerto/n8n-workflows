@@ -1,0 +1,310 @@
+{
+  "updatedAt": "2026-02-18T01:07:40.209Z",
+  "createdAt": "2026-02-13T04:49:00.251Z",
+  "id": "XpULQf4VczPZw8YxPBT8L",
+  "name": "reviewFunnelHelp",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "review-help",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "325ba10b-3835-4eda-baa7-1235c0a1f2ee",
+      "name": "Webhook",
+      "webhookId": "a7b69d18-cdbd-4bd7-913c-01edf4c57436"
+    },
+    {
+      "parameters": {
+        "respondWith": "redirect",
+        "redirectURL": "https://windowrevivalshop.com/pages/support",
+        "options": {
+          "responseCode": 302,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Location",
+                "value": "https://windowrevivalshop.com/pages/faqs"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        400,
+        0
+      ],
+      "id": "437ce9d3-7583-45ee-8051-7a0b4080ba4e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1471333477101207594",
+          "mode": "list",
+          "cachedResultName": "RevivalShop",
+          "cachedResultUrl": "https://discord.com/channels/1471333477101207594"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1473199795127455786",
+          "mode": "list",
+          "cachedResultName": "customer-disputes",
+          "cachedResultUrl": "https://discord.com/channels/1471333477101207594/1473199795127455786"
+        },
+        "content": "=Need help - Customer responded to survey.\nemail: {{ $json.query.email }}\norder #: {{ $json.query.order }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "68539cd2-949c-41c9-9e63-4fb98b7c5971",
+      "name": "Send a message1",
+      "webhookId": "544645c0-79c9-4b34-99ba-383f0de4a931",
+      "credentials": {
+        "discordBotApi": {
+          "id": "Q7zz7uhF16mvp292",
+          "name": "Discord Bot account Shop"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "uuxIWB5TVjU2H3nWtHINp",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.srv1127913.hstgr.cloud",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2B3%2BKFwmDQ7dQjGMOBd0%2FTwOR7UBKoy5d0%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX186HXdOxhop8I%2B3gzNnAFITY7%2FCRdpV%2FpU%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19kE9x%2FlFnmwYXHH5NCjnyCjdU4FfEOqdGd3t6tyGgQlQZ2aeJWRD9VCn4R3x0jF22lFHB%2B1sbIqQ%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2FK09TxXprYT3z9MhJpG0Kl0NG7Mu5QHRLdvaHwtl4IzlbnBZWW%2FU5jzxXhsvxQnhGn2%2FY6NsfXaY%2BMT5rm2SWDIHandKuB4GzUrgR%2BPvIdwMwc8NSC2k64O78byEcQlPTRVgcl%2FjAhLSNr5ruICMgYW%2B0VIsXBFSE%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19RDL89oDkU0DTexgDstFKqidRnomDErA5wR4TYuMB7tp1EnR2SAvkUzXHUxl7JGycpSozSj8CI8RlzVDVe4mEat5T%2B5N2WF9PtoGN%2FnCRowONSikFSfHYDNpPcOTRx37uo2nWrQLr%2Bvm0AJDZdz8e51MuFyD4DGEw%3D; rl_session=RudderEncrypt%3AU2FsdGVkX19hKurFWDdAjBQPEbdEBgw8AATxX9PEXtZq%2FffPgm0ZcB%2B97X0tQUk8Y3gGIvBUL4UuyNZN4%2FIDuJZzFd01ihvTY0uvK%2FM6g48ML2hS8ClCmTyMCTmT7qhIk48o3ZClLzuYHc6aT7Wi6A%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019b49f2-ee46-7b3b-9547-7ebb41e6a7df%22%2C%22distinct_id%22%3A%227dbf3596a1c12dbf61db178e153ec02139eef6dae0e060a96f5452c164c4042e%23bc31a112-3ed8-48ca-b94c-7225571c3d7b%22%2C%22%24sesid%22%3A%5B1771210521595%2C%22019c645f-bbfc-75cc-a01d-a991fc660b08%22%2C1771210521595%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1127913.hstgr.cloud%2Fsignout%22%7D%7D",
+            "priority": "u=0, i",
+            "sec-ch-ua": "\"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"144\", \"Google Chrome\";v=\"144\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "cross-site",
+            "sec-fetch-user": "?1",
+            "upgrade-insecure-requests": "1",
+            "x-forwarded-for": "172.18.0.1",
+            "x-forwarded-host": "n8n.srv1127913.hstgr.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "768ed9c68e95",
+            "x-real-ip": "172.18.0.1"
+          },
+          "params": {},
+          "query": {
+            "email": "conradvernon11@gmail.com",
+            "order": "1214"
+          },
+          "body": {},
+          "webhookUrl": "https://n8n.srv1127913.hstgr.cloud/webhook-test/review-help",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "versionId": "8aecd21b-6e2f-4ddf-b351-347d86b93f4d",
+  "activeVersionId": "8aecd21b-6e2f-4ddf-b351-347d86b93f4d",
+  "versionCounter": 69,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-13T04:49:00.254Z",
+      "createdAt": "2026-02-13T04:49:00.254Z",
+      "role": "workflow:owner",
+      "workflowId": "XpULQf4VczPZw8YxPBT8L",
+      "projectId": "6TsYTzg0HY92xH2K",
+      "project": {
+        "updatedAt": "2025-11-14T08:33:27.896Z",
+        "createdAt": "2025-11-14T07:49:25.938Z",
+        "id": "6TsYTzg0HY92xH2K",
+        "name": "Christine Kam <windowrevival@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-18T01:08:10.000Z",
+    "createdAt": "2026-02-18T01:07:38.219Z",
+    "versionId": "8aecd21b-6e2f-4ddf-b351-347d86b93f4d",
+    "workflowId": "XpULQf4VczPZw8YxPBT8L",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "review-help",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "325ba10b-3835-4eda-baa7-1235c0a1f2ee",
+        "name": "Webhook",
+        "webhookId": "a7b69d18-cdbd-4bd7-913c-01edf4c57436"
+      },
+      {
+        "parameters": {
+          "respondWith": "redirect",
+          "redirectURL": "https://windowrevivalshop.com/pages/support",
+          "options": {
+            "responseCode": 302,
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Location",
+                  "value": "https://windowrevivalshop.com/pages/faqs"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          400,
+          0
+        ],
+        "id": "437ce9d3-7583-45ee-8051-7a0b4080ba4e",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1471333477101207594",
+            "mode": "list",
+            "cachedResultName": "RevivalShop",
+            "cachedResultUrl": "https://discord.com/channels/1471333477101207594"
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1473199795127455786",
+            "mode": "list",
+            "cachedResultName": "customer-disputes",
+            "cachedResultUrl": "https://discord.com/channels/1471333477101207594/1473199795127455786"
+          },
+          "content": "=Need help - Customer responded to survey.\nemail: {{ $json.query.email }}\norder #: {{ $json.query.order }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          192,
+          0
+        ],
+        "id": "68539cd2-949c-41c9-9e63-4fb98b7c5971",
+        "name": "Send a message1",
+        "webhookId": "544645c0-79c9-4b34-99ba-383f0de4a931",
+        "credentials": {
+          "discordBotApi": {
+            "id": "Q7zz7uhF16mvp292",
+            "name": "Discord Bot account Shop"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Send a message1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send a message1": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Christine Kam",
+    "name": "Version 1.2",
+    "description": "sends updates in discord now",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-18T01:08:10.576Z",
+        "id": 192,
+        "workflowId": "XpULQf4VczPZw8YxPBT8L",
+        "versionId": "8aecd21b-6e2f-4ddf-b351-347d86b93f4d",
+        "event": "activated",
+        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    ]
+  }
+}
