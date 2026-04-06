@@ -1,0 +1,1254 @@
+{
+  "updatedAt": "2026-04-05T16:49:12.890Z",
+  "createdAt": "2026-04-05T07:12:53.321Z",
+  "id": "E1JxllLWHTJNdt8F",
+  "name": "[POC] Golden Record - Lead Dedup & Merge - v1",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "4452f261-d4eb-4f8b-9001-805e7664345c",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg1",
+              "name": "clayApiKey",
+              "value": "8eacce5c5254fa043e50",
+              "type": "string"
+            },
+            {
+              "id": "cfg2",
+              "name": "clayTableId",
+              "value": "t_0tcwmj8keyhJi3eMjkF",
+              "type": "string"
+            },
+            {
+              "id": "cfg3",
+              "name": "crmSheetId",
+              "value": "17BQ45Vnc1zHQeEcUeG-PAInwo_iXRjXJeg8QLHmnY14",
+              "type": "string"
+            },
+            {
+              "id": "cfg4",
+              "name": "goldenSheetId",
+              "value": "1Dy8-TMEgIh8ht7cIVy_msOPyt3pDvUT8eBq0CQ1MtKQ",
+              "type": "string"
+            },
+            {
+              "id": "cfg5",
+              "name": "reviewSheetId",
+              "value": "1l_2fpJP8Rt_M-BE6m7cEbdsaDG-M2oH5xdeM7XlDTSk",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "333c27aa-4d12-4c11-93da-8c1550d159ec",
+      "name": "Set: Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Set: Config').first().json.crmSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "GHL CRM Mock"
+        },
+        "options": {}
+      },
+      "id": "3ffbf4f5-8871-47fd-9ad0-4559adecf7f2",
+      "name": "Google Sheets: Read CRM Mock",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        304
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DBEwozLer2lI42WC",
+          "name": "DP: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { source: 'county_csv', raw_name: 'DOE, JOHN (DECEASED)', phone: '555-0101', email: '', address: '1234 Oak St, Springfield, IL 62701' }},\n  { json: { source: 'county_csv', raw_name: 'SMITH, MARY ANN', phone: '555-9999', email: 'mary.smith@gmail.com', address: '567 Elm Ave., Chicago IL' }}\n];"
+      },
+      "id": "7a3fa703-7975-4a54-9b21-534c257e7739",
+      "name": "Source A: County CSV",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        112
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { source: 'facebook', raw_name: 'John Doe', phone: '555-0101', email: 'john.doe@email.com', address: '' }},\n  { json: { source: 'facebook', raw_name: 'Robert Johnson', phone: '', email: 'rob.johnson@email.com', address: '789 Pine Road, Chicago, IL' }}\n];"
+      },
+      "id": "099628a4-6c3a-4bb8-a36e-33d75732b362",
+      "name": "Source B: Facebook Leads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        304
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { source: 'researcher', raw_name: 'Mary Smith', phone: '555-9999', email: '', address: '567 Elm, Chicago IL 60601', notes: 'possible duplic8' }}\n];"
+      },
+      "id": "daedee42-f394-427d-973d-4017c07b3f5d",
+      "name": "Source C: Researcher Sheet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        512
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {},
+      "id": "ab11c001-1111-4aaa-bbbb-cascade0001ab",
+      "name": "Merge: A+B",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        912,
+        192
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "ab22c002-2222-4bbb-cccc-cascade0002cd",
+      "name": "Merge: All Sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1104,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\nlet idx = 0;\nfor (const item of items) {\n  const d = item.json;\n  const src = d.source || 'unknown';\n  const rawName = d.raw_name || d.name || '';\n  const deceasedFlag = /(DECEASED|DECSD|DEC'D)/i.test(rawName);\n  let firstName = '', lastName = '';\n  const cleanName = rawName.replace(/\\s*\\(DECEASED\\)|\\s*\\(DECSD\\)|\\s*\\(DEC'D\\)/gi, '').trim();\n  if (cleanName.includes(',')) {\n    const parts = cleanName.split(',').map(p => p.trim());\n    lastName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();\n    const fnParts = (parts[1] || '').trim().split(/\\s+/);\n    firstName = fnParts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');\n  } else {\n    const parts = cleanName.trim().split(/\\s+/);\n    firstName = parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase() : '';\n    lastName = parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');\n  }\n  const normalizedFullName = [firstName, lastName].filter(Boolean).join(' ');\n  const rawPhone = (d.phone || '').replace(/\\D/g, '');\n  const phone = rawPhone.length >= 7 ? rawPhone.slice(-7, -4) + '-' + rawPhone.slice(-4) : rawPhone;\n  const sourcePriority = src === 'county_csv' ? 3 : (src === 'researcher' ? 2 : 1);\n  results.push({ json: {\n    record_id: 'REC-' + String(++idx).padStart(3, '0'),\n    source: src, source_priority: sourcePriority,\n    raw_name: rawName, normalized_full_name: normalizedFullName,\n    first_name: firstName, last_name: lastName,\n    phone: phone, email: (d.email || '').toLowerCase().trim(),\n    address: (d.address || '').trim(),\n    deceased_flag: deceasedFlag,\n    review_status: deceasedFlag ? 'needs_review' : 'pending',\n  }});\n}\nreturn results;"
+      },
+      "id": "d2fc5125-1590-4ad9-85c6-e604fcfa340c",
+      "name": "Code: Normalize & Flag",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.clay.com/v3/sources/tables/' + $('Set: Config').first().json.clayTableId + '/rows' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Set: Config').first().json.clayApiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"source_system\": $json.source, \"raw_full_name\": $json.raw_name, \"normalized_full_name\": $json.normalized_full_name, \"first_name\": $json.first_name, \"last_name\": $json.last_name, \"phone_primary\": $json.phone, \"email_primary\": $json.email, \"raw_address\": $json.address, \"deceased_flag\": $json.deceased_flag, \"review_status\": $json.review_status } }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "a90c9cb4-e780-4843-8d7f-97d695260ddd",
+      "name": "HTTP: Push to Clay",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "await new Promise(resolve => setTimeout(resolve, 3000));\nreturn $input.all();"
+      },
+      "id": "4cdb363a-69e6-4d8d-80db-587ada145c8d",
+      "name": "Code: Wait for Clay",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "function jaroWinkler(s1, s2) {\n  if (!s1 || !s2) return 0;\n  s1 = s1.toLowerCase(); s2 = s2.toLowerCase();\n  if (s1 === s2) return 1;\n  const len1 = s1.length, len2 = s2.length;\n  const matchDist = Math.max(Math.floor(Math.max(len1, len2) / 2) - 1, 0);\n  const s1m = new Array(len1).fill(false), s2m = new Array(len2).fill(false);\n  let matches = 0, transpositions = 0;\n  for (let i = 0; i < len1; i++) {\n    const start = Math.max(0, i - matchDist), end = Math.min(i + matchDist + 1, len2);\n    for (let j = start; j < end; j++) {\n      if (s2m[j] || s1[i] !== s2[j]) continue;\n      s1m[i] = s2m[j] = true; matches++; break;\n    }\n  }\n  if (matches === 0) return 0;\n  let k = 0;\n  for (let i = 0; i < len1; i++) {\n    if (!s1m[i]) continue;\n    while (!s2m[k]) k++;\n    if (s1[i] !== s2[k]) transpositions++;\n    k++;\n  }\n  const jaro = (matches/len1 + matches/len2 + (matches - transpositions/2)/matches) / 3;\n  let prefix = 0;\n  for (let i = 0; i < Math.min(4, Math.min(len1, len2)); i++) { if (s1[i] === s2[i]) prefix++; else break; }\n  return jaro + prefix * 0.1 * (1 - jaro);\n}\nconst crmRows = $('Google Sheets: Read CRM Mock').all();\nconst normalizedItems = $('Code: Normalize & Flag').all();\nconst results = [];\nfor (const item of normalizedItems) {\n  const d = item.json;\n  let bestScore = 0, bestMatch = null;\n  for (const crmItem of crmRows) {\n    const crm = crmItem.json;\n    const inPhone = (d.phone || '').replace(/\\D/g,'');\n    const crmPhone = (crm.phone || '').replace(/\\D/g,'');\n    let phoneScore = 0;\n    if (inPhone && crmPhone) { if (inPhone === crmPhone) phoneScore = 1.0; else if (inPhone.slice(-7) === crmPhone.slice(-7)) phoneScore = 0.8; }\n    const inEmail = (d.email || '').toLowerCase().trim();\n    const crmEmail = (crm.email || '').toLowerCase().trim();\n    let emailScore = 0;\n    if (inEmail && crmEmail) { if (inEmail === crmEmail) emailScore = 1.0; else { const iD = inEmail.split('@')[1]; const cD = crmEmail.split('@')[1]; if (iD && cD && iD === cD) emailScore = 0.3; } }\n    const nameScore = jaroWinkler(d.normalized_full_name || '', crm.full_name || '');\n    const addrScore = jaroWinkler(d.address || '', crm.address || '');\n    const total = phoneScore*0.4 + emailScore*0.3 + nameScore*0.2 + addrScore*0.1;\n    if (total > bestScore) { bestScore = total; bestMatch = crm; }\n  }\n  results.push({ json: { ...d,\n    match_score: Math.round(bestScore * 100) / 100,\n    best_match_id: bestMatch ? bestMatch.contact_id : null,\n    best_match_name: bestMatch ? bestMatch.full_name : null,\n    best_match_phone: bestMatch ? bestMatch.phone : null,\n    best_match_email: bestMatch ? bestMatch.email : null,\n    best_match_address: bestMatch ? bestMatch.address : null,\n  }});\n}\nreturn results;"
+      },
+      "id": "956b915b-1be2-49ec-9e5d-89562b8dfa11",
+      "name": "Code: Fuzzy Match Scoring",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(function(item) {\n  return {\n    json: Object.assign({}, item.json, {\n      route: item.json.match_score >= 0.7 ? 'merge' : (item.json.match_score >= 0.5 ? 'review' : 'create_new')\n    })\n  };\n});"
+      },
+      "id": "52df5c13-eafe-4aaa-b8c1-d3cd148e794b",
+      "name": "Code: Route by Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const mergeItems = $input.all().filter(function(item) { return item.json.route === 'merge'; });\nif (mergeItems.length === 0) return [];\nconst results = [];\nfor (var i = 0; i < mergeItems.length; i++) {\n  var d = mergeItems[i].json;\n  var conflictFlag = !!(d.phone && d.best_match_phone && d.phone !== d.best_match_phone);\n  results.push({ json: {\n    golden_record_id: 'GR-' + d.best_match_id,\n    source_systems: d.source,\n    raw_full_name: d.raw_name,\n    normalized_full_name: d.normalized_full_name,\n    first_name: d.first_name,\n    last_name: d.last_name,\n    phone_primary: d.best_match_phone || d.phone,\n    phone_secondary: conflictFlag ? d.phone : '',\n    email_primary: d.email || d.best_match_email || '',\n    normalized_address: d.address || d.best_match_address || '',\n    est_property_value: d.est_property_value || '',\n    deceased_flag: d.deceased_flag === true,\n    source_priority: d.source_priority,\n    match_score: d.match_score,\n    conflict_flag: conflictFlag,\n    review_status: d.deceased_flag === true ? 'needs_review' : 'merged',\n    last_updated_at: new Date().toISOString(),\n  }});\n}\nreturn results;"
+      },
+      "id": "081a9186-155c-4fc0-b515-76ce53019cb7",
+      "name": "Code: Build Golden Record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2352,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Set: Config').first().json.goldenSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Golden Record Output"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "golden_record_id",
+              "displayName": "golden_record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_systems",
+              "displayName": "source_systems",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "raw_full_name",
+              "displayName": "raw_full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "normalized_full_name",
+              "displayName": "normalized_full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone_primary",
+              "displayName": "phone_primary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone_secondary",
+              "displayName": "phone_secondary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_primary",
+              "displayName": "email_primary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "normalized_address",
+              "displayName": "normalized_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "est_property_value",
+              "displayName": "est_property_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deceased_flag",
+              "displayName": "deceased_flag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_priority",
+              "displayName": "source_priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "match_score",
+              "displayName": "match_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "conflict_flag",
+              "displayName": "conflict_flag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "review_status",
+              "displayName": "review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_updated_at",
+              "displayName": "last_updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9c00b4f2-2121-4772-8631-96e2e33f99a1",
+      "name": "Google Sheets: Write Golden Record",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2576,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DBEwozLer2lI42WC",
+          "name": "DP: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().filter(function(item) { return item.json.route === 'review'; });"
+      },
+      "id": "d4219861-5efa-4339-b741-9e57dc0e9036",
+      "name": "Code: Filter Review Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2352,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Set: Config').first().json.reviewSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Manual Review Queue"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "raw_name",
+              "displayName": "raw_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "normalized_full_name",
+              "displayName": "normalized_full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "match_score",
+              "displayName": "match_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_name",
+              "displayName": "best_match_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_id",
+              "displayName": "best_match_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deceased_flag",
+              "displayName": "deceased_flag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "review_status",
+              "displayName": "review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_priority",
+              "displayName": "source_priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_phone",
+              "displayName": "best_match_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_email",
+              "displayName": "best_match_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_address",
+              "displayName": "best_match_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "route",
+              "displayName": "route",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "389c0459-7220-4177-978e-d0cd1ad96c31",
+      "name": "Google Sheets: Write Review Queue",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2576,
+        304
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DBEwozLer2lI42WC",
+          "name": "DP: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().filter(function(item) { return item.json.route === 'create_new'; });"
+      },
+      "id": "bca3333b-7866-4788-b369-7e361324a75f",
+      "name": "Code: Filter New Contacts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2352,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Set: Config').first().json.crmSheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "GHL CRM Mock"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "contact_id",
+              "displayName": "contact_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_priority",
+              "displayName": "source_priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "raw_name",
+              "displayName": "raw_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "normalized_full_name",
+              "displayName": "normalized_full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "deceased_flag",
+              "displayName": "deceased_flag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "review_status",
+              "displayName": "review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "match_score",
+              "displayName": "match_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_id",
+              "displayName": "best_match_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_name",
+              "displayName": "best_match_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_phone",
+              "displayName": "best_match_phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_email",
+              "displayName": "best_match_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "best_match_address",
+              "displayName": "best_match_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "route",
+              "displayName": "route",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7086df2c-d5a7-4e1e-a76a-5141adb05385",
+      "name": "Google Sheets: Create New Contact",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2576,
+        512
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DBEwozLer2lI42WC",
+          "name": "DP: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## [POC] Golden Record - Lead Dedup & Merge - v1\n**Trigger:** Manual | **Sources:** County CSV (A), Facebook (B), Researcher Sheet (C) | **CRM:** Google Sheet (GHL Mock)\n**Clay:** Visible HTTP Request node (neverError=true â€” workflow continues even if Clay is down)\n**Match threshold:** >=70% merge, 50-69% review, <50% create new\n**Credentials:** DP: Google Sheets Account | Sheet IDs + Clay key pre-filled in Set: Config\n**Fix 2026-04-05:** Cascade merge (A+B â†’ MergeAll+C) replaces buggy single 3-input Merge",
+        "height": 130,
+        "width": 750,
+        "color": 2
+      },
+      "id": "b6a461d0-e4cb-482a-9cce-4e4567ae55b5",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "content": "WARNING: DECEASED records force review_status=needs_review regardless of merge path. Never auto-close DECEASED leads.",
+        "height": 128,
+        "width": 312,
+        "color": 4
+      },
+      "id": "073d183f-6f00-42f1-9940-99ff9abd1057",
+      "name": "Warning Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2352,
+        -32
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set: Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Config": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets: Read CRM Mock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets: Read CRM Mock": {
+      "main": [
+        [
+          {
+            "node": "Source A: County CSV",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Source B: Facebook Leads",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Source C: Researcher Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Source A: County CSV": {
+      "main": [
+        [
+          {
+            "node": "Merge: A+B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Source B: Facebook Leads": {
+      "main": [
+        [
+          {
+            "node": "Merge: A+B",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Source C: Researcher Sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge: All Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge: A+B": {
+      "main": [
+        [
+          {
+            "node": "Merge: All Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge: All Sources": {
+      "main": [
+        [
+          {
+            "node": "Code: Normalize & Flag",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Normalize & Flag": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Push to Clay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Push to Clay": {
+      "main": [
+        [
+          {
+            "node": "Code: Wait for Clay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Wait for Clay": {
+      "main": [
+        [
+          {
+            "node": "Code: Fuzzy Match Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Fuzzy Match Scoring": {
+      "main": [
+        [
+          {
+            "node": "Code: Route by Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Route by Score": {
+      "main": [
+        [
+          {
+            "node": "Code: Build Golden Record",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code: Filter Review Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code: Filter New Contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Golden Record": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets: Write Golden Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Filter Review Items": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets: Write Review Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Filter New Contacts": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets: Create New Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "bc641829-ae46-45fd-91af-92f1ee49f5b4",
+  "activeVersionId": null,
+  "versionCounter": 10,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-05T07:12:53.323Z",
+      "createdAt": "2026-04-05T07:12:53.323Z",
+      "role": "workflow:owner",
+      "workflowId": "E1JxllLWHTJNdt8F",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
