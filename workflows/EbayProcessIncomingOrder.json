@@ -1,0 +1,3180 @@
+{
+  "updatedAt": "2026-02-27T02:30:57.956Z",
+  "createdAt": "2026-02-13T01:00:27.563Z",
+  "id": "RYEk05bzAWo9zg1X",
+  "name": "EbayProcessIncomingOrder",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -672,
+        384
+      ],
+      "id": "4eff032b-44c9-47d7-a108-3a42d240db29",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.ebay.com/sell/fulfillment/v1/order",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filter",
+              "value": "={{ $json.filter }}"
+            },
+            {
+              "name": "limit",
+              "value": "200"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -368,
+        384
+      ],
+      "id": "a507b9f7-a075-45a3-95fc-7f663e117f16",
+      "name": "ebay getOrders",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "httM6qOhGTBXknOh",
+          "name": "eBay prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\n\nif (!data.lastRun) {\n  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);\n  data.lastRun = yesterday.toISOString();\n}\n\nreturn [{\n  json: {\n    lastRun: data.lastRun,\n    filter: `lastmodifieddate:[${data.lastRun}..]`,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        384
+      ],
+      "id": "774d0a2b-9af4-4c5f-a95d-42a556153cca",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "faa8f13e-cc29-4d40-bcfa-d32a5de8ff7b",
+              "leftValue": "={{ $json.total }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        384
+      ],
+      "id": "5300705d-ce5b-42a1-997e-862f359908d2",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        544
+      ],
+      "id": "6afb8bcf-0df5-462e-96a8-f24313c2f0bf",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\nconst processedIds = data.processedIds || [];\n\nconst orders = $input.first().json.orders;\n\nconst newOrders = orders.filter(order => \n  !processedIds.some(entry => entry.id === order.orderId) &&\n  order.orderFulfillmentStatus === 'NOT_STARTED'\n);\n\nif (newOrders.length === 0) {\n  return [];\n}\n\nreturn newOrders.map(order => ({ json: order }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        368
+      ],
+      "id": "d4a7d03d-a90d-4943-9841-6884feeb84de",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "595ac1df-22cf-49fd-8c6a-af2bf400cc57",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "={{ false }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        128,
+        368
+      ],
+      "id": "fc50eed1-f531-4796-b287-7bfa15f24c46",
+      "name": "If1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        320,
+        560
+      ],
+      "id": "471d63f3-6834-4f9a-9a4c-5dd81260f95b",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ebayOrders = $('If1').all().map(i => i.json);\nconst unprocessedSheetRows = $('If2').all().map(i => i.json);\n\n// Build set of unprocessed sale_refs from sheet\nconst unprocessedRefs = new Set(unprocessedSheetRows.map(r => String(r.sale_ref)));\n\n// Only transform eBay orders that are unprocessed in sheet\nconst newOrders = ebayOrders.filter(order =>\n  unprocessedRefs.has(String(order.salesRecordReference))\n);\n\nif (newOrders.length === 0) return [];\n\nreturn newOrders.map(order => {\n  const shipTo = order.fulfillmentStartInstructions[0].shippingStep.shipTo;\n  const address = shipTo.contactAddress;\n  const streetAddress = address.addressLine2 || address.addressLine1;\n\n  const orderDate = new Date(order.creationDate).toLocaleDateString('en-AU', {\n    day: '2-digit',\n    month: 'long',\n    year: 'numeric',\n  });\n\n  const toNumber = (v) => {\n    if (v === null || v === undefined) return 0;\n    if (typeof v === 'number') return v;\n    const n = Number(String(v).replace(/[^0-9.-]/g, ''));\n    return Number.isFinite(n) ? n : 0;\n  };\n\n  const payment_gateway_names = order.paymentSummary.payments.map(p => p.paymentMethod);\n  const payment_gateways = payment_gateway_names.join(', ');\n\n  const shipping_address = [\n    streetAddress,\n    [address.city, address.stateOrProvince, address.postalCode].filter(Boolean).join(' '),\n    address.countryCode,\n  ].filter(Boolean).join('\\n');\n\n  const line_items_structured = order.lineItems.map(item => ({\n    title: item.title,\n    sku: 'n/a',\n    quantity: item.quantity,\n    price_each: toNumber(item.lineItemCost.value),\n    product_url: `https://www.ebay.com.au/itm/${item.legacyItemId}`,\n    product_id: item.legacyItemId,\n    variant_id: null,\n    variant_gid: null,\n    image_url: null,\n    legacyItemId: item.legacyItemId,\n  }));\n\n  return {\n    json: {\n      order_id: order.orderId,\n      order_number: order.salesRecordReference,\n      order_date: orderDate,\n      shipping_name: shipTo.fullName,\n      shipping_address,\n      billing_name: shipTo.fullName,\n      billing_address: shipping_address,\n      shipping_title: order.fulfillmentStartInstructions[0].shippingStep.shippingCarrierCode,\n      shipping_price: toNumber(order.pricingSummary.deliveryCost.value),\n      payment_gateway_names,\n      payment_gateways,\n      subtotal: toNumber(order.pricingSummary.priceSubtotal.value),\n      total_paid: toNumber(order.pricingSummary.total.value),\n      line_items_structured,\n      salesRecord: order.salesRecordReference,\n      deliveryMin: order.fulfillmentStartInstructions[0].minEstimatedDeliveryDate,\n      deliveryMax: order.fulfillmentStartInstructions[0].maxEstimatedDeliveryDate,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        288
+      ],
+      "id": "585ea884-9d16-4e93-8bca-c86593452972",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const orders = $('Code in JavaScript5').all().map(i => i.json);\nconst sheetRows = $input.all().map(i => i.json);\n\nconst skuMap = {};\nfor (const row of sheetRows) {\n  skuMap[String(row.item_id)] = row.sku;\n}\n\nreturn orders.map(order => ({\n  json: {\n    ...order,\n    line_items_structured: order.line_items_structured.map(item => ({\n      ...item,\n      sku: skuMap[String(item.product_id)] || 'n/a',\n    })),\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        256
+      ],
+      "id": "b6deca9a-d648-4066-95ed-833c6c26a902",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1ifWvhhWjKC6rZtVsueXOm0unqgG8Kcso0XhHC_qCK9g/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ebay to sku map",
+          "mode": "name"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange",
+              "headerRow": 2,
+              "firstDataRow": 3
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        256
+      ],
+      "id": "b3e06286-fe52-47d8-993d-8cd6ec644ac3",
+      "name": "skuMap",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iNsBYYAG0CoB29qK",
+          "name": "WR: Google Sheets Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const orders = $input.all().map(i => i.json);\n\nconst items = [];\nfor (const order of orders) {\n  for (const lineItem of order.line_items_structured) {\n    items.push({\n      json: {\n        ...lineItem,\n        _orderId: order.order_id,\n        _orderData: order,\n      }\n    });\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        256
+      ],
+      "id": "1ddf9bb4-7d86-449e-9096-e691e3893924",
+      "name": "Code in JavaScript7"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.ebay.com/buy/browse/v1/item/v1|{{ $json.legacyItemId }}|0",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-EBAY-C-MARKETPLACE-ID",
+              "value": "EBAY_AU"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1392,
+        256
+      ],
+      "id": "6abdf836-faf4-4e0a-a9f9-80562ebff109",
+      "name": "HTTP Request2",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "httM6qOhGTBXknOh",
+          "name": "eBay prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const browseItems = $('HTTP Request2').all().map(i => i.json);\nconst originalItems = $('Code in JavaScript7').all().map(i => i.json);\n\nconst orderMap = {};\n\nfor (let idx = 0; idx < originalItems.length; idx++) {\n  const original = originalItems[idx];\n  const browse = browseItems[idx];\n  const orderId = original._orderId;\n\n  if (!orderMap[orderId]) {\n    orderMap[orderId] = {\n      ...original._orderData,\n      line_items_structured: [],\n    };\n  }\n\n  orderMap[orderId].line_items_structured.push({\n    title: original.title,\n    sku: original.sku,\n    quantity: original.quantity,\n    price_each: original.price_each,\n    product_url: original.product_url,\n    product_id: original.product_id,\n    variant_id: original.variant_id,\n    variant_gid: original.variant_gid,\n    legacyItemId: original.legacyItemId,\n    image_url: browse.image?.imageUrl || null,\n  });\n}\n\nreturn Object.values(orderMap).map(order => ({ json: order }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        256
+      ],
+      "id": "c2ce787d-f9ce-490d-87a6-1aad4d75d4fd",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "=1n-mW2zeZ9gxowNPQA7Lr2X6R-VjDJUdl70eKXxmqbqU"
+        },
+        "name": "={{ String($json.order_number || '').trim().replace(/^#/, '') }} - ebayPackingSlip",
+        "sameFolder": false,
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/folders/10XpAyp6PagbD9IpiolnVw8StFUDpa8Re",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1712,
+        256
+      ],
+      "id": "53d28be5-67f6-4788-88f9-3963e74fc27f",
+      "name": "Copy file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{order_number}}",
+              "replaceText": "={{ $('Code in JavaScript8').item.json.order_number }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{order_date}}",
+              "replaceText": "={{ $('Code in JavaScript8').item.json.order_date }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{shipping_name}}",
+              "replaceText": "={{ $('Code in JavaScript8').item.json.shipping_name }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{shipping_address}}",
+              "replaceText": "={{ $('Code in JavaScript8').item.json.shipping_address }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{billing_name}}",
+              "replaceText": "={{ $('Code in JavaScript8').item.json.billing_name }}",
+              "matchCase": true
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{billing_address}}",
+              "replaceText": "={{ $('Code in JavaScript8').item.json.billing_address }}",
+              "matchCase": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        256
+      ],
+      "id": "bb2af203-4e39-4c4d-a501-f4737f90b8b7",
+      "name": "Update a document2",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "7hqPnkkybGiEUtlG",
+          "name": "WR: Google Docs account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $json.documentId }}",
+        "simple": false
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2032,
+        256
+      ],
+      "id": "9fd3df81-5f18-4215-b707-5b9561e8cad5",
+      "name": "Get a document1",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "7hqPnkkybGiEUtlG",
+          "name": "WR: Google Docs account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (let i = 0; i < $input.all().length; i++) {\n  const docItem = $input.all()[i];\n  const orderItem = $('Code in JavaScript8').all()[i];\n\n  const documentId = $('Update a document2').all()[i].json.documentId;\n  const anchorStartIndex = docItem.json.body.content[8].paragraph.elements[0].startIndex;\n  const anchorEndIndex = docItem.json.body.content[8].paragraph.elements[0].endIndex;\n  const items = orderItem.json.line_items_structured || [];\n\n  if (!documentId) throw new Error(\"Missing documentId for item \" + i);\n  if (!anchorStartIndex || !anchorEndIndex) throw new Error(\"Missing anchor indices for item \" + i);\n\n  const requests = [];\n  const reversed = [...items].reverse();\n\n  function hasRealSku(rawSku) {\n    if (rawSku === null || rawSku === undefined) return false;\n    const s = String(rawSku).trim();\n    if (!s) return false;\n    const lowered = s.toLowerCase();\n    if (lowered === \"n/a\" || lowered === \"na\" || lowered === \"none\" || lowered === \"null\" || lowered === \"-\") return false;\n    // Split on spaces and validate each part\n    const parts = s.split(' ').filter(Boolean);\n    return parts.every(part => /^[A-Za-z]{2,3}-\\d{3}$/.test(part));\n  }\n\n  for (const item of reversed) {\n    const qty = (item.quantity ?? \"\").toString().trim() || \"0\";\n    const title = (item.title ?? \"\").toString().trim() || \"\";\n    const imageUrl = (item.image_url ?? \"\").toString().trim();\n\n    const skuLine = hasRealSku(item.sku)\n      ? `SKU: ${String(item.sku).trim()}     QTY: ${qty}\\n`\n      : `QTY: ${qty}\\n`;\n\n    requests.push({ insertText: { location: { index: anchorStartIndex }, text: \"\\n\" } });\n\n    if (imageUrl) {\n      requests.push({ insertText: { location: { index: anchorStartIndex }, text: \"\\n\" } });\n      requests.push({\n        insertInlineImage: {\n          location: { index: anchorStartIndex },\n          uri: imageUrl,\n          objectSize: {\n            height: { magnitude: 100, unit: \"PT\" },\n            width: { magnitude: 100, unit: \"PT\" },\n          },\n        },\n      });\n    }\n\n    requests.push({ insertText: { location: { index: anchorStartIndex }, text: `${title}\\n` } });\n    requests.push({ insertText: { location: { index: anchorStartIndex }, text: skuLine } });\n  }\n\n  results.push({ json: { documentId, requests } });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2192,
+        256
+      ],
+      "id": "6942e825-a484-42e7-bd28-362992c23cb7",
+      "name": "Code in JavaScript9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://docs.googleapis.com/v1/documents/{{$json.documentId}}:batchUpdate\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ requests: $json.requests }) }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2352,
+        256
+      ],
+      "id": "dcff9c81-103e-4eb5-bb3a-15e1316df67e",
+      "name": "HTTP Request3",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "7hqPnkkybGiEUtlG",
+          "name": "WR: Google Docs account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('Update a document2').item.json.documentId }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{anchor}}",
+              "matchCase": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        256
+      ],
+      "id": "73594881-1d92-4dfd-81c7-5ca8ac62233d",
+      "name": "Update a document3",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "7hqPnkkybGiEUtlG",
+          "name": "WR: Google Docs account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf"
+            }
+          },
+          "fileName": "={{ $('Copy file1').item.json.name }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2672,
+        256
+      ],
+      "id": "58dbf346-5201-4184-bc48-042989ca7c11",
+      "name": "Download file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Copy file1').item.json.name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/folders/10XpAyp6PagbD9IpiolnVw8StFUDpa8Re",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2832,
+        256
+      ],
+      "id": "43e3e0de-1f5d-40ea-8053-6fb59ce6761c",
+      "name": "Upload file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2960,
+        256
+      ],
+      "id": "9ececf42-0fa3-45d7-ab7e-c4ed6248b2d8",
+      "name": "Share file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1471333477101207594",
+          "mode": "id"
+        },
+        "sendTo": "=channel",
+        "userId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1471333508851957780",
+          "mode": "id"
+        },
+        "content": "=New Order Placed - Packing Slip Ready",
+        "options": {},
+        "embeds": {
+          "values": [
+            {
+              "description": "=Customer: {{ $('Code in JavaScript8').item.json.shipping_name }}\nStatus: Pending\nOrdered: {{ $('Code in JavaScript8').item.json.order_date }}\nSend by: {{ $json.send_by }}\nShipping: ${{ ($('Code in JavaScript8').item.json.total_paid - $('Code in JavaScript8').item.json.subtotal).toFixed(2) }} {{ $('Code in JavaScript8').item.json.shipping_title }}\nPayment Method: {{ $('Code in JavaScript8').item.json.payment_gateways }}\nTotal Paid: ${{ $('Code in JavaScript8').item.json.total_paid }}\nItems:\n{{ $('Code in JavaScript8').item.json.line_items_structured.map(item => \n`• ${item.title}\n  ${item.product_url}\n`).join('\\n') }}",
+              "color": "#000000",
+              "title": "=Order #{{ $('Code in JavaScript8').item.json.order_number }} - eBay",
+              "url": "={{ $('Upload file1').item.json.webViewLink }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        3392,
+        256
+      ],
+      "id": "6b4b280b-feb6-461a-b83b-e49573358d52",
+      "name": "Send a message1",
+      "webhookId": "748505d9-0594-44d9-8e67-4b848f836e9e",
+      "credentials": {
+        "discordBotApi": {
+          "id": "Q7zz7uhF16mvp292",
+          "name": "Discord Bot account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Update a document3').item.json.documentId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3536,
+        256
+      ],
+      "id": "076600dd-04bc-4872-baa1-d5f632bf4096",
+      "name": "Delete a file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ukMqhBlcAttN3yTg",
+          "name": "WR: Google Drive account Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU",
+          "mode": "list",
+          "cachedResultName": "Order Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1928111501,
+          "mode": "list",
+          "cachedResultName": "Tracker - eBay",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit#gid=1928111501"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=sale_ref",
+              "lookupValue": "={{ $('Code in JavaScript8').item.json.order_number }}"
+            }
+          ]
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange",
+              "headerRow": 3,
+              "firstDataRow": 6
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3248,
+        256
+      ],
+      "id": "5ad6142a-156c-4bfe-8f5a-613e94b03b17",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iNsBYYAG0CoB29qK",
+          "name": "WR: Google Sheets Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracker - eBay",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sale_ref": "={{ $('Code in JavaScript8').item.json.order_number }}",
+            "ordered": "={{ $('Code in JavaScript8').item.json.order_date }}",
+            "status": "⚫ Pending",
+            "name": "={{ $('Code in JavaScript8').item.json.shipping_name }}",
+            "order_number": "={{ $('Code in JavaScript8').item.json.order_id }}",
+            "packing_slip": "={{ $('Upload file1').item.json.webViewLink }}"
+          },
+          "matchingColumns": [
+            "sale_ref"
+          ],
+          "schema": [
+            {
+              "id": "ordered",
+              "displayName": "ordered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sale_ref",
+              "displayName": "sale_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "track",
+              "displayName": "track",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "order_number",
+              "displayName": "order_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "virtual_tracking_number",
+              "displayName": "virtual_tracking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "label_created",
+              "displayName": "label_created",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "dispatched_date",
+              "displayName": "dispatched_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "delivered_date",
+              "displayName": "delivered_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tracking_number",
+              "displayName": "tracking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "expected_delivery",
+              "displayName": "expected_delivery",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "packing_slip",
+              "displayName": "packing_slip",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "shipping_label",
+              "displayName": "shipping_label",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tax_invoice",
+              "displayName": "tax_invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tracking_link",
+              "displayName": "tracking_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "working_days_to_resolve",
+              "displayName": "working_days_to_resolve",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "working_days_to_deliver",
+              "displayName": "working_days_to_deliver",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "send_by_override",
+              "displayName": "send_by_override",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "send_by",
+              "displayName": "send_by",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "locationDefine": {
+            "values": {
+              "headerRow": 3,
+              "firstDataRow": 6
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3104,
+        256
+      ],
+      "id": "370e3d00-d465-4afe-9c4a-2b1d16ece298",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iNsBYYAG0CoB29qK",
+          "name": "WR: Google Sheets Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU",
+          "mode": "list",
+          "cachedResultName": "Order Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1928111501,
+          "mode": "list",
+          "cachedResultName": "Tracker - eBay",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit#gid=1928111501"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "=sale_ref",
+              "lookupValue": "={{ $json.salesRecordReference }}"
+            }
+          ]
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange",
+              "headerRow": 3,
+              "firstDataRow": 6
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        336,
+        304
+      ],
+      "id": "713e8b3f-916e-4479-a99f-dae07f04ff05",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "iNsBYYAG0CoB29qK",
+          "name": "WR: Google Sheets Shop"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "103fdb5a-2fa3-42d8-80be-0273aa332dba",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        304
+      ],
+      "id": "644240a3-030f-4951-9a67-6da6d495b6b6",
+      "name": "If2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        688,
+        544
+      ],
+      "id": "87f6ad66-d807-4c18-b280-c34057d1b791",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $getWorkflowStaticData('global');\ndata.lastRun = new Date().toISOString();\nreturn [{ json: { lastRun: data.lastRun } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3664,
+        256
+      ],
+      "id": "872d6cae-b906-40cf-8131-1814fd13ba85",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "ebay getOrders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ebay getOrders": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "skuMap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "skuMap": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "Copy file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file1": {
+      "main": [
+        [
+          {
+            "node": "Update a document2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document2": {
+      "main": [
+        [
+          {
+            "node": "Get a document1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript9": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Update a document3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file1": {
+      "main": [
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file1": {
+      "main": [
+        [
+          {
+            "node": "Share file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Share file1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Delete a file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document3": {
+      "main": [
+        [
+          {
+            "node": "Download file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a file1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "uuxIWB5TVjU2H3nWtHINp"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    },
+    "global": {
+      "lastRun": "2026-04-01T15:01:00.913Z",
+      "processedIds": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "ebay getOrders": [
+      {
+        "json": {
+          "href": "https://api.ebay.com/sell/fulfillment/v1/order?filter=lastmodifieddate:%5B2026-02-26T01:12:45.391Z..%5D&limit=200&offset=0",
+          "total": 2,
+          "limit": 200,
+          "offset": 0,
+          "orders": [
+            {
+              "orderId": "12-14286-39245",
+              "legacyOrderId": "12-14286-39245",
+              "creationDate": "2026-02-26T09:32:06.000Z",
+              "lastModifiedDate": "2026-02-26T09:32:33.000Z",
+              "orderFulfillmentStatus": "NOT_STARTED",
+              "orderPaymentStatus": "PAID",
+              "sellerId": "winrevshop",
+              "buyer": {
+                "username": "adam72marshall",
+                "taxAddress": {
+                  "stateOrProvince": "NSW",
+                  "postalCode": "2567",
+                  "countryCode": "AU"
+                },
+                "buyerRegistrationAddress": {
+                  "fullName": "adam marshall",
+                  "contactAddress": {
+                    "addressLine1": "19 the Clearwater ",
+                    "city": "Mount Annan ",
+                    "stateOrProvince": "New South Wales",
+                    "postalCode": "2567",
+                    "countryCode": "AU"
+                  },
+                  "primaryPhone": {
+                    "phoneNumber": "0426738407"
+                  },
+                  "email": "226f9924570aa928a351@members.ebay.com"
+                }
+              },
+              "pricingSummary": {
+                "priceSubtotal": {
+                  "value": "36.0",
+                  "currency": "AUD"
+                },
+                "deliveryCost": {
+                  "value": "89.7",
+                  "currency": "AUD"
+                },
+                "deliveryDiscount": {
+                  "value": "-74.25",
+                  "currency": "AUD"
+                },
+                "total": {
+                  "value": "51.45",
+                  "currency": "AUD"
+                }
+              },
+              "cancelStatus": {
+                "cancelState": "NONE_REQUESTED",
+                "cancelRequests": []
+              },
+              "paymentSummary": {
+                "totalDueSeller": {
+                  "value": "45.23",
+                  "currency": "AUD"
+                },
+                "refunds": [],
+                "payments": [
+                  {
+                    "paymentMethod": "EBAY",
+                    "paymentReferenceId": "420004_S",
+                    "paymentDate": "2026-02-26T09:32:06.572Z",
+                    "amount": {
+                      "value": "45.23",
+                      "currency": "AUD"
+                    },
+                    "paymentStatus": "PAID"
+                  }
+                ]
+              },
+              "fulfillmentStartInstructions": [
+                {
+                  "fulfillmentInstructionsType": "SHIP_TO",
+                  "minEstimatedDeliveryDate": "2026-03-02T13:00:00.000Z",
+                  "maxEstimatedDeliveryDate": "2026-03-05T13:00:00.000Z",
+                  "ebaySupportedFulfillment": false,
+                  "shippingStep": {
+                    "shipTo": {
+                      "fullName": "adam marshall",
+                      "contactAddress": {
+                        "addressLine1": "ebay:mpw242m",
+                        "addressLine2": "19 The Clearwater",
+                        "city": "Mount Annan",
+                        "stateOrProvince": "NSW",
+                        "postalCode": "2567",
+                        "countryCode": "AU"
+                      },
+                      "primaryPhone": {
+                        "phoneNumber": "0426738407"
+                      },
+                      "email": "226f9924570aa928a351@members.ebay.com"
+                    },
+                    "shippingCarrierCode": "Australia Post",
+                    "shippingServiceCode": "AU_Regular"
+                  }
+                }
+              ],
+              "fulfillmentHrefs": [],
+              "lineItems": [
+                {
+                  "lineItemId": "10079919776612",
+                  "legacyItemId": "316389946453",
+                  "sku": "WR-036",
+                  "title": "Window Rollers - suits Stegbar, Trend, Capral 580 series",
+                  "lineItemCost": {
+                    "value": "36.0",
+                    "currency": "AUD"
+                  },
+                  "quantity": 6,
+                  "soldFormat": "FIXED_PRICE",
+                  "listingMarketplaceId": "EBAY_AU",
+                  "purchaseMarketplaceId": "EBAY_AU",
+                  "lineItemFulfillmentStatus": "NOT_STARTED",
+                  "total": {
+                    "value": "51.45",
+                    "currency": "AUD"
+                  },
+                  "deliveryCost": {
+                    "shippingCost": {
+                      "value": "15.45",
+                      "currency": "AUD"
+                    },
+                    "discountAmount": {
+                      "value": "74.25",
+                      "currency": "AUD"
+                    }
+                  },
+                  "appliedPromotions": [],
+                  "taxes": [],
+                  "properties": {
+                    "buyerProtection": true
+                  },
+                  "lineItemFulfillmentInstructions": {
+                    "minEstimatedDeliveryDate": "2026-03-02T13:00:00.000Z",
+                    "maxEstimatedDeliveryDate": "2026-03-05T13:00:00.000Z",
+                    "shipByDate": "2026-03-05T12:59:59.000Z",
+                    "guaranteedDelivery": false
+                  },
+                  "itemLocation": {
+                    "location": "Robina, QLD",
+                    "countryCode": "AU",
+                    "postalCode": "4226"
+                  }
+                }
+              ],
+              "salesRecordReference": "159",
+              "totalFeeBasisAmount": {
+                "value": "51.45",
+                "currency": "AUD"
+              },
+              "totalMarketplaceFee": {
+                "value": "6.22",
+                "currency": "AUD"
+              }
+            },
+            {
+              "orderId": "12-14263-09747",
+              "legacyOrderId": "12-14263-09747",
+              "creationDate": "2026-02-21T06:05:48.000Z",
+              "lastModifiedDate": "2026-02-26T04:02:15.000Z",
+              "orderFulfillmentStatus": "NOT_STARTED",
+              "orderPaymentStatus": "PAID",
+              "sellerId": "winrevshop",
+              "buyer": {
+                "username": "giuliano_romanello",
+                "taxAddress": {
+                  "stateOrProvince": "VIC",
+                  "postalCode": "3073",
+                  "countryCode": "AU"
+                },
+                "buyerRegistrationAddress": {
+                  "fullName": "giuliano romanello",
+                  "contactAddress": {
+                    "addressLine1": "3757 wangaratta whitfield Rd king valley",
+                    "city": "wangaratta",
+                    "stateOrProvince": "Victoria",
+                    "postalCode": "3678",
+                    "countryCode": "AU"
+                  },
+                  "primaryPhone": {
+                    "phoneNumber": "488180465"
+                  },
+                  "email": "00898825a7064da71064@members.ebay.com"
+                }
+              },
+              "pricingSummary": {
+                "priceSubtotal": {
+                  "value": "52.0",
+                  "currency": "AUD"
+                },
+                "deliveryCost": {
+                  "value": "14.95",
+                  "currency": "AUD"
+                },
+                "total": {
+                  "value": "66.95",
+                  "currency": "AUD"
+                }
+              },
+              "cancelStatus": {
+                "cancelState": "NONE_REQUESTED",
+                "cancelRequests": []
+              },
+              "paymentSummary": {
+                "totalDueSeller": {
+                  "value": "58.96",
+                  "currency": "AUD"
+                },
+                "refunds": [],
+                "payments": [
+                  {
+                    "paymentMethod": "EBAY",
+                    "paymentReferenceId": "420004_S",
+                    "paymentDate": "2026-02-21T06:05:49.425Z",
+                    "amount": {
+                      "value": "58.96",
+                      "currency": "AUD"
+                    },
+                    "paymentStatus": "PAID"
+                  }
+                ]
+              },
+              "fulfillmentStartInstructions": [
+                {
+                  "fulfillmentInstructionsType": "SHIP_TO",
+                  "minEstimatedDeliveryDate": "2026-02-24T13:00:00.000Z",
+                  "maxEstimatedDeliveryDate": "2026-03-01T13:00:00.000Z",
+                  "ebaySupportedFulfillment": false,
+                  "shippingStep": {
+                    "shipTo": {
+                      "fullName": "Giuliano Romanello",
+                      "contactAddress": {
+                        "addressLine1": "ebay:mprql54",
+                        "addressLine2": "19 Ramleh Road Reservoir",
+                        "city": "Reservoir",
+                        "stateOrProvince": "VIC",
+                        "postalCode": "3073",
+                        "countryCode": "AU"
+                      },
+                      "primaryPhone": {
+                        "phoneNumber": "0488180465"
+                      },
+                      "email": "00898825a7064da71064@members.ebay.com"
+                    },
+                    "shippingCarrierCode": "Australia Post",
+                    "shippingServiceCode": "AU_eBayAusPost500gFlatRateSatchel"
+                  }
+                }
+              ],
+              "fulfillmentHrefs": [
+                "https://api.ebay.com/sell/fulfillment/v1/order/12-14263-09747/shipping_fulfillment/99719844888501008320909"
+              ],
+              "lineItems": [
+                {
+                  "lineItemId": "10079785569212",
+                  "legacyItemId": "316384379615",
+                  "title": "Stegbar Sliding Door Rollers - Same Profile as DR358/DR359 (LH & RH Set)",
+                  "lineItemCost": {
+                    "value": "52.0",
+                    "currency": "AUD"
+                  },
+                  "quantity": 1,
+                  "soldFormat": "FIXED_PRICE",
+                  "listingMarketplaceId": "EBAY_AU",
+                  "purchaseMarketplaceId": "EBAY_AU",
+                  "lineItemFulfillmentStatus": "FULFILLED",
+                  "total": {
+                    "value": "66.95",
+                    "currency": "AUD"
+                  },
+                  "deliveryCost": {
+                    "shippingCost": {
+                      "value": "14.95",
+                      "currency": "AUD"
+                    }
+                  },
+                  "appliedPromotions": [],
+                  "taxes": [],
+                  "properties": {
+                    "buyerProtection": true
+                  },
+                  "lineItemFulfillmentInstructions": {
+                    "minEstimatedDeliveryDate": "2026-02-24T13:00:00.000Z",
+                    "maxEstimatedDeliveryDate": "2026-03-01T13:00:00.000Z",
+                    "shipByDate": "2026-02-27T12:59:59.000Z",
+                    "guaranteedDelivery": false
+                  },
+                  "itemLocation": {
+                    "location": "Robina, QLD",
+                    "countryCode": "AU",
+                    "postalCode": "4226"
+                  }
+                }
+              ],
+              "salesRecordReference": "156",
+              "totalFeeBasisAmount": {
+                "value": "66.95",
+                "currency": "AUD"
+              },
+              "totalMarketplaceFee": {
+                "value": "7.99",
+                "currency": "AUD"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "versionId": "342fb725-ae70-4fb7-b43b-63928a12edbf",
+  "activeVersionId": "342fb725-ae70-4fb7-b43b-63928a12edbf",
+  "versionCounter": 408,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-13T01:00:27.567Z",
+      "createdAt": "2026-02-13T01:00:27.567Z",
+      "role": "workflow:owner",
+      "workflowId": "RYEk05bzAWo9zg1X",
+      "projectId": "6TsYTzg0HY92xH2K",
+      "project": {
+        "updatedAt": "2025-11-14T08:33:27.896Z",
+        "createdAt": "2025-11-14T07:49:25.938Z",
+        "id": "6TsYTzg0HY92xH2K",
+        "name": "Christine Kam <windowrevival@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-27T02:32:11.000Z",
+    "createdAt": "2026-02-27T02:30:57.957Z",
+    "versionId": "342fb725-ae70-4fb7-b43b-63928a12edbf",
+    "workflowId": "RYEk05bzAWo9zg1X",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -672,
+          384
+        ],
+        "id": "4eff032b-44c9-47d7-a108-3a42d240db29",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "url": "https://api.ebay.com/sell/fulfillment/v1/order",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "oAuth2Api",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "filter",
+                "value": "={{ $json.filter }}"
+              },
+              {
+                "name": "limit",
+                "value": "200"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          -368,
+          384
+        ],
+        "id": "a507b9f7-a075-45a3-95fc-7f663e117f16",
+        "name": "ebay getOrders",
+        "credentials": {
+          "oAuth2Api": {
+            "id": "httM6qOhGTBXknOh",
+            "name": "eBay prod"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $getWorkflowStaticData('global');\n\nif (!data.lastRun) {\n  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);\n  data.lastRun = yesterday.toISOString();\n}\n\nreturn [{\n  json: {\n    lastRun: data.lastRun,\n    filter: `lastmodifieddate:[${data.lastRun}..]`,\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -528,
+          384
+        ],
+        "id": "774d0a2b-9af4-4c5f-a95d-42a556153cca",
+        "name": "Code in JavaScript3"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "faa8f13e-cc29-4d40-bcfa-d32a5de8ff7b",
+                "leftValue": "={{ $json.total }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -208,
+          384
+        ],
+        "id": "5300705d-ce5b-42a1-997e-862f359908d2",
+        "name": "If"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          -48,
+          544
+        ],
+        "id": "6afb8bcf-0df5-462e-96a8-f24313c2f0bf",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $getWorkflowStaticData('global');\nconst processedIds = data.processedIds || [];\n\nconst orders = $input.first().json.orders;\n\nconst newOrders = orders.filter(order => \n  !processedIds.some(entry => entry.id === order.orderId) &&\n  order.orderFulfillmentStatus === 'NOT_STARTED'\n);\n\nif (newOrders.length === 0) {\n  return [];\n}\n\nreturn newOrders.map(order => ({ json: order }));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -32,
+          368
+        ],
+        "id": "d4a7d03d-a90d-4943-9841-6884feeb84de",
+        "name": "Code in JavaScript4"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "595ac1df-22cf-49fd-8c6a-af2bf400cc57",
+                "leftValue": "={{ $input.all().length }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": "={{ false }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          128,
+          368
+        ],
+        "id": "fc50eed1-f531-4796-b287-7bfa15f24c46",
+        "name": "If1"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          320,
+          560
+        ],
+        "id": "471d63f3-6834-4f9a-9a4c-5dd81260f95b",
+        "name": "No Operation, do nothing1"
+      },
+      {
+        "parameters": {
+          "jsCode": "const ebayOrders = $('If1').all().map(i => i.json);\nconst unprocessedSheetRows = $('If2').all().map(i => i.json);\n\n// Build set of unprocessed sale_refs from sheet\nconst unprocessedRefs = new Set(unprocessedSheetRows.map(r => String(r.sale_ref)));\n\n// Only transform eBay orders that are unprocessed in sheet\nconst newOrders = ebayOrders.filter(order =>\n  unprocessedRefs.has(String(order.salesRecordReference))\n);\n\nif (newOrders.length === 0) return [];\n\nreturn newOrders.map(order => {\n  const shipTo = order.fulfillmentStartInstructions[0].shippingStep.shipTo;\n  const address = shipTo.contactAddress;\n  const streetAddress = address.addressLine2 || address.addressLine1;\n\n  const orderDate = new Date(order.creationDate).toLocaleDateString('en-AU', {\n    day: '2-digit',\n    month: 'long',\n    year: 'numeric',\n  });\n\n  const toNumber = (v) => {\n    if (v === null || v === undefined) return 0;\n    if (typeof v === 'number') return v;\n    const n = Number(String(v).replace(/[^0-9.-]/g, ''));\n    return Number.isFinite(n) ? n : 0;\n  };\n\n  const payment_gateway_names = order.paymentSummary.payments.map(p => p.paymentMethod);\n  const payment_gateways = payment_gateway_names.join(', ');\n\n  const shipping_address = [\n    streetAddress,\n    [address.city, address.stateOrProvince, address.postalCode].filter(Boolean).join(' '),\n    address.countryCode,\n  ].filter(Boolean).join('\\n');\n\n  const line_items_structured = order.lineItems.map(item => ({\n    title: item.title,\n    sku: 'n/a',\n    quantity: item.quantity,\n    price_each: toNumber(item.lineItemCost.value),\n    product_url: `https://www.ebay.com.au/itm/${item.legacyItemId}`,\n    product_id: item.legacyItemId,\n    variant_id: null,\n    variant_gid: null,\n    image_url: null,\n    legacyItemId: item.legacyItemId,\n  }));\n\n  return {\n    json: {\n      order_id: order.orderId,\n      order_number: order.salesRecordReference,\n      order_date: orderDate,\n      shipping_name: shipTo.fullName,\n      shipping_address,\n      billing_name: shipTo.fullName,\n      billing_address: shipping_address,\n      shipping_title: order.fulfillmentStartInstructions[0].shippingStep.shippingCarrierCode,\n      shipping_price: toNumber(order.pricingSummary.deliveryCost.value),\n      payment_gateway_names,\n      payment_gateways,\n      subtotal: toNumber(order.pricingSummary.priceSubtotal.value),\n      total_paid: toNumber(order.pricingSummary.total.value),\n      line_items_structured,\n      salesRecord: order.salesRecordReference,\n      deliveryMin: order.fulfillmentStartInstructions[0].minEstimatedDeliveryDate,\n      deliveryMax: order.fulfillmentStartInstructions[0].maxEstimatedDeliveryDate,\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          288
+        ],
+        "id": "585ea884-9d16-4e93-8bca-c86593452972",
+        "name": "Code in JavaScript5"
+      },
+      {
+        "parameters": {
+          "jsCode": "const orders = $('Code in JavaScript5').all().map(i => i.json);\nconst sheetRows = $input.all().map(i => i.json);\n\nconst skuMap = {};\nfor (const row of sheetRows) {\n  skuMap[String(row.item_id)] = row.sku;\n}\n\nreturn orders.map(order => ({\n  json: {\n    ...order,\n    line_items_structured: order.line_items_structured.map(item => ({\n      ...item,\n      sku: skuMap[String(item.product_id)] || 'n/a',\n    })),\n  }\n}));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1072,
+          256
+        ],
+        "id": "b6deca9a-d648-4066-95ed-833c6c26a902",
+        "name": "Code in JavaScript6"
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "https://docs.google.com/spreadsheets/d/1ifWvhhWjKC6rZtVsueXOm0unqgG8Kcso0XhHC_qCK9g/edit?gid=0#gid=0",
+            "mode": "url"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "ebay to sku map",
+            "mode": "name"
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRange",
+                "headerRow": 2,
+                "firstDataRow": 3
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          912,
+          256
+        ],
+        "id": "b3e06286-fe52-47d8-993d-8cd6ec644ac3",
+        "name": "skuMap",
+        "executeOnce": true,
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "iNsBYYAG0CoB29qK",
+            "name": "WR: Google Sheets Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const orders = $input.all().map(i => i.json);\n\nconst items = [];\nfor (const order of orders) {\n  for (const lineItem of order.line_items_structured) {\n    items.push({\n      json: {\n        ...lineItem,\n        _orderId: order.order_id,\n        _orderData: order,\n      }\n    });\n  }\n}\n\nreturn items;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1232,
+          256
+        ],
+        "id": "1ddf9bb4-7d86-449e-9096-e691e3893924",
+        "name": "Code in JavaScript7"
+      },
+      {
+        "parameters": {
+          "url": "=https://api.ebay.com/buy/browse/v1/item/v1|{{ $json.legacyItemId }}|0",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "oAuth2Api",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-EBAY-C-MARKETPLACE-ID",
+                "value": "EBAY_AU"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1392,
+          256
+        ],
+        "id": "6abdf836-faf4-4e0a-a9f9-80562ebff109",
+        "name": "HTTP Request2",
+        "credentials": {
+          "oAuth2Api": {
+            "id": "httM6qOhGTBXknOh",
+            "name": "eBay prod"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const browseItems = $('HTTP Request2').all().map(i => i.json);\nconst originalItems = $('Code in JavaScript7').all().map(i => i.json);\n\nconst orderMap = {};\n\nfor (let idx = 0; idx < originalItems.length; idx++) {\n  const original = originalItems[idx];\n  const browse = browseItems[idx];\n  const orderId = original._orderId;\n\n  if (!orderMap[orderId]) {\n    orderMap[orderId] = {\n      ...original._orderData,\n      line_items_structured: [],\n    };\n  }\n\n  orderMap[orderId].line_items_structured.push({\n    title: original.title,\n    sku: original.sku,\n    quantity: original.quantity,\n    price_each: original.price_each,\n    product_url: original.product_url,\n    product_id: original.product_id,\n    variant_id: original.variant_id,\n    variant_gid: original.variant_gid,\n    legacyItemId: original.legacyItemId,\n    image_url: browse.image?.imageUrl || null,\n  });\n}\n\nreturn Object.values(orderMap).map(order => ({ json: order }));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1552,
+          256
+        ],
+        "id": "c2ce787d-f9ce-490d-87a6-1aad4d75d4fd",
+        "name": "Code in JavaScript8"
+      },
+      {
+        "parameters": {
+          "operation": "copy",
+          "fileId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "=1n-mW2zeZ9gxowNPQA7Lr2X6R-VjDJUdl70eKXxmqbqU"
+          },
+          "name": "={{ String($json.order_number || '').trim().replace(/^#/, '') }} - ebayPackingSlip",
+          "sameFolder": false,
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "https://drive.google.com/drive/folders/10XpAyp6PagbD9IpiolnVw8StFUDpa8Re",
+            "mode": "url"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          1712,
+          256
+        ],
+        "id": "53d28be5-67f6-4788-88f9-3963e74fc27f",
+        "name": "Copy file1",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ukMqhBlcAttN3yTg",
+            "name": "WR: Google Drive account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentURL": "={{ $json.id }}",
+          "actionsUi": {
+            "actionFields": [
+              {
+                "action": "replaceAll",
+                "text": "{{order_number}}",
+                "replaceText": "={{ $('Code in JavaScript8').item.json.order_number }}",
+                "matchCase": true
+              },
+              {
+                "action": "replaceAll",
+                "text": "{{order_date}}",
+                "replaceText": "={{ $('Code in JavaScript8').item.json.order_date }}",
+                "matchCase": true
+              },
+              {
+                "action": "replaceAll",
+                "text": "{{shipping_name}}",
+                "replaceText": "={{ $('Code in JavaScript8').item.json.shipping_name }}",
+                "matchCase": true
+              },
+              {
+                "action": "replaceAll",
+                "text": "{{shipping_address}}",
+                "replaceText": "={{ $('Code in JavaScript8').item.json.shipping_address }}",
+                "matchCase": true
+              },
+              {
+                "action": "replaceAll",
+                "text": "{{billing_name}}",
+                "replaceText": "={{ $('Code in JavaScript8').item.json.billing_name }}",
+                "matchCase": true
+              },
+              {
+                "action": "replaceAll",
+                "text": "{{billing_address}}",
+                "replaceText": "={{ $('Code in JavaScript8').item.json.billing_address }}",
+                "matchCase": true
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.googleDocs",
+        "typeVersion": 2,
+        "position": [
+          1872,
+          256
+        ],
+        "id": "bb2af203-4e39-4c4d-a501-f4737f90b8b7",
+        "name": "Update a document2",
+        "credentials": {
+          "googleDocsOAuth2Api": {
+            "id": "7hqPnkkybGiEUtlG",
+            "name": "WR: Google Docs account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "documentURL": "={{ $json.documentId }}",
+          "simple": false
+        },
+        "type": "n8n-nodes-base.googleDocs",
+        "typeVersion": 2,
+        "position": [
+          2032,
+          256
+        ],
+        "id": "9fd3df81-5f18-4215-b707-5b9561e8cad5",
+        "name": "Get a document1",
+        "credentials": {
+          "googleDocsOAuth2Api": {
+            "id": "7hqPnkkybGiEUtlG",
+            "name": "WR: Google Docs account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const results = [];\n\nfor (let i = 0; i < $input.all().length; i++) {\n  const docItem = $input.all()[i];\n  const orderItem = $('Code in JavaScript8').all()[i];\n\n  const documentId = $('Update a document2').all()[i].json.documentId;\n  const anchorStartIndex = docItem.json.body.content[8].paragraph.elements[0].startIndex;\n  const anchorEndIndex = docItem.json.body.content[8].paragraph.elements[0].endIndex;\n  const items = orderItem.json.line_items_structured || [];\n\n  if (!documentId) throw new Error(\"Missing documentId for item \" + i);\n  if (!anchorStartIndex || !anchorEndIndex) throw new Error(\"Missing anchor indices for item \" + i);\n\n  const requests = [];\n  const reversed = [...items].reverse();\n\n  function hasRealSku(rawSku) {\n    if (rawSku === null || rawSku === undefined) return false;\n    const s = String(rawSku).trim();\n    if (!s) return false;\n    const lowered = s.toLowerCase();\n    if (lowered === \"n/a\" || lowered === \"na\" || lowered === \"none\" || lowered === \"null\" || lowered === \"-\") return false;\n    // Split on spaces and validate each part\n    const parts = s.split(' ').filter(Boolean);\n    return parts.every(part => /^[A-Za-z]{2,3}-\\d{3}$/.test(part));\n  }\n\n  for (const item of reversed) {\n    const qty = (item.quantity ?? \"\").toString().trim() || \"0\";\n    const title = (item.title ?? \"\").toString().trim() || \"\";\n    const imageUrl = (item.image_url ?? \"\").toString().trim();\n\n    const skuLine = hasRealSku(item.sku)\n      ? `SKU: ${String(item.sku).trim()}     QTY: ${qty}\\n`\n      : `QTY: ${qty}\\n`;\n\n    requests.push({ insertText: { location: { index: anchorStartIndex }, text: \"\\n\" } });\n\n    if (imageUrl) {\n      requests.push({ insertText: { location: { index: anchorStartIndex }, text: \"\\n\" } });\n      requests.push({\n        insertInlineImage: {\n          location: { index: anchorStartIndex },\n          uri: imageUrl,\n          objectSize: {\n            height: { magnitude: 100, unit: \"PT\" },\n            width: { magnitude: 100, unit: \"PT\" },\n          },\n        },\n      });\n    }\n\n    requests.push({ insertText: { location: { index: anchorStartIndex }, text: `${title}\\n` } });\n    requests.push({ insertText: { location: { index: anchorStartIndex }, text: skuLine } });\n  }\n\n  results.push({ json: { documentId, requests } });\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2192,
+          256
+        ],
+        "id": "6942e825-a484-42e7-bd28-362992c23cb7",
+        "name": "Code in JavaScript9"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://docs.googleapis.com/v1/documents/{{$json.documentId}}:batchUpdate\n",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleDocsOAuth2Api",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ requests: $json.requests }) }}\n",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          2352,
+          256
+        ],
+        "id": "dcff9c81-103e-4eb5-bb3a-15e1316df67e",
+        "name": "HTTP Request3",
+        "credentials": {
+          "googleDocsOAuth2Api": {
+            "id": "7hqPnkkybGiEUtlG",
+            "name": "WR: Google Docs account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentURL": "={{ $('Update a document2').item.json.documentId }}",
+          "actionsUi": {
+            "actionFields": [
+              {
+                "action": "replaceAll",
+                "text": "{{anchor}}",
+                "matchCase": true
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.googleDocs",
+        "typeVersion": 2,
+        "position": [
+          2512,
+          256
+        ],
+        "id": "73594881-1d92-4dfd-81c7-5ca8ac62233d",
+        "name": "Update a document3",
+        "credentials": {
+          "googleDocsOAuth2Api": {
+            "id": "7hqPnkkybGiEUtlG",
+            "name": "WR: Google Docs account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $json.documentId }}",
+            "mode": "id"
+          },
+          "options": {
+            "googleFileConversion": {
+              "conversion": {
+                "docsToFormat": "application/pdf"
+              }
+            },
+            "fileName": "={{ $('Copy file1').item.json.name }}"
+          }
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          2672,
+          256
+        ],
+        "id": "58dbf346-5201-4184-bc48-042989ca7c11",
+        "name": "Download file1",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ukMqhBlcAttN3yTg",
+            "name": "WR: Google Drive account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "name": "={{ $('Copy file1').item.json.name }}",
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "https://drive.google.com/drive/folders/10XpAyp6PagbD9IpiolnVw8StFUDpa8Re",
+            "mode": "url"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          2832,
+          256
+        ],
+        "id": "43e3e0de-1f5d-40ea-8053-6fb59ce6761c",
+        "name": "Upload file1",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ukMqhBlcAttN3yTg",
+            "name": "WR: Google Drive account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "share",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $json.id }}",
+            "mode": "id"
+          },
+          "permissionsUi": {
+            "permissionsValues": {
+              "role": "reader",
+              "type": "anyone"
+            }
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          2960,
+          256
+        ],
+        "id": "9ececf42-0fa3-45d7-ab7e-c4ed6248b2d8",
+        "name": "Share file1",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ukMqhBlcAttN3yTg",
+            "name": "WR: Google Drive account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "message",
+          "guildId": {
+            "__rl": true,
+            "value": "1471333477101207594",
+            "mode": "id"
+          },
+          "sendTo": "=channel",
+          "userId": {
+            "__rl": true,
+            "mode": "list",
+            "value": ""
+          },
+          "channelId": {
+            "__rl": true,
+            "value": "1471333508851957780",
+            "mode": "id"
+          },
+          "content": "=New Order Placed - Packing Slip Ready",
+          "options": {},
+          "embeds": {
+            "values": [
+              {
+                "description": "=Customer: {{ $('Code in JavaScript8').item.json.shipping_name }}\nStatus: Pending\nOrdered: {{ $('Code in JavaScript8').item.json.order_date }}\nSend by: {{ $json.send_by }}\nShipping: ${{ ($('Code in JavaScript8').item.json.total_paid - $('Code in JavaScript8').item.json.subtotal).toFixed(2) }} {{ $('Code in JavaScript8').item.json.shipping_title }}\nPayment Method: {{ $('Code in JavaScript8').item.json.payment_gateways }}\nTotal Paid: ${{ $('Code in JavaScript8').item.json.total_paid }}\nItems:\n{{ $('Code in JavaScript8').item.json.line_items_structured.map(item => \n`• ${item.title}\n  ${item.product_url}\n`).join('\\n') }}",
+                "color": "#000000",
+                "title": "=Order #{{ $('Code in JavaScript8').item.json.order_number }} - eBay",
+                "url": "={{ $('Upload file1').item.json.webViewLink }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.discord",
+        "typeVersion": 2,
+        "position": [
+          3392,
+          256
+        ],
+        "id": "6b4b280b-feb6-461a-b83b-e49573358d52",
+        "name": "Send a message1",
+        "webhookId": "748505d9-0594-44d9-8e67-4b848f836e9e",
+        "credentials": {
+          "discordBotApi": {
+            "id": "Q7zz7uhF16mvp292",
+            "name": "Discord Bot account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "deleteFile",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $('Update a document3').item.json.documentId }}",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          3536,
+          256
+        ],
+        "id": "076600dd-04bc-4872-baa1-d5f632bf4096",
+        "name": "Delete a file1",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "ukMqhBlcAttN3yTg",
+            "name": "WR: Google Drive account Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU",
+            "mode": "list",
+            "cachedResultName": "Order Tracker",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 1928111501,
+            "mode": "list",
+            "cachedResultName": "Tracker - eBay",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit#gid=1928111501"
+          },
+          "filtersUI": {
+            "values": [
+              {
+                "lookupColumn": "=sale_ref",
+                "lookupValue": "={{ $('Code in JavaScript8').item.json.order_number }}"
+              }
+            ]
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRange",
+                "headerRow": 3,
+                "firstDataRow": 6
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          3248,
+          256
+        ],
+        "id": "5ad6142a-156c-4bfe-8f5a-613e94b03b17",
+        "name": "Get row(s) in sheet1",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "iNsBYYAG0CoB29qK",
+            "name": "WR: Google Sheets Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "appendOrUpdate",
+          "documentId": {
+            "__rl": true,
+            "value": "1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "Tracker - eBay",
+            "mode": "name"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "sale_ref": "={{ $('Code in JavaScript8').item.json.order_number }}",
+              "ordered": "={{ $('Code in JavaScript8').item.json.order_date }}",
+              "status": "⚫ Pending",
+              "name": "={{ $('Code in JavaScript8').item.json.shipping_name }}",
+              "order_number": "={{ $('Code in JavaScript8').item.json.order_id }}",
+              "packing_slip": "={{ $('Upload file1').item.json.webViewLink }}"
+            },
+            "matchingColumns": [
+              "sale_ref"
+            ],
+            "schema": [
+              {
+                "id": "ordered",
+                "displayName": "ordered",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "sale_ref",
+                "displayName": "sale_ref",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "track",
+                "displayName": "track",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "name",
+                "displayName": "name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "order_number",
+                "displayName": "order_number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "virtual_tracking_number",
+                "displayName": "virtual_tracking_number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "label_created",
+                "displayName": "label_created",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "dispatched_date",
+                "displayName": "dispatched_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "delivered_date",
+                "displayName": "delivered_date",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "tracking_number",
+                "displayName": "tracking_number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "expected_delivery",
+                "displayName": "expected_delivery",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "notes",
+                "displayName": "notes",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "packing_slip",
+                "displayName": "packing_slip",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "shipping_label",
+                "displayName": "shipping_label",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "tax_invoice",
+                "displayName": "tax_invoice",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "tracking_link",
+                "displayName": "tracking_link",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "working_days_to_resolve",
+                "displayName": "working_days_to_resolve",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "working_days_to_deliver",
+                "displayName": "working_days_to_deliver",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "send_by_override",
+                "displayName": "send_by_override",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "send_by",
+                "displayName": "send_by",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "locationDefine": {
+              "values": {
+                "headerRow": 3,
+                "firstDataRow": 6
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          3104,
+          256
+        ],
+        "id": "370e3d00-d465-4afe-9c4a-2b1d16ece298",
+        "name": "Append or update row in sheet1",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "iNsBYYAG0CoB29qK",
+            "name": "WR: Google Sheets Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU",
+            "mode": "list",
+            "cachedResultName": "Order Tracker",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 1928111501,
+            "mode": "list",
+            "cachedResultName": "Tracker - eBay",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Saoy_4dBYP6pOevexzFizFDmkFt-6ARlmwRvYPzGtWU/edit#gid=1928111501"
+          },
+          "filtersUI": {
+            "values": [
+              {
+                "lookupColumn": "=sale_ref",
+                "lookupValue": "={{ $json.salesRecordReference }}"
+              }
+            ]
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRange",
+                "headerRow": 3,
+                "firstDataRow": 6
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          336,
+          304
+        ],
+        "id": "713e8b3f-916e-4479-a99f-dae07f04ff05",
+        "name": "Get row(s) in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "iNsBYYAG0CoB29qK",
+            "name": "WR: Google Sheets Shop"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "103fdb5a-2fa3-42d8-80be-0273aa332dba",
+                "leftValue": "={{ $json.status }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "string",
+                  "operation": "empty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          496,
+          304
+        ],
+        "id": "644240a3-030f-4951-9a67-6da6d495b6b6",
+        "name": "If2"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          688,
+          544
+        ],
+        "id": "87f6ad66-d807-4c18-b280-c34057d1b791",
+        "name": "No Operation, do nothing2"
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $getWorkflowStaticData('global');\ndata.lastRun = new Date().toISOString();\nreturn [{ json: { lastRun: data.lastRun } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3664,
+          256
+        ],
+        "id": "872d6cae-b906-40cf-8131-1814fd13ba85",
+        "name": "Code in JavaScript"
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript3": {
+        "main": [
+          [
+            {
+              "node": "ebay getOrders",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ebay getOrders": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript4",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript4": {
+        "main": [
+          [
+            {
+              "node": "If1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If1": {
+        "main": [
+          [
+            {
+              "node": "Get row(s) in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript5": {
+        "main": [
+          [
+            {
+              "node": "skuMap",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "skuMap": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript6",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript6": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript7",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript7": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request2": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript8",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript8": {
+        "main": [
+          [
+            {
+              "node": "Copy file1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Copy file1": {
+        "main": [
+          [
+            {
+              "node": "Update a document2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update a document2": {
+        "main": [
+          [
+            {
+              "node": "Get a document1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get a document1": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript9",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript9": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request3": {
+        "main": [
+          [
+            {
+              "node": "Update a document3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download file1": {
+        "main": [
+          [
+            {
+              "node": "Upload file1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload file1": {
+        "main": [
+          [
+            {
+              "node": "Share file1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Share file1": {
+        "main": [
+          [
+            {
+              "node": "Append or update row in sheet1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send a message1": {
+        "main": [
+          [
+            {
+              "node": "Delete a file1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s) in sheet1": {
+        "main": [
+          [
+            {
+              "node": "Send a message1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update a document3": {
+        "main": [
+          [
+            {
+              "node": "Download file1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Append or update row in sheet1": {
+        "main": [
+          [
+            {
+              "node": "Get row(s) in sheet1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s) in sheet": {
+        "main": [
+          [
+            {
+              "node": "If2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If2": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript5",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Delete a file1": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Christine Kam",
+    "name": "Version 1.3",
+    "description": "* fixed: packing slip can display 2 skus per item now (for sets)",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-27T02:32:11.670Z",
+        "id": 254,
+        "workflowId": "RYEk05bzAWo9zg1X",
+        "versionId": "342fb725-ae70-4fb7-b43b-63928a12edbf",
+        "event": "activated",
+        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    ]
+  }
+}
