@@ -1,0 +1,621 @@
+{
+  "updatedAt": "2026-03-06T00:15:11.036Z",
+  "createdAt": "2026-03-06T00:15:03.605Z",
+  "id": "BQOKGmCqTKgYDjgg",
+  "name": "Batch upload Instagram Reels to YouTube with scheduled delays",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 * * *"
+            }
+          ]
+        }
+      },
+      "id": "53cfe1f4-26bf-4b16-a31e-999491e8dec1",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        672,
+        416
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"includeSourceLink\": true,\n  \"waitTimeoutSeconds\": 15,\n  \"maxTitleLength\": 100,\n  \"categoryId\": \"22\",\n  \"privacyStatus\": \"public\",\n  \"notifySubscribers\": false,\n  \"defaultLanguage\": \"en\",\n  \"ageRestricted\": false\n}",
+        "options": {}
+      },
+      "id": "5f6d81ac-2a44-4749-a3cc-8f29ccad16e4",
+      "name": "Configuration",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        896,
+        416
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "url": "https://graph.instagram.com/me/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "={\n  \"fields\": \"id,caption,media_url,media_type,timestamp,permalink\",\n  \"limit\": \"25\"\n}",
+        "options": {}
+      },
+      "id": "167a72fd-58ac-4a0e-a0cc-be1d92f2eadd",
+      "name": "Fetch Instagram Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1168,
+        416
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "id": "68fb9b83-80b0-48fb-a8c7-aae832aa4835",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        1392,
+        416
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "video-check",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.media_type }}",
+              "rightValue": "VIDEO"
+            },
+            {
+              "id": "reels-check",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.media_type }}",
+              "rightValue": "REELS"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "50592eeb-eca3-4d6d-9d03-34c56a36c27b",
+      "name": "Filter Videos Only",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1616,
+        416
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "ec875909-6e89-47f1-a049-a909e1a3ec72",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        1840,
+        416
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "oOxou5oOQXuS4cQY",
+          "cachedResultUrl": "/projects/vZdjtqHcrLoO32Ib/datatables/oOxou5oOQXuS4cQY",
+          "cachedResultName": "Instagram To YouTube"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "postId",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "id": "2fa4100e-917d-4e45-a7aa-7a6d1bde614e",
+      "name": "Check If Already Uploaded",
+      "type": "n8n-nodes-base.dataTable",
+      "position": [
+        2064,
+        480
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "eab5894a-31d7-43f4-8866-104c416eed3f",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.postId }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "9dff5bb8-7486-4297-9161-8d5dfc02fff7",
+      "name": "If Not Uploaded Yet",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2288,
+        480
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "amount": "={{ $('Configuration').item.json.waitTimeoutSeconds }}"
+      },
+      "id": "7daf31ee-4be7-4389-a9ff-c5325f3a65d0",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2512,
+        416
+      ],
+      "webhookId": "0489833a-4a5a-4ac4-969f-f3094638cb4f",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get configuration from the Configuration node\nconst config = $('Configuration').first().json;\nconst includeSourceLink = config.includeSourceLink;\nconst MAX_TITLE_LENGTH = config.maxTitleLength || 100;\n\n// Get the post data from the Loop Over Items node\nconst caption = $('Loop Over Items').item.json.caption || '';\nconst postId = $('Loop Over Items').item.json.id;\nconst mediaUrl = $('Loop Over Items').item.json.media_url;\nconst permalink = $('Loop Over Items').item.json.permalink;\n\n// Extract hashtags\nconst hashtagRegex = /#[\\w\\u00C0-\\u024F]+/gu;\nconst hashtags = caption.match(hashtagRegex) || [];\n\n// Get text before first hashtag\nconst firstHashtagIndex = caption.indexOf('#');\nlet textBeforeHashtags = firstHashtagIndex === -1 \n  ? caption.trim() \n  : caption.substring(0, firstHashtagIndex).trim();\n\n// Build title\nlet title = textBeforeHashtags;\n\n// If no text before hashtags, use first hashtag\nif (!title && hashtags.length > 0) {\n  title = hashtags[0].replace('#', '');\n}\n\n// If still no title, use generic\nif (!title) {\n  title = 'Instagram Video';\n}\n\n// Smart truncation at word boundary\nif (title.length > MAX_TITLE_LENGTH) {\n  title = title.substring(0, MAX_TITLE_LENGTH);\n  const lastSpace = title.lastIndexOf(' ');\n  if (lastSpace > MAX_TITLE_LENGTH * 0.6) {\n    title = title.substring(0, lastSpace);\n  }\n  title = title.trim() + '...';\n}\n\n// Build description - conditionally include source link\nlet description = caption;\n\nif (includeSourceLink) {\n  description += `\\n\\n---\\nOriginally posted on Instagram: ${permalink}`;\n}\n\n// Extract tags for YouTube (without # symbol, max 10)\nconst tags = hashtags\n  .map(h => h.replace('#', ''))\n  .filter(t => t.length > 1 && t.length <= 30)\n  .slice(0, 10);\n\n// Return processed data\nreturn [{\n  json: {\n    postId: postId,\n    title: title,\n    description: description,\n    tags: tags,\n    mediaUrl: mediaUrl,\n    originalCaption: caption,\n    hashtagCount: hashtags.length,\n    sourceLinkIncluded: includeSourceLink\n  }\n}];"
+      },
+      "id": "a96cdf84-f512-4b7a-8be6-a6e509e6fb5a",
+      "name": "Process Title and Tags",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2736,
+        416
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.mediaUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "3fcb3362-deb7-4542-ab10-13ef0beda34f",
+      "name": "Download Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2960,
+        416
+      ],
+      "typeVersion": 4.3
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Process Title and Tags').item.json.title }}",
+        "regionCode": "US",
+        "categoryId": "={{ $('Configuration').item.json.categoryId }}",
+        "options": {
+          "defaultLanguage": "={{ $('Configuration').item.json.defaultLanguage }}",
+          "description": "={{ $('Process Title and Tags').item.json.description }}",
+          "embeddable": true,
+          "license": "youtube",
+          "notifySubscribers": "={{ $('Configuration').item.json.notifySubscribers }}",
+          "privacyStatus": "={{ $('Configuration').item.json.privacyStatus }}",
+          "publicStatsViewable": true,
+          "selfDeclaredMadeForKids": false,
+          "tags": "={{ $('Process Title and Tags').item.json.tags.join(',') }}"
+        }
+      },
+      "id": "263ec5c0-8989-4da3-b51e-946afff5eba2",
+      "name": "Upload to YouTube",
+      "type": "n8n-nodes-base.youTube",
+      "position": [
+        3184,
+        416
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "oOxou5oOQXuS4cQY",
+          "cachedResultUrl": "/projects/vZdjtqHcrLoO32Ib/datatables/oOxou5oOQXuS4cQY",
+          "cachedResultName": "Instagram To YouTube"
+        },
+        "columns": {
+          "value": {
+            "postId": "={{ $('Process Title and Tags').item.json.postId }}",
+            "youtubeId": "={{ $json.id }}"
+          },
+          "schema": [
+            {
+              "id": "postId",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "postId",
+              "defaultMatch": false
+            },
+            {
+              "id": "youtubeId",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "required": false,
+              "displayName": "youtubeId",
+              "defaultMatch": false
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "postId"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f4fcc566-155e-4a19-902f-b48de1385457",
+      "name": "Save Upload Record",
+      "type": "n8n-nodes-base.dataTable",
+      "position": [
+        3408,
+        416
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ffd3b7ab-4ac6-4c71-8ee1-a6c93732a701",
+              "name": "status",
+              "type": "string",
+              "value": "Workflow completed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "22bc5d96-2324-4e42-ae09-21f6168a7184",
+      "name": "Done",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1840,
+        224
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "## Instagram to YouTube Uploader\n\nAutomatically upload Instagram videos to YouTube with scheduled intervals.\n\n### Why This Template?\nThis workflow posts videos at a set time, then progressively uploads remaining content with configurable gaps between each upload. It's a simpler alternative to managing a spreadsheet-based publishing queue - all configuration lives in one node.\n\n### Configuration Options\nEdit the **Configuration** node:\n\n```json\n{\n  \"includeSourceLink\": true,    // Instagram link in description\n  \"waitTimeoutSeconds\": 900,    // Gap between uploads (seconds)\n  \"maxTitleLength\": 100,        // Max title length\n  \"categoryId\": \"24\",           // YouTube category\n  \"privacyStatus\": \"public\",    // public/private/unlisted\n  \"notifySubscribers\": false,   // Notify on upload\n  \"defaultLanguage\": \"en\",      // Video language\n  \"ageRestricted\": false        // 18+ content flag\n}\n```\n\n### Key Settings Explained\n- **includeSourceLink**: Set `false` for unverified accounts that can't add external links\n- **waitTimeoutSeconds**: Gap between uploads (900 = 15 min)\n- **ageRestricted**: Set `true` for 18+ content\n\n### Features\n- Video-only filter (skips images)\n- Hashtag to YouTube tags extraction\n- Deduplication via Data Table\n- COPPA compliance options\n\n### Setup\n1. Edit **Configuration** node\n2. Set **Bearer Auth** in **Fetch Instagram Posts**\n3. Create Data Table: `postId`, `youtubeId`\n4. Set **YouTube OAuth2** in **Upload to YouTube**\n\n### Category IDs\n| ID | Category |\n|----|----------|\n| 22 | People & Blogs |\n| 24 | Entertainment |\n| 20 | Gaming |\n| 10 | Music |",
+        "height": 1104,
+        "width": 678
+      },
+      "id": "414a000a-e8eb-4986-b76d-ad6f68514d12",
+      "name": "Sticky Note - Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Configuration",
+        "height": 224,
+        "width": 256,
+        "color": 5
+      },
+      "id": "540a534a-ca67-4b48-8b9a-36548d909159",
+      "name": "Sticky Note - Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        832,
+        336
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Fetch & Filter Videos\n",
+        "height": 304,
+        "width": 500,
+        "color": 6
+      },
+      "id": "0d0cc97b-99ed-4122-8bd5-802624fb8e9b",
+      "name": "Sticky Note - Fetch",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1136,
+        336
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Deduplication",
+        "height": 384,
+        "width": 388,
+        "color": 7
+      },
+      "id": "6d3e566b-40ba-47b2-8fef-0598dfcdc3fe",
+      "name": "Sticky Note - Check",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2032,
+        336
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Process & Upload",
+        "height": 304,
+        "width": 740,
+        "color": 3
+      },
+      "id": "e14c15b1-ef10-4f4d-b504-2c6fef50d43d",
+      "name": "Sticky Note - Upload",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2704,
+        336
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Process Title and Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Filter Videos Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuration": {
+      "main": [
+        [
+          {
+            "node": "Fetch Instagram Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video": {
+      "main": [
+        [
+          {
+            "node": "Upload to YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check If Already Uploaded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to YouTube": {
+      "main": [
+        [
+          {
+            "node": "Save Upload Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Videos Only": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Upload Record": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Not Uploaded Yet": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Instagram Posts": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Title and Tags": {
+      "main": [
+        [
+          {
+            "node": "Download Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Already Uploaded": {
+      "main": [
+        [
+          {
+            "node": "If Not Uploaded Yet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "c827b1ab-4855-4c19-9035-4f182d753f61",
+  "activeVersionId": null,
+  "versionCounter": 3,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-06T00:15:03.609Z",
+      "createdAt": "2026-03-06T00:15:03.609Z",
+      "role": "workflow:owner",
+      "workflowId": "BQOKGmCqTKgYDjgg",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
