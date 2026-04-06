@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-06T13:10:28.733Z",
+  "updatedAt": "2026-04-06T16:30:11.587Z",
   "createdAt": "2026-02-13T14:21:39.857Z",
   "id": "CPxhdWrDqI60Zub3-HlUd",
   "name": "01. Backup & Restore Workflow",
@@ -37,7 +37,8 @@
         "rule": {
           "interval": [
             {
-              "field": "minutes"
+              "field": "minutes",
+              "minutesInterval": 5
             }
           ]
         }
@@ -528,16 +529,18 @@
           "id": "H2VTfwuqfmPzjb9v",
           "name": "DP: GitHub API"
         }
-      }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "34775986-2867-4e53-b4b3-f6392d652107",
+              "id": "c7c89bc3-f541-4694-b2da-38fffe94ada2",
               "name": "github",
-              "value": "={{ $json.content.html_url }}",
+              "value": "=https://github.com/donPuerto/n8n-workflows/blob/main/{{$json.path}}",
               "type": "string"
             }
           ]
@@ -650,7 +653,7 @@
     },
     {
       "parameters": {
-        "content": "## Get all workflows and store in Google Drive and Github",
+        "content": "## Scheduled reconciliation flow\n1. Load all live workflows from n8n.\n2. Loop through each workflow and check the backup sheet by workflow Id.\n3. If no sheet row exists, create new Drive and GitHub backups.\n4. If a row exists, compare updatedAt to decide whether a refresh is needed.\n5. If changed, rebuild the JSON backup, upload to Drive, and create or edit the GitHub file.\n6. Append or update the sheet row with the latest backup links.\n7. After processing live workflows, read all backup sheet rows.\n8. Find rows whose workflow Id no longer exists in n8n.\n9. Delete the removed workflow backups from Google Drive and GitHub.",
         "height": 752,
         "width": 3744,
         "color": 4
@@ -708,20 +711,20 @@
     },
     {
       "parameters": {
-        "authentication": "oAuth2",
+        "authentication": "accessToken",
         "resource": "file",
         "operation": "edit",
         "owner": {
           "__rl": true,
-          "value": "={{ $('Extract Drive File ID from Sheet').item.json.github_owner || 'donPuerto' }}",
+          "value": "donPuerto",
           "mode": "name"
         },
         "repository": {
           "__rl": true,
-          "value": "={{ $('Extract Drive File ID from Sheet').item.json.github_repo || 'n8n-workflows' }}",
+          "value": "n8n-workflows",
           "mode": "name"
         },
-        "filePath": "={{ $('Extract Drive File ID from Sheet').item.json.github_path || $json.path }}",
+        "filePath": "={{ $json.path }}",
         "binaryData": true,
         "commitMessage": "=Backup workflow {{$json.workflowName}}"
       },
@@ -735,9 +738,9 @@
       "name": "Workflow ? GitHub File Builder",
       "webhookId": "6d34e561-d4d8-45ad-bad5-b38b775c223d",
       "credentials": {
-        "githubOAuth2Api": {
-          "id": "HXZmS7poh93Qp0Vm",
-          "name": "DP: GitHub Account OAuth2 API"
+        "githubApi": {
+          "id": "H2VTfwuqfmPzjb9v",
+          "name": "DP: GitHub API"
         }
       }
     },
@@ -872,12 +875,14 @@
       ],
       "id": "1521ff47-6900-47b2-b925-daa09d3f458d",
       "name": "Delete Existing Drive Backup",
+      "alwaysOutputData": true,
       "credentials": {
         "googleDriveOAuth2Api": {
           "id": "YO4qnGhKlEgotzkB",
           "name": "DP: Google Drive Account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -990,7 +995,7 @@
     },
     {
       "parameters": {
-        "content": "## Update working during Published instance\n",
+        "content": "## Workflow update trigger flow\n1. Receive an n8n workflow update event.\n2. Load the updated workflow by Id.\n3. Check the backup sheet for the existing row using workflow Id.\n4. If no row exists, this workflow will be backed up as a new record.\n5. If a row exists, extract the current Drive file Id and GitHub file path.\n6. Replace the Drive JSON backup with the latest workflow JSON.\n7. Check whether the GitHub backup file already exists.\n8. Edit the GitHub file when it exists, or create it when missing.\n9. Append or update the sheet row with the refreshed backup links.",
         "height": 784,
         "width": 3744,
         "color": 6
@@ -1182,6 +1187,132 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "donPuerto",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "=n8n-workflows"
+        },
+        "filePath": "={{ $json.path }}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1888,
+        864
+      ],
+      "id": "74a8993e-16dd-452e-9531-e519ebfac7c6",
+      "name": "Check GitHub Backup Exists",
+      "credentials": {
+        "githubApi": {
+          "id": "H2VTfwuqfmPzjb9v",
+          "name": "DP: GitHub API"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "71b0487e-a56f-4023-8324-0468b46c8a1c",
+              "leftValue": "={{ $json.sha || $json.content?.sha || \"\" }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2112,
+        864
+      ],
+      "id": "a40dd520-da06-4ba9-ba0d-dc3680324301",
+      "name": "GitHub Backup Exists?"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "donPuerto",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "=n8n-workflows"
+        },
+        "filePath": "={{ $('Prepare workflow JSON for GitHub commit').item.json.path }}",
+        "binaryData": true,
+        "commitMessage": "=Backup workflow {{$json.workflowName}}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        2352,
+        768
+      ],
+      "id": "647c2eae-49d8-45ef-84e6-a27aee1a920d",
+      "name": "Edit Existing GitHub Backup",
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "HXZmS7poh93Qp0Vm",
+          "name": "DP: GitHub Account OAuth2 API"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc348ddd-13ba-4be5-8321-bf41104de961",
+              "name": "github",
+              "value": "=https://github.com/donPuerto/n8n-workflows/blob/main/{{$json.path || $('Prepare workflow JSON for GitHub commit').item.json.path}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2576,
+        768
+      ],
+      "id": "7d32e732-29e8-48f4-af36-9946891deae3",
+      "name": "Set Field for GitHub URL (Edit)"
     }
   ],
   "connections": {
@@ -1241,6 +1372,17 @@
       ]
     },
     "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
       "main": [
         [
           {
@@ -1351,7 +1493,7 @@
       "main": [
         [
           {
-            "node": "Upload JSON File to GitHub",
+            "node": "Check GitHub Backup Exists",
             "type": "main",
             "index": 0
           }
@@ -1584,6 +1726,17 @@
         ]
       ]
     },
+    "Record found, do nothing": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Loop completed": {
       "main": [
         [
@@ -1621,13 +1774,68 @@
           }
         ]
       ]
+    },
+    "Check GitHub Backup Exists": {
+      "main": [
+        [
+          {
+            "node": "GitHub Backup Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Backup Exists?": {
+      "main": [
+        [
+          {
+            "node": "Edit Existing GitHub Backup",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload JSON File to GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Existing GitHub Backup": {
+      "main": [
+        [
+          {
+            "node": "Set Field for GitHub URL (Edit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Field for GitHub URL (Edit)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false,
-    "callerPolicy": "workflowsFromSameOwner"
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true
   },
   "staticData": {
     "node:Schedule Trigger": {
@@ -1638,9 +1846,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "0f157eda-55a0-4938-8da8-a7071b3ee33e",
-  "activeVersionId": "363a7dd9-d5d6-4d27-8265-13b4a7432b82",
-  "versionCounter": 226,
+  "versionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
+  "activeVersionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
+  "versionCounter": 275,
   "triggerCount": 2,
   "shared": [
     {
@@ -1663,9 +1871,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-06T12:26:54.345Z",
-    "createdAt": "2026-04-06T12:26:54.345Z",
-    "versionId": "363a7dd9-d5d6-4d27-8265-13b4a7432b82",
+    "updatedAt": "2026-04-06T16:30:11.588Z",
+    "createdAt": "2026-04-06T16:30:11.588Z",
+    "versionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
     "workflowId": "CPxhdWrDqI60Zub3-HlUd",
     "nodes": [
       {
@@ -1673,8 +1881,8 @@
         "type": "n8n-nodes-base.manualTrigger",
         "typeVersion": 1,
         "position": [
-          80,
-          1200
+          -944,
+          496
         ],
         "id": "294bf68f-3462-4d91-8ab3-39510b96c3d6",
         "name": "When clicking �Test workflow�"
@@ -1686,8 +1894,8 @@
         "type": "n8n-nodes-base.wait",
         "typeVersion": 1.1,
         "position": [
-          752,
-          1136
+          -272,
+          400
         ],
         "id": "5da72489-0ffd-4e60-9828-678fbe0dd58f",
         "name": "Wait",
@@ -1707,8 +1915,8 @@
         "type": "n8n-nodes-base.scheduleTrigger",
         "typeVersion": 1.2,
         "position": [
-          80,
-          1008
+          -944,
+          304
         ],
         "id": "f177158e-f46b-4454-ae53-c34f994cb285",
         "name": "Schedule Trigger"
@@ -1718,8 +1926,8 @@
         "type": "n8n-nodes-base.merge",
         "typeVersion": 3.2,
         "position": [
-          2416,
-          1104
+          1520,
+          -352
         ],
         "id": "c5f056d7-9fde-469a-a402-40240193cb1c",
         "name": "Merge"
@@ -1732,8 +1940,8 @@
         "type": "n8n-nodes-base.aggregate",
         "typeVersion": 1,
         "position": [
-          2624,
-          1104
+          1744,
+          -352
         ],
         "id": "153803d9-933f-4d44-b635-e41727b76e8f",
         "name": "Aggregate"
@@ -1843,8 +2051,8 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.5,
         "position": [
-          2208,
-          448
+          2400,
+          592
         ],
         "id": "220150f1-f325-4bc8-aeb5-7301ee6d5604",
         "name": "Append or update row in sheet",
@@ -1947,8 +2155,8 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.5,
         "position": [
-          3104,
-          1104
+          2192,
+          -160
         ],
         "id": "20dcde06-8e6c-40f9-a060-4a38a8a47a99",
         "name": "Append row in sheet",
@@ -1966,8 +2174,8 @@
         "type": "n8n-nodes-base.splitInBatches",
         "typeVersion": 3,
         "position": [
-          544,
-          1120
+          -496,
+          304
         ],
         "id": "45306c4c-e1f6-436c-9fc6-64e93a809f0e",
         "name": "Loop Over Items"
@@ -1980,8 +2188,8 @@
         "type": "n8n-nodes-base.n8n",
         "typeVersion": 1,
         "position": [
-          304,
-          1120
+          -720,
+          304
         ],
         "id": "85b05771-ffd1-4f0d-90ad-1623ffa85269",
         "name": "Get many n8n workflows",
@@ -2020,8 +2228,8 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
         "position": [
-          1344,
-          1136
+          400,
+          400
         ],
         "id": "f98873b7-0fa9-4d3e-bb54-b3c0a93d470d",
         "name": "Route if Workflow Exists"
@@ -2039,8 +2247,8 @@
         "type": "n8n-nodes-base.n8n",
         "typeVersion": 1,
         "position": [
-          1600,
-          1024
+          624,
+          -352
         ],
         "id": "86dd34d6-5dbc-4b84-bf4a-0870ca0d7a62",
         "name": "Get Workflow by ID",
@@ -2060,8 +2268,8 @@
         "name": "Convert JSON to Binary File",
         "type": "n8n-nodes-base.code",
         "position": [
-          1776,
-          1120
+          848,
+          -256
         ],
         "typeVersion": 2
       },
@@ -2087,8 +2295,8 @@
         "type": "n8n-nodes-base.googleDrive",
         "typeVersion": 3,
         "position": [
-          1968,
-          1120
+          1072,
+          -256
         ],
         "id": "653360b7-9f58-44e4-9fcc-87c3f2918a5b",
         "name": "Upload JSON to Google Drive",
@@ -2140,8 +2348,8 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          2208,
-          1120
+          1296,
+          -256
         ],
         "id": "e18b8007-3217-4c1f-8763-15ba6655efb5",
         "name": "Set Fields from JSON Binary to Google Drive"
@@ -2154,8 +2362,8 @@
         "name": "Prepare workflow JSON for GitHub commit",
         "type": "n8n-nodes-base.code",
         "position": [
-          1760,
-          864
+          848,
+          -448
         ],
         "typeVersion": 2
       },
@@ -2179,8 +2387,8 @@
         "type": "n8n-nodes-base.github",
         "typeVersion": 1.1,
         "position": [
-          1968,
-          864
+          1072,
+          -448
         ],
         "id": "b1b682d6-5dd4-400f-9cd3-8283ba77760a",
         "name": "Upload JSON File to GitHub",
@@ -2190,16 +2398,18 @@
             "id": "H2VTfwuqfmPzjb9v",
             "name": "DP: GitHub API"
           }
-        }
+        },
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
       },
       {
         "parameters": {
           "assignments": {
             "assignments": [
               {
-                "id": "34775986-2867-4e53-b4b3-f6392d652107",
+                "id": "c7c89bc3-f541-4694-b2da-38fffe94ada2",
                 "name": "github",
-                "value": "={{ $json.content.html_url }}",
+                "value": "=https://github.com/donPuerto/n8n-workflows/blob/main/{{$json.path}}",
                 "type": "string"
               }
             ]
@@ -2209,8 +2419,8 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          2208,
-          864
+          1296,
+          -448
         ],
         "id": "bc369717-0161-4530-a6c6-b4c37be2841e",
         "name": "Set Field for GitHub URL"
@@ -2262,8 +2472,8 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          2880,
-          1104
+          1968,
+          -352
         ],
         "id": "852b8ebd-4772-444e-896a-328527c326ab",
         "name": "Final Fields"
@@ -2297,8 +2507,8 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.5,
         "position": [
-          944,
-          1136
+          -48,
+          400
         ],
         "id": "a2f1f907-c603-4ea2-b55a-f52877d82735",
         "name": "Check Title If Exist in Workflow Sheet Tab",
@@ -2312,15 +2522,15 @@
       },
       {
         "parameters": {
-          "content": "## Get all workflows and store in Google Drive and Github",
-          "height": 688,
-          "width": 3280,
+          "content": "## Scheduled reconciliation flow\n1. Load all live workflows from n8n.\n2. Loop through each workflow and check the backup sheet by workflow Id.\n3. If no sheet row exists, create new Drive and GitHub backups.\n4. If a row exists, compare updatedAt to decide whether a refresh is needed.\n5. If changed, rebuild the JSON backup, upload to Drive, and create or edit the GitHub file.\n6. Append or update the sheet row with the latest backup links.\n7. After processing live workflows, read all backup sheet rows.\n8. Find rows whose workflow Id no longer exists in n8n.\n9. Delete the removed workflow backups from Google Drive and GitHub.",
+          "height": 752,
+          "width": 3744,
           "color": 4
         },
         "type": "n8n-nodes-base.stickyNote",
         "position": [
-          0,
-          800
+          -1104,
+          208
         ],
         "typeVersion": 1,
         "id": "14d6dd81-636d-4a87-a2db-e916157b4886",
@@ -2355,8 +2565,8 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.5,
         "position": [
-          288,
-          64
+          848,
+          304
         ],
         "id": "fe997183-36dc-47c7-9dee-30d4b3006d47",
         "name": "Check Title/Name Existence in Workflow Sheet Tab1",
@@ -2370,36 +2580,36 @@
       },
       {
         "parameters": {
-          "authentication": "oAuth2",
+          "authentication": "accessToken",
           "resource": "file",
           "operation": "edit",
           "owner": {
             "__rl": true,
-            "value": "={{ $('Extract Drive File ID from Sheet').item.json.github_owner || 'donPuerto' }}",
+            "value": "donPuerto",
             "mode": "name"
           },
           "repository": {
             "__rl": true,
-            "value": "={{ $('Extract Drive File ID from Sheet').item.json.github_repo || 'n8n-workflows' }}",
+            "value": "n8n-workflows",
             "mode": "name"
           },
-          "filePath": "={{ $('Extract Drive File ID from Sheet').item.json.github_path || $json.path }}",
+          "filePath": "={{ $json.path }}",
           "binaryData": true,
           "commitMessage": "=Backup workflow {{$json.workflowName}}"
         },
         "type": "n8n-nodes-base.github",
         "typeVersion": 1.1,
         "position": [
-          800,
-          592
+          1296,
+          688
         ],
         "id": "1ab48db8-6823-4cb9-8c6d-9cd051a28268",
         "name": "Workflow ? GitHub File Builder",
         "webhookId": "6d34e561-d4d8-45ad-bad5-b38b775c223d",
         "credentials": {
-          "githubOAuth2Api": {
-            "id": "HXZmS7poh93Qp0Vm",
-            "name": "DP: GitHub Account OAuth2 API"
+          "githubApi": {
+            "id": "H2VTfwuqfmPzjb9v",
+            "name": "DP: GitHub API"
           }
         }
       },
@@ -2411,8 +2621,8 @@
         "name": "Prepare Workflow JSON for Google Drive",
         "type": "n8n-nodes-base.code",
         "position": [
-          576,
-          320
+          1072,
+          496
         ],
         "typeVersion": 2
       },
@@ -2424,8 +2634,8 @@
         "name": "Prepare Workflow JSON for GitHub",
         "type": "n8n-nodes-base.code",
         "position": [
-          576,
-          592
+          1072,
+          688
         ],
         "typeVersion": 2
       },
@@ -2451,8 +2661,8 @@
         "type": "n8n-nodes-base.googleDrive",
         "typeVersion": 3,
         "position": [
-          832,
-          320
+          1296,
+          496
         ],
         "id": "cbf0a3a9-0609-457b-bf56-12fb884f7120",
         "name": "Google Drive File Builder",
@@ -2472,8 +2682,8 @@
         "type": "n8n-nodes-base.n8nTrigger",
         "typeVersion": 1,
         "position": [
-          80,
-          464
+          -944,
+          -256
         ],
         "id": "c8781d0c-3dea-4e5b-b98c-49173e4d3e5f",
         "name": "n8n ? Workflow Update Trigger"
@@ -2491,8 +2701,8 @@
         "type": "n8n-nodes-base.n8n",
         "typeVersion": 1,
         "position": [
-          304,
-          464
+          848,
+          592
         ],
         "id": "4b8e8ae8-f928-428c-a1ac-97e6337efd72",
         "name": "n8n ? Get Workflow by ID",
@@ -2510,8 +2720,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          544,
-          64
+          1072,
+          304
         ],
         "id": "606efc06-c542-4e70-97d7-72606fa668ab",
         "name": "Extract Drive File ID from Sheet"
@@ -2529,17 +2739,19 @@
         "type": "n8n-nodes-base.googleDrive",
         "typeVersion": 3,
         "position": [
-          784,
-          64
+          1296,
+          304
         ],
         "id": "1521ff47-6900-47b2-b925-daa09d3f458d",
         "name": "Delete Existing Drive Backup",
+        "alwaysOutputData": true,
         "credentials": {
           "googleDriveOAuth2Api": {
             "id": "YO4qnGhKlEgotzkB",
             "name": "DP: Google Drive Account"
           }
-        }
+        },
+        "onError": "continueRegularOutput"
       },
       {
         "parameters": {
@@ -2582,8 +2794,8 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          1056,
-          320
+          1520,
+          496
         ],
         "id": "f79fd592-e2c6-4ea8-a8f5-3641e6a60ce8",
         "name": "Set Drive File Metadata"
@@ -2605,8 +2817,8 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          1056,
-          592
+          1520,
+          688
         ],
         "id": "ea95bda7-db7f-479a-9809-a521178ba8f0",
         "name": "Set GitHub File Metadata"
@@ -2616,8 +2828,8 @@
         "type": "n8n-nodes-base.merge",
         "typeVersion": 3.2,
         "position": [
-          1440,
-          448
+          1744,
+          592
         ],
         "id": "3c52d176-557c-4a26-ac2e-a727d64af6f3",
         "name": "Combine Drive + GitHub Results"
@@ -2630,8 +2842,8 @@
         "type": "n8n-nodes-base.aggregate",
         "typeVersion": 1,
         "position": [
-          1664,
-          448
+          1968,
+          592
         ],
         "id": "e6491c33-83da-4b1e-9a6c-e2d4aadec227",
         "name": "Consolidate Backup Data"
@@ -2643,8 +2855,8 @@
         "type": "n8n-nodes-base.wait",
         "typeVersion": 1.1,
         "position": [
-          1920,
-          448
+          2176,
+          592
         ],
         "id": "8c24b54a-97db-426c-8ddc-06601bbbee19",
         "name": "Stabilize Before Sheet Update",
@@ -2652,15 +2864,15 @@
       },
       {
         "parameters": {
-          "content": "## Update working during Published instance\n",
+          "content": "## Workflow update trigger flow\n1. Receive an n8n workflow update event.\n2. Load the updated workflow by Id.\n3. Check the backup sheet for the existing row using workflow Id.\n4. If no row exists, this workflow will be backed up as a new record.\n5. If a row exists, extract the current Drive file Id and GitHub file path.\n6. Replace the Drive JSON backup with the latest workflow JSON.\n7. Check whether the GitHub backup file already exists.\n8. Edit the GitHub file when it exists, or create it when missing.\n9. Append or update the sheet row with the refreshed backup links.",
           "height": 784,
-          "width": 3280,
+          "width": 3744,
           "color": 6
         },
         "type": "n8n-nodes-base.stickyNote",
         "position": [
-          0,
-          0
+          -1104,
+          -592
         ],
         "typeVersion": 1,
         "id": "6e0c9301-de41-40d5-8d10-ea3c4478b3f0",
@@ -2673,8 +2885,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1136,
-          1136
+          176,
+          400
         ],
         "id": "c5f561c3-cc0e-4013-9c71-a8caa1289c0d",
         "name": "Code in JavaScript",
@@ -2685,8 +2897,8 @@
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
         "position": [
-          816,
-          928
+          -272,
+          -256
         ],
         "id": "a9a218a7-0602-43c0-a273-68ebc566a7d8",
         "name": "Loop completed"
@@ -2696,8 +2908,8 @@
         "type": "n8n-nodes-base.noOp",
         "typeVersion": 1,
         "position": [
-          1616,
-          1312
+          848,
+          784
         ],
         "id": "f5e48625-bbcf-4ba4-9fbc-942fc17d791b",
         "name": "Record found, do nothing"
@@ -2730,8 +2942,8 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
         "position": [
-          1568,
-          1136
+          624,
+          688
         ],
         "id": "29135f72-08aa-453c-acae-769093de64d6",
         "name": "Needs Backup Refresh?"
@@ -2757,8 +2969,8 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.5,
         "position": [
-          352,
-          1328
+          -48,
+          -256
         ],
         "id": "af60d070-2983-430d-84ee-9b6e95ac8839",
         "name": "Read Workflow Backup Rows",
@@ -2776,8 +2988,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          608,
-          1328
+          176,
+          -256
         ],
         "id": "4b1f6c66-efb3-4058-9779-0a58d3e1f5ea",
         "name": "Find Deleted Workflow Backups"
@@ -2795,19 +3007,19 @@
         "type": "n8n-nodes-base.googleDrive",
         "typeVersion": 3,
         "position": [
-          896,
-          1248
+          400,
+          -352
         ],
         "id": "e31c34cd-3cd5-4547-8051-b4c150258f07",
         "name": "Delete Removed Drive Backup",
+        "alwaysOutputData": true,
         "credentials": {
           "googleDriveOAuth2Api": {
             "id": "YO4qnGhKlEgotzkB",
             "name": "DP: Google Drive Account"
           }
         },
-        "onError": "continueRegularOutput",
-        "alwaysOutputData": true
+        "onError": "continueRegularOutput"
       },
       {
         "parameters": {
@@ -2830,11 +3042,115 @@
         "type": "n8n-nodes-base.github",
         "typeVersion": 1.1,
         "position": [
-          896,
-          1408
+          400,
+          -160
         ],
         "id": "d4241560-a040-4699-ae45-c4b0a1a95171",
         "name": "Delete Removed GitHub Backup",
+        "alwaysOutputData": true,
+        "webhookId": "05561ab0-16dd-42cd-ae16-aff8ac71509e",
+        "credentials": {
+          "githubOAuth2Api": {
+            "id": "HXZmS7poh93Qp0Vm",
+            "name": "DP: GitHub Account OAuth2 API"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "value": "donPuerto",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "=n8n-workflows"
+          },
+          "filePath": "={{ $json.path }}"
+        },
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          1888,
+          864
+        ],
+        "id": "74a8993e-16dd-452e-9531-e519ebfac7c6",
+        "name": "Check GitHub Backup Exists",
+        "credentials": {
+          "githubApi": {
+            "id": "H2VTfwuqfmPzjb9v",
+            "name": "DP: GitHub API"
+          }
+        },
+        "onError": "continueRegularOutput",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "71b0487e-a56f-4023-8324-0468b46c8a1c",
+                "leftValue": "={{ $json.sha || $json.content?.sha || \"\" }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEmpty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          2112,
+          864
+        ],
+        "id": "a40dd520-da06-4ba9-ba0d-dc3680324301",
+        "name": "GitHub Backup Exists?"
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "resource": "file",
+          "operation": "edit",
+          "owner": {
+            "__rl": true,
+            "value": "donPuerto",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "mode": "name",
+            "value": "=n8n-workflows"
+          },
+          "filePath": "={{ $('Prepare workflow JSON for GitHub commit').item.json.path }}",
+          "binaryData": true,
+          "commitMessage": "=Backup workflow {{$json.workflowName}}"
+        },
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          2352,
+          768
+        ],
+        "id": "647c2eae-49d8-45ef-84e6-a27aee1a920d",
+        "name": "Edit Existing GitHub Backup",
         "credentials": {
           "githubOAuth2Api": {
             "id": "HXZmS7poh93Qp0Vm",
@@ -2843,6 +3159,29 @@
         },
         "onError": "continueRegularOutput",
         "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "fc348ddd-13ba-4be5-8321-bf41104de961",
+                "name": "github",
+                "value": "=https://github.com/donPuerto/n8n-workflows/blob/main/{{$json.path || $('Prepare workflow JSON for GitHub commit').item.json.path}}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2576,
+          768
+        ],
+        "id": "7d32e732-29e8-48f4-af36-9946891deae3",
+        "name": "Set Field for GitHub URL (Edit)"
       }
     ],
     "connections": {
@@ -2902,6 +3241,17 @@
         ]
       },
       "Append row in sheet": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Append or update row in sheet": {
         "main": [
           [
             {
@@ -3012,7 +3362,7 @@
         "main": [
           [
             {
-              "node": "Upload JSON File to GitHub",
+              "node": "Check GitHub Backup Exists",
               "type": "main",
               "index": 0
             }
@@ -3245,6 +3595,17 @@
           ]
         ]
       },
+      "Record found, do nothing": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "Loop completed": {
         "main": [
           [
@@ -3282,6 +3643,57 @@
             }
           ]
         ]
+      },
+      "Check GitHub Backup Exists": {
+        "main": [
+          [
+            {
+              "node": "GitHub Backup Exists?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GitHub Backup Exists?": {
+        "main": [
+          [
+            {
+              "node": "Edit Existing GitHub Backup",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Upload JSON File to GitHub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Existing GitHub Backup": {
+        "main": [
+          [
+            {
+              "node": "Set Field for GitHub URL (Edit)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Field for GitHub URL (Edit)": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
     },
     "authors": "Don Puerto",
@@ -3290,18 +3702,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-06T12:26:54.412Z",
-        "id": 855,
+        "createdAt": "2026-04-06T16:30:11.688Z",
+        "id": 881,
         "workflowId": "CPxhdWrDqI60Zub3-HlUd",
-        "versionId": "363a7dd9-d5d6-4d27-8265-13b4a7432b82",
+        "versionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
         "event": "activated",
         "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
       },
       {
-        "createdAt": "2026-04-06T12:26:54.394Z",
-        "id": 854,
+        "createdAt": "2026-04-06T16:30:11.635Z",
+        "id": 880,
         "workflowId": "CPxhdWrDqI60Zub3-HlUd",
-        "versionId": "363a7dd9-d5d6-4d27-8265-13b4a7432b82",
+        "versionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
         "event": "deactivated",
         "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
       }
