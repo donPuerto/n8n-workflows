@@ -1,0 +1,784 @@
+{
+  "updatedAt": "2026-03-18T13:56:33.407Z",
+  "createdAt": "2026-03-17T13:54:31.609Z",
+  "id": "EtcDoFGCQgaFqQfh",
+  "name": "[Portfolio] Retell - Start Web Call",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "start-web-call",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "wh-start-call",
+      "name": "Receive Call Request",
+      "webhookId": "start-web-call-001"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.body.agent_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        192
+      ],
+      "id": "if-validate-agent",
+      "name": "Has Agent ID?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, code: 'MISSING_AGENT_ID', message: 'agent_id is required.', retryable: false }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        288
+      ],
+      "id": "resp-missing-agent",
+      "name": "Missing Agent ID Error"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "metadata",
+              "value": "={{ JSON.stringify({ customer_name: $json.body.customer_name || 'Unknown', customer_id: $json.body.customer_id || '', email: $json.body.email || '', phone: $json.body.phone || '', service_type: $json.body.service_type || '', source: 'web_ui' }) }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "retell_llm_dynamic_variables",
+              "value": "={{ JSON.stringify({ \"current_time_Asia/Manila\": $now.setZone(\"Asia/Manila\").toFormat(\"yyyy-MM-dd HH:mm:ss\"), ...($json.body.retell_llm_dynamic_variables || {}) }) }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "customer_name",
+              "value": "={{ $json.body.customer_name || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "email",
+              "value": "={{ $json.body.email || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        96
+      ],
+      "id": "set-build-request",
+      "name": "Build Retell Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/v2/create-web-call",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ agent_id: $json.agent_id, metadata: JSON.parse($json.metadata), retell_llm_dynamic_variables: JSON.parse($json.retell_llm_dynamic_variables) }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        96
+      ],
+      "id": "http-retell",
+      "name": "Call Retell Create Web Call",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "NIw0Vvna0R5uqRGV",
+          "name": "DP: Retell API Key"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.body.access_token }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        96
+      ],
+      "id": "if-retell-success",
+      "name": "Retell Success?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "s2",
+              "name": "call_id",
+              "value": "={{ $json.body.call_id }}",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "access_token",
+              "value": "={{ $json.body.access_token }}",
+              "type": "string"
+            },
+            {
+              "id": "s4",
+              "name": "agent_id",
+              "value": "={{ $json.body.agent_id }}",
+              "type": "string"
+            },
+            {
+              "id": "s5",
+              "name": "call_status",
+              "value": "={{ $json.body.call_status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "set-format-success",
+      "name": "Format Success Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "resp-success",
+      "name": "Success Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, code: 'RETELL_API_ERROR', message: 'Failed to create web call.', details: $json.body || $json, retryable: true }) }}",
+        "options": {
+          "responseCode": 502
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        192
+      ],
+      "id": "resp-retell-error",
+      "name": "Retell Error Response"
+    }
+  ],
+  "connections": {
+    "Receive Call Request": {
+      "main": [
+        [
+          {
+            "node": "Has Agent ID?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Agent ID?": {
+      "main": [
+        [
+          {
+            "node": "Build Retell Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Missing Agent ID Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Retell Request": {
+      "main": [
+        [
+          {
+            "node": "Call Retell Create Web Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Retell Create Web Call": {
+      "main": [
+        [
+          {
+            "node": "Retell Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retell Success?": {
+      "main": [
+        [
+          {
+            "node": "Format Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retell Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Success Response": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "550d98d4-b6b0-494c-b61e-b253e0f4b544",
+  "activeVersionId": "550d98d4-b6b0-494c-b61e-b253e0f4b544",
+  "versionCounter": 24,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-17T13:54:31.611Z",
+      "createdAt": "2026-03-17T13:54:31.611Z",
+      "role": "workflow:owner",
+      "workflowId": "EtcDoFGCQgaFqQfh",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2026-03-17T14:31:11.365Z",
+      "createdAt": "2026-03-17T14:31:11.365Z",
+      "id": "xOTM5xUTxHZrwP68",
+      "name": "Workflow-A"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-18T13:56:33.407Z",
+    "createdAt": "2026-03-18T13:56:33.407Z",
+    "versionId": "550d98d4-b6b0-494c-b61e-b253e0f4b544",
+    "workflowId": "EtcDoFGCQgaFqQfh",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "start-web-call",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          192
+        ],
+        "id": "wh-start-call",
+        "name": "Receive Call Request",
+        "webhookId": "start-web-call-001"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "caseSensitive": true
+            },
+            "combinator": "or",
+            "conditions": [
+              {
+                "id": "cond1",
+                "leftValue": "={{ $json.body.agent_id }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          192
+        ],
+        "id": "if-validate-agent",
+        "name": "Has Agent ID?"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: false, code: 'MISSING_AGENT_ID', message: 'agent_id is required.', retryable: false }) }}",
+          "options": {
+            "responseCode": 400
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          288
+        ],
+        "id": "resp-missing-agent",
+        "name": "Missing Agent ID Error"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a1",
+                "name": "agent_id",
+                "value": "={{ $json.body.agent_id }}",
+                "type": "string"
+              },
+              {
+                "id": "a2",
+                "name": "metadata",
+                "value": "={{ JSON.stringify({ customer_name: $json.body.customer_name || 'Unknown', customer_id: $json.body.customer_id || '', email: $json.body.email || '', phone: $json.body.phone || '', service_type: $json.body.service_type || '', source: 'web_ui' }) }}",
+                "type": "string"
+              },
+              {
+                "id": "a3",
+                "name": "retell_llm_dynamic_variables",
+                "value": "={{ JSON.stringify({ \"current_time_Asia/Manila\": $now.setZone(\"Asia/Manila\").toFormat(\"yyyy-MM-dd HH:mm:ss\"), ...($json.body.retell_llm_dynamic_variables || {}) }) }}",
+                "type": "string"
+              },
+              {
+                "id": "a4",
+                "name": "customer_name",
+                "value": "={{ $json.body.customer_name || 'Unknown' }}",
+                "type": "string"
+              },
+              {
+                "id": "a5",
+                "name": "email",
+                "value": "={{ $json.body.email || '' }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          448,
+          96
+        ],
+        "id": "set-build-request",
+        "name": "Build Retell Request"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.retellai.com/v2/create-web-call",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ agent_id: $json.agent_id, metadata: JSON.parse($json.metadata), retell_llm_dynamic_variables: JSON.parse($json.retell_llm_dynamic_variables) }) }}",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          672,
+          96
+        ],
+        "id": "http-retell",
+        "name": "Call Retell Create Web Call",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "NIw0Vvna0R5uqRGV",
+            "name": "DP: Retell API Key"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "caseSensitive": true
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "cond1",
+                "leftValue": "={{ $json.body.access_token }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          96
+        ],
+        "id": "if-retell-success",
+        "name": "Retell Success?"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "s1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "s2",
+                "name": "call_id",
+                "value": "={{ $json.body.call_id }}",
+                "type": "string"
+              },
+              {
+                "id": "s3",
+                "name": "access_token",
+                "value": "={{ $json.body.access_token }}",
+                "type": "string"
+              },
+              {
+                "id": "s4",
+                "name": "agent_id",
+                "value": "={{ $json.body.agent_id }}",
+                "type": "string"
+              },
+              {
+                "id": "s5",
+                "name": "call_status",
+                "value": "={{ $json.body.call_status }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1120,
+          0
+        ],
+        "id": "set-format-success",
+        "name": "Format Success Response"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json) }}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1344,
+          0
+        ],
+        "id": "resp-success",
+        "name": "Success Response"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: false, code: 'RETELL_API_ERROR', message: 'Failed to create web call.', details: $json.body || $json, retryable: true }) }}",
+          "options": {
+            "responseCode": 502
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1120,
+          192
+        ],
+        "id": "resp-retell-error",
+        "name": "Retell Error Response"
+      }
+    ],
+    "connections": {
+      "Receive Call Request": {
+        "main": [
+          [
+            {
+              "node": "Has Agent ID?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Agent ID?": {
+        "main": [
+          [
+            {
+              "node": "Build Retell Request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Missing Agent ID Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Retell Request": {
+        "main": [
+          [
+            {
+              "node": "Call Retell Create Web Call",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call Retell Create Web Call": {
+        "main": [
+          [
+            {
+              "node": "Retell Success?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Retell Success?": {
+        "main": [
+          [
+            {
+              "node": "Format Success Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Retell Error Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Success Response": {
+        "main": [
+          [
+            {
+              "node": "Success Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-18T13:56:33.440Z",
+        "id": 533,
+        "workflowId": "EtcDoFGCQgaFqQfh",
+        "versionId": "550d98d4-b6b0-494c-b61e-b253e0f4b544",
+        "event": "activated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      },
+      {
+        "createdAt": "2026-03-18T13:56:46.362Z",
+        "id": 535,
+        "workflowId": "EtcDoFGCQgaFqQfh",
+        "versionId": "550d98d4-b6b0-494c-b61e-b253e0f4b544",
+        "event": "activated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      },
+      {
+        "createdAt": "2026-03-18T13:56:33.430Z",
+        "id": 532,
+        "workflowId": "EtcDoFGCQgaFqQfh",
+        "versionId": "550d98d4-b6b0-494c-b61e-b253e0f4b544",
+        "event": "deactivated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      },
+      {
+        "createdAt": "2026-03-18T13:56:46.353Z",
+        "id": 534,
+        "workflowId": "EtcDoFGCQgaFqQfh",
+        "versionId": "550d98d4-b6b0-494c-b61e-b253e0f4b544",
+        "event": "deactivated",
+        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    ]
+  }
+}
