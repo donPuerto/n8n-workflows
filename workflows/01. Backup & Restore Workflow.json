@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-06T16:30:11.587Z",
+  "updatedAt": "2026-04-06T16:48:04.491Z",
   "createdAt": "2026-02-13T14:21:39.857Z",
   "id": "CPxhdWrDqI60Zub3-HlUd",
   "name": "01. Backup & Restore Workflow",
@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "amount": 1
+        "amount": 4
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -653,7 +653,7 @@
     },
     {
       "parameters": {
-        "content": "## Scheduled reconciliation flow\n1. Load all live workflows from n8n.\n2. Loop through each workflow and check the backup sheet by workflow Id.\n3. If no sheet row exists, create new Drive and GitHub backups.\n4. If a row exists, compare updatedAt to decide whether a refresh is needed.\n5. If changed, rebuild the JSON backup, upload to Drive, and create or edit the GitHub file.\n6. Append or update the sheet row with the latest backup links.\n7. After processing live workflows, read all backup sheet rows.\n8. Find rows whose workflow Id no longer exists in n8n.\n9. Delete the removed workflow backups from Google Drive and GitHub.",
+        "content": "## Scheduled reconciliation flow\n1. Load all live workflows from n8n.\n2. Loop through each workflow one at a time.\n3. Pause between items so Google Sheets stays under quota.\n4. Check the backup sheet by workflow Id.\n5. If no sheet row exists, create new Drive and GitHub backups.\n6. If a row exists, compare updatedAt to decide whether a refresh is needed.\n7. If changed, rebuild the JSON backup, upload to Drive, and create or edit the GitHub file.\n8. Append or update the sheet row with the latest backup links.\n9. After processing live workflows, read all backup sheet rows.\n10. Find rows whose workflow Id no longer exists in n8n.\n11. Delete the removed workflow backups from Google Drive and GitHub.",
         "height": 752,
         "width": 3744,
         "color": 4
@@ -995,7 +995,7 @@
     },
     {
       "parameters": {
-        "content": "## Workflow update trigger flow\n1. Receive an n8n workflow update event.\n2. Load the updated workflow by Id.\n3. Check the backup sheet for the existing row using workflow Id.\n4. If no row exists, this workflow will be backed up as a new record.\n5. If a row exists, extract the current Drive file Id and GitHub file path.\n6. Replace the Drive JSON backup with the latest workflow JSON.\n7. Check whether the GitHub backup file already exists.\n8. Edit the GitHub file when it exists, or create it when missing.\n9. Append or update the sheet row with the refreshed backup links.",
+        "content": "## Workflow update trigger flow\n1. Receive an n8n workflow update event.\n2. Load the updated workflow by Id.\n3. Check the backup sheet for the existing row using workflow Id.\n4. If no row exists, this workflow will be backed up as a new record.\n5. If a row exists, extract the current Drive file Id and GitHub file path.\n6. Replace the Drive JSON backup with the latest workflow JSON.\n7. Check whether the GitHub backup file already exists.\n8. Edit the GitHub file when it exists, or create it when missing.\n9. Append or update the sheet row with the refreshed backup links.\n10. Use the same workflow Id matching rule so scheduled sync and trigger sync stay aligned.",
         "height": 784,
         "width": 3744,
         "color": 6
@@ -1846,9 +1846,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
-  "activeVersionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
-  "versionCounter": 275,
+  "versionId": "705f9c6e-cdc0-4a4d-8e81-1b446c94f1c2",
+  "activeVersionId": "705f9c6e-cdc0-4a4d-8e81-1b446c94f1c2",
+  "versionCounter": 278,
   "triggerCount": 2,
   "shared": [
     {
@@ -1871,9 +1871,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-06T16:30:11.588Z",
-    "createdAt": "2026-04-06T16:30:11.588Z",
-    "versionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
+    "updatedAt": "2026-04-06T16:48:04.493Z",
+    "createdAt": "2026-04-06T16:48:04.493Z",
+    "versionId": "705f9c6e-cdc0-4a4d-8e81-1b446c94f1c2",
     "workflowId": "CPxhdWrDqI60Zub3-HlUd",
     "nodes": [
       {
@@ -1889,7 +1889,7 @@
       },
       {
         "parameters": {
-          "amount": 1
+          "amount": 4
         },
         "type": "n8n-nodes-base.wait",
         "typeVersion": 1.1,
@@ -2522,7 +2522,7 @@
       },
       {
         "parameters": {
-          "content": "## Scheduled reconciliation flow\n1. Load all live workflows from n8n.\n2. Loop through each workflow and check the backup sheet by workflow Id.\n3. If no sheet row exists, create new Drive and GitHub backups.\n4. If a row exists, compare updatedAt to decide whether a refresh is needed.\n5. If changed, rebuild the JSON backup, upload to Drive, and create or edit the GitHub file.\n6. Append or update the sheet row with the latest backup links.\n7. After processing live workflows, read all backup sheet rows.\n8. Find rows whose workflow Id no longer exists in n8n.\n9. Delete the removed workflow backups from Google Drive and GitHub.",
+          "content": "## Scheduled reconciliation flow\n1. Load all live workflows from n8n.\n2. Loop through each workflow one at a time.\n3. Pause between items so Google Sheets stays under quota.\n4. Check the backup sheet by workflow Id.\n5. If no sheet row exists, create new Drive and GitHub backups.\n6. If a row exists, compare updatedAt to decide whether a refresh is needed.\n7. If changed, rebuild the JSON backup, upload to Drive, and create or edit the GitHub file.\n8. Append or update the sheet row with the latest backup links.\n9. After processing live workflows, read all backup sheet rows.\n10. Find rows whose workflow Id no longer exists in n8n.\n11. Delete the removed workflow backups from Google Drive and GitHub.",
           "height": 752,
           "width": 3744,
           "color": 4
@@ -2864,7 +2864,7 @@
       },
       {
         "parameters": {
-          "content": "## Workflow update trigger flow\n1. Receive an n8n workflow update event.\n2. Load the updated workflow by Id.\n3. Check the backup sheet for the existing row using workflow Id.\n4. If no row exists, this workflow will be backed up as a new record.\n5. If a row exists, extract the current Drive file Id and GitHub file path.\n6. Replace the Drive JSON backup with the latest workflow JSON.\n7. Check whether the GitHub backup file already exists.\n8. Edit the GitHub file when it exists, or create it when missing.\n9. Append or update the sheet row with the refreshed backup links.",
+          "content": "## Workflow update trigger flow\n1. Receive an n8n workflow update event.\n2. Load the updated workflow by Id.\n3. Check the backup sheet for the existing row using workflow Id.\n4. If no row exists, this workflow will be backed up as a new record.\n5. If a row exists, extract the current Drive file Id and GitHub file path.\n6. Replace the Drive JSON backup with the latest workflow JSON.\n7. Check whether the GitHub backup file already exists.\n8. Edit the GitHub file when it exists, or create it when missing.\n9. Append or update the sheet row with the refreshed backup links.\n10. Use the same workflow Id matching rule so scheduled sync and trigger sync stay aligned.",
           "height": 784,
           "width": 3744,
           "color": 6
@@ -3702,18 +3702,18 @@
     "autosaved": false,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-06T16:30:11.688Z",
-        "id": 881,
+        "createdAt": "2026-04-06T16:48:04.570Z",
+        "id": 883,
         "workflowId": "CPxhdWrDqI60Zub3-HlUd",
-        "versionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
+        "versionId": "705f9c6e-cdc0-4a4d-8e81-1b446c94f1c2",
         "event": "activated",
         "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
       },
       {
-        "createdAt": "2026-04-06T16:30:11.635Z",
-        "id": 880,
+        "createdAt": "2026-04-06T16:48:04.545Z",
+        "id": 882,
         "workflowId": "CPxhdWrDqI60Zub3-HlUd",
-        "versionId": "dad7081e-9385-4ca8-b302-8bbb47fc9eb4",
+        "versionId": "705f9c6e-cdc0-4a4d-8e81-1b446c94f1c2",
         "event": "deactivated",
         "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
       }
