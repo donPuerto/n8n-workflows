@@ -1,0 +1,209 @@
+{
+  "updatedAt": "2026-02-22T04:19:06.998Z",
+  "createdAt": "2026-02-21T15:10:02.005Z",
+  "id": "HaKroF0wl7gaZ0Zk",
+  "name": "[SUB] Chunk and Embed Document",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "node-trigger",
+      "name": "Workflow Input Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        304
+      ],
+      "alwaysOutputData": false,
+      "notes": "Receives the input payload from the Ingest workflow via Execute Workflow.\n\nExpected input fields:\n  - content (string)     — full extracted and normalised document text\n  - document_id (string) — UUID from the documents table; used to tag\n    every chunk in metadata so stale chunks can be deleted before re-ingestion.\n\nThis node is never triggered manually or by a webhook.\nIt is always called by the \"Chunk and Embed Document\" Execute Workflow node\nin the Ingest workflow (dzxVlm0ygn25EVFz)."
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "document_chunks",
+          "mode": "list",
+          "cachedResultName": "document_chunks"
+        },
+        "options": {}
+      },
+      "id": "node-vector-store",
+      "name": "Store Documents to Supabase",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        304
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "lq5LD9KCxEuooJMe",
+          "name": "DP: Supabase Account"
+        }
+      },
+      "notes": "LangChain vector store node in INSERT mode.\nOrchestrates the full chunking → embedding → storage pipeline.\n\nSub-nodes connected:\n  - Embed Documents to Supabase (ai_embedding) — converts each chunk to a 1536-dim vector\n  - Default Data Loader (ai_document) — loads the document text and attaches metadata\n    └── Recursive Character Text Splitter (ai_textSplitter) — splits before loading\n\nWrites to: document_chunks table in Supabase.\nEach inserted row contains: content, embedding (vector), metadata (includes document_id).\n\nTable: document_chunks\nRPC function used for retrieval: match_documents\nCredential: Supabase account (supabaseApi)"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "node-embeddings",
+      "name": "Embed Documents to Supabase",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        528
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JQ6ARVQIEbbwoWxD",
+          "name": "DP: OpenAi Account"
+        }
+      },
+      "notes": "OpenAI text-embedding-3-small model (1536 dimensions).\nConnected as ai_embedding sub-node to Store Documents to Supabase.\n\nConverts each text chunk into a dense vector for cosine similarity search.\n\nIMPORTANT: must use the same model as the Chat Interface \"OpenAI Embeddings\" node.\nIf this model is ever changed, all existing embeddings are invalidated and every\ndocument must be re-ingested to regenerate compatible vectors.\n\nCredential: OpenAI account (openAiApi)"
+    },
+    {
+      "parameters": {
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "document_id",
+                "value": "={{ $json.document_id }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "node-data-loader",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        528
+      ],
+      "notes": "Reads $json.content as the source document text (dataType: jsonData).\nConnected as ai_document sub-node to Store Documents to Supabase.\n\nMetadata: attaches document_id from $json.document_id to every chunk.\n\nWhy this matters: the Delete Existing Chunks step in the Ingest workflow\nuses a PostgREST JSONB filter (metadata->>document_id=eq.{UUID}) to remove\nstale chunks before re-embedding. The document_id FK column is NOT used by\nLangChain — only the metadata JSONB field is reliably populated.\n\nWithout this metadata, delete-before-update would not work and re-ingesting\na document would produce duplicate chunks in search results."
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "id": "node-splitter",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        960,
+        528
+      ],
+      "notes": "Splits the full document text into overlapping chunks before embedding.\nConnected as ai_textSplitter sub-node to Default Data Loader.\n\nSettings:\n  - chunkSize: 500 characters — balances retrieval precision vs. context richness.\n    Smaller = more precise hits; larger = more context per retrieved chunk.\n  - chunkOverlap: 100 characters — prevents context loss at chunk boundaries.\n    Ensures sentences or ideas split across a boundary appear in both adjacent chunks.\n\nSplit strategy: tries paragraph → sentence → word boundaries before hard-splitting.\nThis preserves semantic coherence better than a fixed-character split.\n\nTune chunkSize up (700-1000) for long-form documents; down (200-300) for\nstructured data like FAQs where precise retrieval of short answers is needed."
+    },
+    {
+      "parameters": {
+        "content": "## [SUB] Chunk and Embed Document\n\n**PURPOSE:**\nCalled by the Ingest workflow to split a document's full text into overlapping\nchunks and store each chunk as a vector embedding in Supabase.\nEnables semantic (RAG) search over document content in the Chat Interface.\n\n**TRIGGER:**\nSub-workflow call from \"Chunk and Embed Document\" (Execute Workflow node)\nin Chat RAG - Ingest Google Drive - v1. Never triggered directly.\n\n**INPUT (from parent workflow):**\n  - content (string)     — full extracted and normalised document text\n  - document_id (string) — UUID from the documents table\n\n**OUTPUT / RESULT:**\nNew rows inserted into document_chunks in Supabase:\n  - content   — individual chunk text (500 chars, 100 overlap)\n  - embedding — 1536-dim vector (text-embedding-3-small)\n  - metadata  — { \"document_id\": \"<uuid>\" }  ← used for delete-before-update\n\n**CREDENTIALS REQUIRED:**\n  - Store Documents to Supabase → Supabase account (supabaseApi)\n  - Embed Documents to Supabase → OpenAI account (openAiApi)\n\n**CONNECTED WORKFLOWS:**\n  - Called by: Chat RAG - Ingest Google Drive - v1 (dzxVlm0ygn25EVFz)",
+        "height": 500,
+        "width": 640,
+        "color": 4
+      },
+      "id": "node-sticky",
+      "name": "Workflow Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -240
+      ]
+    }
+  ],
+  "connections": {
+    "Workflow Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "Store Documents to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embed Documents to Supabase": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Store Documents to Supabase",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Store Documents to Supabase",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "7dddc5ad-1a2c-4ff6-b2e8-9165e2e303b2",
+  "activeVersionId": null,
+  "versionCounter": 59,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-21T15:10:02.008Z",
+      "createdAt": "2026-02-21T15:10:02.008Z",
+      "role": "workflow:owner",
+      "workflowId": "HaKroF0wl7gaZ0Zk",
+      "projectId": "p3k6mrxCVXQTfj2s",
+      "project": {
+        "updatedAt": "2025-12-28T03:48:55.498Z",
+        "createdAt": "2025-12-23T06:42:33.272Z",
+        "id": "p3k6mrxCVXQTfj2s",
+        "name": "Don Puerto <don.puerto.1003@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": null
+}
