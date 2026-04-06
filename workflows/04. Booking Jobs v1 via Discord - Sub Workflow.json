@@ -1,0 +1,962 @@
+{
+  "updatedAt": "2026-03-01T02:33:11.988Z",
+  "createdAt": "2026-02-27T00:07:25.116Z",
+  "id": "Pgf21DPBfM7iggSs",
+  "name": "04. Booking Jobs v1 via Discord - Sub Workflow",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "react",
+        "guildId": {
+          "__rl": true,
+          "value": "753455160209965106",
+          "mode": "list",
+          "cachedResultName": "Window Revival",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "753455160209965111",
+          "mode": "list",
+          "cachedResultName": "booked_jobs",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106/753455160209965111"
+        },
+        "messageId": "={{ $json.id }}",
+        "emoji": "👍"
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        64,
+        224
+      ],
+      "id": "38126c89-5556-46cf-aefb-5809e2569d72",
+      "name": "React with an emoji to a message",
+      "webhookId": "25cfa005-c1ba-4e1f-b6d7-c40f4ecb2def",
+      "executeOnce": true,
+      "retryOnFail": false,
+      "credentials": {
+        "discordBotApi": {
+          "id": "a0FDlWFh8PBA5Add",
+          "name": "WR: Discord Bot Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "753455160209965106",
+          "mode": "list",
+          "cachedResultName": "Window Revival",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1372367179650957405",
+          "mode": "list",
+          "cachedResultName": "double-hung-emporium",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106/1372367179650957405"
+        },
+        "content": "===========\nJob Category: {{ $json.jobCategory }}\n==========\n* Customer Name:  {{ $json.customerFirstName }}  {{ $json.customerLastName }}\n* Email: {{ $json.emailAddress }}\n* Mobile Number: {{ $json.mobileNumber }}\n* Phone Number: {{ $json.phoneNumber }}\n* Address: {{ $json.streetAddress }} {{ $json.streetAddressDescription }}\n* Suburb: {{ $json.suburb }} \n* Postal Code: {{ $json.postalCode }}\n* Job Start: {{ $json.jobStart }}\n* Job End: {{ $json.jobEnd }}\n* Job Description: {{ $json.jobDetails }}\n\n* DSP notes: {{ $json.dspNotes }}\n* Est Price: {{ $json.estPrice }}\n* Technician: {{ $json.technicianName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -160
+      ],
+      "id": "748da90b-412e-4e11-92fd-e0eb9d8221dc",
+      "name": "Flag DH emporium",
+      "webhookId": "fdc2a683-f0d1-4d8a-b37e-c15f762ae9f4",
+      "executeOnce": true,
+      "credentials": {
+        "discordBotApi": {
+          "id": "a0FDlWFh8PBA5Add",
+          "name": "WR: Discord Bot Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5a532eb4-0f05-41fa-953d-a584e2712626",
+              "leftValue": "={{ $json.isDhWsNsEmporium }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        -160
+      ],
+      "id": "63942d1b-397f-41c4-85ea-02a1ced46c43",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        -160
+      ],
+      "id": "3f2b637a-f2b5-4506-a380-6d71ade575a9",
+      "name": "Wait DH Emporium",
+      "webhookId": "16b24158-67ca-4d19-9dc8-c8b42448efb2",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        224
+      ],
+      "id": "8856484b-3540-4920-9ff4-28d7d8d1c596",
+      "name": "Wait 10s to React Discord",
+      "webhookId": "bc958540-ba91-4dd7-a26e-b965c2d7e17f",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "function getNowBrisbaneTimestamp() {\n  const now = new Date();\n  const parts = new Intl.DateTimeFormat(\"en-AU\", {\n    timeZone: \"Australia/Brisbane\",\n    year: \"numeric\",\n    month: \"2-digit\",\n    day: \"2-digit\",\n    hour: \"2-digit\",\n    minute: \"2-digit\",\n    second: \"2-digit\",\n    hour12: false,\n  }).formatToParts(now);\n\n  const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));\n  return `${map.day}/${map.month}/${map.year} ${map.hour}:${map.minute}:${map.second}`;\n}\n\nreturn items.map((item) => {\n  let parsed = {};\n  try {\n    parsed = JSON.parse(item.json.output || \"{}\");\n  } catch (err) {\n    throw new Error(\n      `Failed to parse AI output JSON. output snippet: ${(item.json.output || \"\").slice(0, 200)}`\n    );\n  }\n\n  // ✅ csrName comes from AI output's authorName (since input only has \"output\")\n  const csrName = (parsed.authorName || \"\").toString().trim();\n\n  const howDidYouHear = (parsed.howDidYouHearAboutUs || \"\").toString().trim() || \"Google\";\n\n  const manJobNum = Number(parsed.manJob);\n  const manJob = Number.isFinite(manJobNum) && manJobNum > 0 ? manJobNum : 1;\n\n  const jobStart = (parsed.jobStart || \"\").toString().trim();\n  const jobEnd = ((parsed.jobEnd || \"\").toString().trim()) || jobStart;\n\n  const mobile = (parsed.mobileNumber || \"\").toString().replace(/\\s+/g, \"\").trim();\n\n  return {\n    json: {\n      id: (parsed.id || \"\").toString(),\n      channelId: (parsed.channelId || \"\").toString(),\n      authorId: (parsed.authorId || \"\").toString(),\n\n      // ✅ only csrName (authorName removed)\n      csrName,\n\n      timestamp: getNowBrisbaneTimestamp(),\n\n      customerFirstName: (parsed.customerFirstName || \"\").toString(),\n      customerLastName: (parsed.customerLastName || \"\").toString(),\n      customerJobTitle: (parsed.customerJobTitle || \"\").toString(),\n\n      emailAddress: (parsed.emailAddress || \"\").toString(),\n\n      streetAddress: (parsed.streetAddress || \"\").toString(),\n      streetAddressDescription: (parsed.streetAddressDescription || \"\").toString(),\n      suburb: (parsed.suburb || \"\").toString(),\n      postalCode: (parsed.postalCode || \"\").toString(),\n\n      mobileNumber: mobile,\n      phoneNumber: (parsed.phoneNumber || \"\").toString(),\n\n      howDidYouHearAboutUs: howDidYouHear,\n\n      isDhWsNsEmporium: parsed.isDhWsNsEmporium ?? false,\n\n      jobServices: (parsed.jobServices || \"\").toString(),\n      jobStart,\n      jobEnd,\n      jobType: (parsed.jobType || \"\").toString(),\n\n      jobDescription: (parsed.jobDescription || \"\").toString(),\n      dspNotes: (parsed.dspNotes || \"\").toString(),\n\n      estTimeHours: Number(parsed.estTimeHours) || 0,\n      estPrice: Number(parsed.estPrice) || 0,\n      manJob,\n\n      // ✅ technicianName from AI\n      technicianName: (parsed.technicianName || \"\").toString(),\n\n      recap: (parsed.recap || \"\").toString(),\n\n      isCreated: true,\n    },\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        32
+      ],
+      "id": "de687f8e-55f7-4593-8933-1928d5a06ec6",
+      "name": "Parse Fields from Raw Data",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4abfb6b0-d81f-4142-91cc-70890badcb03",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "4413efc2-0f52-4a90-a6df-b6cf897a5d05",
+              "name": "channelId",
+              "value": "={{ $json.channelId }}",
+              "type": "string"
+            },
+            {
+              "id": "8b88a742-82cb-43a9-94fc-eec9d5436a16",
+              "name": "authorId",
+              "value": "={{ $json.authorId }}",
+              "type": "string"
+            },
+            {
+              "id": "9267ee9a-e1ce-4742-bfbb-b4dd355a71f4",
+              "name": "timestamp",
+              "value": "={{ $json.timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "587add44-f3a7-435c-a6d9-6ad5b468591f",
+              "name": "csrName",
+              "value": "={{ $json.csrName }}",
+              "type": "string"
+            },
+            {
+              "id": "925e3d4b-e59b-4e03-b106-6e9447b12e6f",
+              "name": "customerFirstName",
+              "value": "={{ $json.customerFirstName }}",
+              "type": "string"
+            },
+            {
+              "id": "93dc55d5-b257-4a71-a719-f099d9ed9cc3",
+              "name": "customerLastName",
+              "value": "={{ $json.customerLastName }}",
+              "type": "string"
+            },
+            {
+              "id": "51fd3344-45ab-4ecc-af5d-8c2a879016ff",
+              "name": "customerJobTitle",
+              "value": "={{ $json.customerJobTitle }}",
+              "type": "string"
+            },
+            {
+              "id": "691f07c6-7c7d-4946-899b-c02a7e2c3a69",
+              "name": "jobServices",
+              "value": "={{ $json.jobServices }}",
+              "type": "string"
+            },
+            {
+              "id": "f79ede2e-96c5-4092-aeee-ccc73fbbc191",
+              "name": "howDidYouHearAboutUs",
+              "value": "={{ $json.howDidYouHearAboutUs }}",
+              "type": "string"
+            },
+            {
+              "id": "052f55ca-b022-4c16-a2cc-965541a0a601",
+              "name": "emailAddress",
+              "value": "={{ $json.emailAddress }}",
+              "type": "string"
+            },
+            {
+              "id": "d853d790-f99d-4874-b750-67924827439e",
+              "name": "mobileNumber",
+              "value": "={{ $json.mobileNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "ca109e2c-d20f-46f5-b2ca-5fb2409ef76f",
+              "name": "phoneNumber",
+              "value": "={{ $json.phoneNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "61fb4fde-d953-487c-997f-49d315f3980d",
+              "name": "streetAddress",
+              "value": "={{ $json.streetAddress }}",
+              "type": "string"
+            },
+            {
+              "id": "d02e6d4d-9104-4441-8421-fb5247ff77f1",
+              "name": "streetAddressDescription",
+              "value": "={{ $json.streetAddressDescription }}",
+              "type": "string"
+            },
+            {
+              "id": "723beb9d-ed69-4ea4-828b-eb55f421bf2b",
+              "name": "suburb",
+              "value": "={{ $json.suburb }}",
+              "type": "string"
+            },
+            {
+              "id": "9c8f69ce-3f0f-4949-8ced-7c3d18ed9850",
+              "name": "postalCode",
+              "value": "={{ $json.postalCode }}",
+              "type": "string"
+            },
+            {
+              "id": "79556e94-4415-4edc-8f74-3c4a80be8fdf",
+              "name": "jobType",
+              "value": "={{ $json.jobType }}",
+              "type": "string"
+            },
+            {
+              "id": "96816861-a658-43b7-b323-70b23192b6fe",
+              "name": "jobStart",
+              "value": "={{ $json.jobStart }}",
+              "type": "string"
+            },
+            {
+              "id": "35cfd6b1-918e-4a49-a659-dab91312c929",
+              "name": "jobEnd",
+              "value": "={{ $json.jobEnd }}",
+              "type": "string"
+            },
+            {
+              "id": "5710b3a5-15c6-4d2d-afc8-5f6bf35d1164",
+              "name": "jobDescription",
+              "value": "={{ $json.jobDescription }}",
+              "type": "string"
+            },
+            {
+              "id": "9c27bf39-587c-4310-a5c6-1f3b7b7f7faa",
+              "name": "dspNotes",
+              "value": "={{ $json.dspNotes }}",
+              "type": "string"
+            },
+            {
+              "id": "033f65ca-52d7-47a9-95e5-d51ebca07352",
+              "name": "estTimeHours",
+              "value": "={{ $json.estTimeHours }}",
+              "type": "number"
+            },
+            {
+              "id": "d08b3db5-9121-4503-9eb6-90e80cbcbc89",
+              "name": "estPrice",
+              "value": "={{ $json.estPrice }}",
+              "type": "number"
+            },
+            {
+              "id": "ce9c2964-42dc-4667-a88e-b5e90a6e5eb0",
+              "name": "manJob",
+              "value": "={{ $json.manJob }}",
+              "type": "number"
+            },
+            {
+              "id": "defb13d7-6bd7-48c6-8d27-71c167924597",
+              "name": "technicianName",
+              "value": "={{ $json.technicianName }}",
+              "type": "string"
+            },
+            {
+              "id": "c27e7b60-d8c0-44f6-b460-f7de5ee1ee7b",
+              "name": "isDhWsNsEmporium",
+              "value": "={{ $json.isDhWsNsEmporium }}",
+              "type": "boolean"
+            },
+            {
+              "id": "84f7908b-42a2-4243-a044-1937f843d774",
+              "name": "isCreated",
+              "value": "={{ $json.isCreated }}",
+              "type": "boolean"
+            },
+            {
+              "id": "f31b2b90-2306-491f-846f-9c9fbd165f5f",
+              "name": "jobTitle",
+              "value": "={{ $json.customerJobTitle }}",
+              "type": "string"
+            },
+            {
+              "id": "97f95829-d866-440e-abca-e279bb048105",
+              "name": "recap",
+              "value": "={{ $json.recap }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -384,
+        32
+      ],
+      "id": "04928e63-7273-4e04-8b49-f1abd285bf8d",
+      "name": "Set Fields",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the Discord message object:\n{{ JSON.stringify($json, null, 2) }}\n",
+        "options": {
+          "systemMessage": "✅ FULL PRODUCTION SYSTEM PROMPT (FINAL)\n\nYou are a structured job parser for booking automation.\n\nYou must extract structured job data from Discord booking messages and return clean JSON output only.\n\nNo explanations. No extra text. No markdown.\n\nCSR RULE (CRITICAL)\n\ncsrName must be set to:\n\n→ Discord authorName\n\nDo NOT generate.\nDo NOT modify.\nDo NOT infer.\nUse authorName exactly as provided.\n\nDATE & TIME RULES (STRICT FORMAT)\n\nJob Start and Job End must be formatted EXACTLY as:\n\nYYYY-MM-DD HH:MM\n\n24-hour format.\n\nExample:\n2026-03-06 07:00\n\nSTRICT REQUIREMENTS:\n\n• Do NOT include seconds\n• Do NOT include timezone\n• Do NOT include AM/PM\n• Always use leading zeros (07:00 not 7:00)\n• Must include a space between date and time\n• Must include dash-separated date\n\nCorrect Example:\n2026-03-06 07:00\n\nIncorrect Examples:\n2026-3-6 7:00\n2026-03-06T07:00:00\n07:00 AM\n2026/03/06 7am\n\nIf only one time is provided:\n→ Job Start = that time\n→ Job End = same time\n\nJob End must NEVER be blank.\n\nIf Job End missing:\n→ Set Job End = Job Start\n\nBoth fields must always exist.\n\nJOB TYPE (STRICT ENUM)\n\nJob Type must ALWAYS be present.\n\nAllowed values:\n\nBooked Job\nQuote\n\nRules:\n\nIf confirmed and scheduled → \"Booked Job\"\n\nIf quote-only / inspection-only / measure-only → \"Quote\"\n\nNever set Job Type to \"Repairs\".\n\nRepairs belongs to Job Services only.\n\nJOB SERVICES (STRICT ENUM — RETURN EXACTLY ONE)\n\nAllowed values:\n\nWindow Painting\nRepairs\nOnsite Quote\nOnsite Check Measure\nService Call\nFollow Up\nPick Up Stock\nSecurity Screen\nGlass Replacement\n\nYou must return EXACT string match from the list.\nNo variations.\nNo lowercase.\nNo combinations.\nNo custom categories.\n\nCRITICAL GLASS RULE (VERY IMPORTANT)\n\nThe word “glass” alone does NOT mean Glass Replacement.\n\nExamples that MUST be classified as \"Repairs\":\n\nGlass Sliding Door Rollers\nGlass door not sliding\nGlass window rollers\nGlass track repair\n\nOnly classify as \"Glass Replacement\" if explicitly stated:\n\nGlass replacement\nReplace broken glass\nBroken glass\nShattered glass\nCracked glass\nNew glass panel\nReplace glass panel\nGlazing\nGlazier required\n\nIf ANY ambiguity exists:\n→ Set Job Services = \"Repairs\"\n\nREPAIR CLASSIFICATION RULES\n\nIf mentions:\n\nSliding Door Rollers\nWindow Rollers\nRoller replacement\nDoor not sliding\nHard to slide\nTrack repair\nDoor repair\nWindow repair\nFrame repair\nPanel replacement (non-glass)\nRubber seals\nHandles\nLatches\n\n→ Set Job Services = \"Repairs\"\n\nSCREEN WORK\n\nIf mentions:\n\nNew Screen\nReplace Screen\nSecurity Screen\nFlyscreen\nScreen repairs\nMesh replacement\nScreen installation\n\n→ Set Job Services = \"Security Screen\"\n\nIf BOTH screen + roller/repair mentioned:\n→ Set Job Services = \"Repairs\"\n\nRepairs takes priority.\n\nQUOTE / MEASURE ONLY\n\nIf message indicates:\n\nQuote only\nOnsite quote\nMeasure only\nCheck measure\nInspection only\nAssessment only\n\nAND no confirmed repair work:\n\n→ Use \"Onsite Quote\"\nOR\n→ \"Onsite Check Measure\" (if specifically measure)\n\nSERVICE / FOLLOW UP / STOCK\n\nService visit → \"Service Call\"\nFollow up → \"Follow Up\"\nPick up stock → \"Pick Up Stock\"\n\nDEFAULT RULE\n\nIf confirmed repair work and nothing overrides:\n→ \"Repairs\"\n\nIf unsure:\n→ \"Repairs\"\n\nJob Services must NEVER be empty.\n\nHOW DID YOU HEAR ABOUT US\n\nField must always exist.\n\nIf not specified:\n→ \"Google\"\n\nPOSTAL CODE RULE\n\nWe service ONLY:\n\nQLD (Brisbane & Gold Coast)\nNSW\n\nDerive postcode from suburb.\n\nMust be real 4-digit Australian postcode.\n\nIf suburb exists in multiple states:\n→ Use QLD or NSW only.\n\nIf not confident:\n→ Return \"\"\n\nNever invent numbers.\n\nTECHNICIAN ASSIGNMENT LOGIC (STRICT — NO NUMBERS)\n\nTechnician must ALWAYS be assigned.\n\nTechnician field must be:\n\n• Full name string only\n• Never numeric\n• Never index\n• Never ID\n• Never array number\n• Never partial name\n\nReturn EXACT full name string.\n\nExample:\n\"Nathan Leafe\"\n\nNOT:\n1\n\"Nathan\"\n[\"Nathan Leafe\"]\n\nIf 2-man job:\n\"Nathan Leafe & Paul Darby\"\n\nSingle string only.\n\nSTEP 1 — Determine Region From Suburb\n\nGold Coast:\n\nSouthport\nLabrador\nUpper Coomera\nHelensvale\nNerang\nRobina\nBurleigh\n\nBrisbane:\n\nCarseldine\nInala\nMacgregor\nSunnybank\nEight Mile Plains\nIndooroopilly\nChermside\nStafford\n\nNSW:\n\nSydney\nNewcastle\nWollongong\n\nSTEP 2 — Region Assignment\n\nGold Coast technicians:\n\nNathan Leafe (Southport)\nPaul Darby (Labrador)\nTaylor Hamilton (Upper Coomera)\n\nAssign closest.\n\nBrisbane technicians:\n\nPhillip Whippy (Carseldine)\nJimmy Tran (Inala)\n\nAssign closest.\n\nNSW:\nChris Vernon\n\nSTEP 3 — ONSITE QUOTE OVERRIDE\n\nIf Job Services =\n\nOnsite Quote\nOnsite Check Measure\n\nAND region = Gold Coast:\n\n→ Assign Chris Vernon\n\nChris Vernon ONLY allowed in Gold Coast or NSW.\n\nSTEP 4 — 2 MAN JOB RULE\n\nIf Man Job = 2:\n\nAssign TWO technicians.\n\n• Must be same region\n• Must not mix Gold Coast & Brisbane\n• Return as single string:\n\n\"Nathan Leafe & Paul Darby\"\n\nADDRESS RULES\n\nStreet Address:\nNumber + street name only\n\nStreet Address Description:\nBuilding / estate / complex name only\n\nSuburb:\nSuburb only (no state, no postcode)\n\nOTHER STRICT RULES\n\nMobile:\nFormat exactly 04XXXXXXXX\n10 digits\nNo spaces\n\nMan Job:\nDefault = 1\n\nRecap:\nMust exist (empty string allowed)\n\nestTimeHours:\nNumeric only\n\nestPrice:\nNumeric only\n\nJob End:\nMust never be blank\nIf missing → equal to Job Start\n\nOUTPUT FORMAT\n\nReturn valid JSON only.\n\nNo commentary.\nNo explanation.\nNo markdown.\nNo extra fields.\nNo missing required fields.\n\nAll required fields must always exist."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -960,
+        32
+      ],
+      "id": "280971a1-c660-47e3-87ab-128e6d894411",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {
+          "codeInterpreter": false
+        },
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_schema",
+              "schema": "{\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \n\n    \"id\": { \"type\": \"string\" },\n    \"channelId\": { \"type\": \"string\" },\n    \"authorId\": { \"type\": \"string\" },\n    \"authorName\": { \"type\": \"string\" },\n\n    \"jobTitle\": { \"type\": \"string\" },\n    \"customerFirstName\": { \"type\": \"string\" },\n    \"customerLastName\": { \"type\": \"string\" },\n\n    \"emailAddress\": { \"type\": \"string\" },\n\n    \"streetAddress\": { \"type\": \"string\" },\n    \"streetAddressDescription\": { \"type\": \"string\" },\n    \"suburb\": { \"type\": \"string\" },\n    \"postalCode\": { \"type\": \"string\", \"pattern\": \"^$|^\\\\d{4}$\" },\n\n    \"mobileNumber\": { \"type\": \"string\" },\n    \"phoneNumber\": { \"type\": \"string\" },\n\n    \"howDidYouHearAboutUs\": { \"type\": \"string\" },\n\n    \"isDhWsNsEmporium\": { \"type\": \"boolean\" },\n\n    \"jobServices\": { \"type\": \"string\" },\n    \"jobStart\": { \"type\": \"string\" },\n    \"jobEnd\": { \"type\": \"string\" },\n    \"jobType\": { \"type\": \"string\" },\n\n    \"jobDescription\": { \"type\": \"string\" },\n    \"dspNotes\": { \"type\": \"string\" },\n\n    \"estTimeHours\": { \"type\": \"number\" },\n    \"estPrice\": { \"type\": \"number\" },\n    \"manJob\": { \"type\": \"number\" },\n\n    \"technicianName\": { \"type\": \"string\" },\n    \"recap\": { \"type\": \"string\" }\n  },\n  \"required\": [\n  \n\n    \"id\",\n    \"channelId\",\n    \"authorId\",\n    \"authorName\",\n\n    \"jobTitle\",\n    \"customerFirstName\",\n    \"customerLastName\",    \n\n    \"emailAddress\",\n\n    \"streetAddress\",\n    \"streetAddressDescription\",\n    \"suburb\",\n    \"postalCode\",\n\n    \"mobileNumber\",\n    \"phoneNumber\",\n\n    \"howDidYouHearAboutUs\",\n\n    \"isDhWsNsEmporium\",\n\n    \"jobServices\",\n    \"jobStart\",\n    \"jobEnd\",\n    \"jobType\",\n\n    \"jobDescription\",\n    \"dspNotes\",\n\n    \"estTimeHours\",\n    \"estPrice\",\n    \"manJob\",\n\n    \"technicianName\",\n    \"recap\"\n  ]\n}",
+              "strict": true
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -952,
+        256
+      ],
+      "id": "535ef8bc-3251-4296-b717-5cba0b2a8292",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "oQQrCQWqdo1CuRzx",
+          "name": "WRai: OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ $json.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -824,
+        256
+      ],
+      "id": "da76ac33-0c34-40b7-8715-0c3a5960f25a",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "5TJyifQHLXw5Imoe",
+          "mode": "list",
+          "cachedResultName": "booked_job",
+          "cachedResultUrl": "/projects/6TsYTzg0HY92xH2K/datatables/5TJyifQHLXw5Imoe"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "discord_id": "={{ $json.id }}",
+            "channelId": "={{ $json.channelId }}",
+            "authorId": "={{ $json.authorId }}",
+            "timestamp": "={{ $json.timestamp }}",
+            "csrName": "={{ $json.csrName }}",
+            "customerFirstName": "={{ $json.customerFirstName }}",
+            "customerLastName": "={{ $json.customerLastName }}",
+            "customerJobTitle": "={{ $json.customerJobTitle }}",
+            "jobServices": "={{ $json.jobServices }}",
+            "howDidYouHearAboutUs": "={{ $json.howDidYouHearAboutUs }}",
+            "emailAddress": "={{ $json.emailAddress }}",
+            "mobileNumber": "={{ $json.mobileNumber }}",
+            "phoneNumber": "={{ $json.phoneNumber }}",
+            "streetAddress": "={{ $json.streetAddress }}",
+            "streetAddressDescription": "={{ $json.streetAddressDescription }}",
+            "suburb": "={{ $json.suburb }}",
+            "postalCode": "={{ $json.postalCode }}",
+            "jobType": "={{ $json.jobType }}",
+            "jobStart": "={{ $json.jobStart }}",
+            "jobEnd": "={{ $json.jobEnd }}",
+            "jobDescription": "={{ $json.jobDescription }}",
+            "dspNotes": "={{ $json.dspNotes }}",
+            "estTimeHours": "={{ $json.estTimeHours }}",
+            "estPrice": "={{ $json.estPrice }}",
+            "manJob": "={{ $json.manJob }}",
+            "technicianName": "={{ $json.technicianName }}",
+            "isDhWsNsEmporium": "={{ $json.isDhWsNsEmporium }}",
+            "isCreated": "={{ $json.isCreated }}",
+            "jobTitle": "={{ $json.jobTitle }}",
+            "recap": "={{ $json.recap }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "discord_id",
+              "displayName": "discord_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "channelId",
+              "displayName": "channelId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "authorId",
+              "displayName": "authorId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "csrName",
+              "displayName": "csrName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "customerFirstName",
+              "displayName": "customerFirstName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "customerLastName",
+              "displayName": "customerLastName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "customerJobTitle",
+              "displayName": "customerJobTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "jobServices",
+              "displayName": "jobServices",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "howDidYouHearAboutUs",
+              "displayName": "howDidYouHearAboutUs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "emailAddress",
+              "displayName": "emailAddress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "mobileNumber",
+              "displayName": "mobileNumber",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phoneNumber",
+              "displayName": "phoneNumber",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "streetAddress",
+              "displayName": "streetAddress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "streetAddressDescription",
+              "displayName": "streetAddressDescription",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "suburb",
+              "displayName": "suburb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "postalCode",
+              "displayName": "postalCode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "jobType",
+              "displayName": "jobType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "jobStart",
+              "displayName": "jobStart",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "jobEnd",
+              "displayName": "jobEnd",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "jobDescription",
+              "displayName": "jobDescription",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dspNotes",
+              "displayName": "dspNotes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "estTimeHours",
+              "displayName": "estTimeHours",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "estPrice",
+              "displayName": "estPrice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "manJob",
+              "displayName": "manJob",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "technicianName",
+              "displayName": "technicianName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "isDhWsNsEmporium",
+              "displayName": "isDhWsNsEmporium",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "isCreated",
+              "displayName": "isCreated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "jobTitle",
+              "displayName": "jobTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "recap",
+              "displayName": "recap",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        32
+      ],
+      "id": "7f557ea2-f92c-43fb-bf04-3a697a9fe84f",
+      "name": "Insert row",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1184,
+        32
+      ],
+      "id": "fd69cd18-66d0-4019-a4c9-b65ccd42593b",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait DH Emporium",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait DH Emporium": {
+      "main": [
+        [
+          {
+            "node": "Flag DH emporium",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10s to React Discord": {
+      "main": [
+        [
+          {
+            "node": "React with an emoji to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Fields from Raw Data": {
+      "main": [
+        [
+          {
+            "node": "Set Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait 10s to React Discord",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Fields from Raw Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "b4cFEFv1eFePOnMh",
+    "saveExecutionProgress": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e15a0886-6a72-4eb2-9873-9418e3b198a4",
+  "activeVersionId": null,
+  "versionCounter": 70,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-27T00:07:25.120Z",
+      "createdAt": "2026-02-27T00:07:25.120Z",
+      "role": "workflow:owner",
+      "workflowId": "Pgf21DPBfM7iggSs",
+      "projectId": "6TsYTzg0HY92xH2K",
+      "project": {
+        "updatedAt": "2025-11-14T08:33:27.896Z",
+        "createdAt": "2025-11-14T07:49:25.938Z",
+        "id": "6TsYTzg0HY92xH2K",
+        "name": "Christine Kam <windowrevival@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-25T13:05:18.454Z",
+      "createdAt": "2025-11-25T13:05:18.454Z",
+      "id": "xn6seEX74pkTOLqC",
+      "name": "@lead"
+    }
+  ],
+  "activeVersion": null
+}
