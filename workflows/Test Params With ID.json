@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-04-05T07:10:28.747Z",
+  "updatedAt": "2026-04-08T09:28:07.000Z",
   "createdAt": "2026-04-05T07:10:28.747Z",
   "id": "HeZQKtjTacu9kGDA",
   "name": "Test Params With ID",
   "description": null,
   "active": false,
-  "isArchived": false,
+  "isArchived": true,
   "nodes": [
     {
       "id": "c257c0f7-8c2c-4f57-b60e-099ee6ed98e1",
@@ -50,9 +50,9 @@
     "aiBuilderAssisted": true
   },
   "pinData": null,
-  "versionId": "26181c84-d58b-4a13-92aa-2dff8f6d407e",
+  "versionId": "e7f85ae1-f2dc-42a8-86ab-3f9f0d914362",
   "activeVersionId": null,
-  "versionCounter": 1,
+  "versionCounter": 2,
   "triggerCount": 0,
   "shared": [
     {
