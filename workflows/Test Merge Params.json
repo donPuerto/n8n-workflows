@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-04-05T07:10:45.213Z",
+  "updatedAt": "2026-04-08T09:27:43.000Z",
   "createdAt": "2026-04-05T07:10:45.213Z",
   "id": "72Dweeo7gfWjgQyx",
   "name": "Test Merge Params",
   "description": null,
   "active": false,
-  "isArchived": false,
+  "isArchived": true,
   "nodes": [
     {
       "id": "f185d9bb-28f4-45e5-aec2-b02b7e8791b7",
@@ -50,9 +50,9 @@
     "aiBuilderAssisted": true
   },
   "pinData": null,
-  "versionId": "d5ff6b48-9edf-43a5-950b-8aed1e86cb4c",
+  "versionId": "bbe2c656-ca4a-4765-9c23-e62d89770d8a",
   "activeVersionId": null,
-  "versionCounter": 1,
+  "versionCounter": 2,
   "triggerCount": 0,
   "shared": [
     {
