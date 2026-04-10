@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-02T05:45:29.865Z",
+  "updatedAt": "2026-04-06T21:40:09.547Z",
   "createdAt": "2026-03-30T00:52:30.297Z",
   "id": "XuEJUSibmhjQPGYh",
   "name": "Google Ads Lead",
@@ -109,7 +109,7 @@
         "text": "=Extract the lead details from this input and return JSON only.\n\nInput ID:\n{{ $json.id }}\n\nRaw text:\n{{ $json.text }}",
         "hasOutputParser": true,
         "options": {
-          "systemMessage": "You are a data extraction assistant.\n\nExtract these fields from the provided input:\n- id\n- first_name\n- last_name\n- email_address\n- mobile_number\n- phone_number\n- suburb\n- state\n- postal_code\n- address\n- message\n- quantity\n- IdLikeToGetMyProjectUnderway\n\nRules:\n1. Return valid JSON only.\n2. Do not include markdown, code fences, notes, or explanations.\n3. Use empty strings only when a value cannot be determined.\n4. The id field must be copied exactly from the provided input ID.\n5. Do not try to extract id from the raw text body.\n6. Ignore tracking links, headers, greetings, and unrelated text, but do not ignore useful contact numbers, quantity details, or project timing mentioned in the message.\n7. Split the full name into first_name and last_name.\n   - If there is only one name, put it in first_name and leave last_name empty.\n8. For email_address, return only the email value.\n9. For mobile_number:\n   - If the raw lead contains a field labeled Phone, treat that value as mobile_number by default.\n   - If the raw lead contains a field labeled Mobile, treat that value as mobile_number.\n   - mobile_number must be an Australian mobile number starting with 04.\n   - A valid Australian mobile number has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output mobile_number as digits only with no spaces, for example: 0417786747\n   - If the Phone or Mobile field contains a valid 04 number, always place it in mobile_number.\n   - Never place a valid 04 mobile number in phone_number.\n   - If no valid mobile number can be determined, return an empty string.\n10. For phone_number:\n   - phone_number is for landline numbers only.\n   - Only extract phone_number from the message when a landline is mentioned there.\n   - Do not copy the lead’s Phone field into phone_number if it is a mobile.\n   - A valid Brisbane / Queensland landline starts with 07 and has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output phone_number in this format: 07 1234 1234\n   - If no valid landline appears in the message, return an empty string.\n11. Do not put the same number in both mobile_number and phone_number.\n12. If only one number is found and it starts with 04, put it in mobile_number and leave phone_number empty.\n13. For suburb, return only the suburb value.\n14. For state:\n   - Extract the state value.\n   - Convert Australian abbreviations to full names:\n     - NSW = New South Wales\n     - QLD = Queensland\n     - VIC = Victoria\n     - SA = South Australia\n     - WA = Western Australia\n     - TAS = Tasmania\n     - NT = Northern Territory\n     - ACT = Australian Capital Territory\n   - Do not output state abbreviations.\n15. For postal_code:\n   - Extract it if explicitly present.\n   - If not explicitly present, infer it from suburb + Australian state when highly confident and unambiguous.\n   - If not confident, return an empty string.\n16. For message, return only the message content.\n17. For quantity:\n   - Extract the quantity from the message when it clearly refers to the number of items for the job, such as doors, windows, mirrors, tracks, panels, screens, rollers, or similar repair or replacement items.\n   - Prefer explicit numbers such as 1, 2, 3, 4.\n   - You may convert simple written numbers like one, two, three, four into digits.\n   - Return quantity as a string containing only the number.\n   - If no clear quantity is mentioned, return an empty string.\n18. For IdLikeToGetMyProjectUnderway:\n   - Extract the project timing or urgency from the message.\n   - Examples include: today, tomorrow, next week, this week, ASAP, urgently, this weekend, Monday, in two weeks.\n   - Return a short timing phrase only.\n   - If no timing or urgency is mentioned, return an empty string.\n19. Build address using these parts in this order:\n   - suburb\n   - state\n   - postal_code\n   - Australia\n20. Join address parts with a single space only.\n21. Do not add commas in address.\n22. Only include address parts that exist.\n23. Output exactly this structure:\n{\n  \"id\": \"\",\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email_address\": \"\",\n  \"mobile_number\": \"\",\n  \"phone_number\": \"\",\n  \"suburb\": \"\",\n  \"state\": \"\",\n  \"postal_code\": \"\",\n  \"address\": \"\",\n  \"message\": \"\",\n  \"quantity\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\"\n}"
+          "systemMessage": "You are a data extraction assistant.\n\nExtract these fields from the provided input:\n- id\n- first_name\n- last_name\n- email_address\n- mobile_number\n- phone_number\n- suburb\n- state\n- postal_code\n- address\n- message\n- quantity\n- IdLikeToGetMyProjectUnderway\n\nRules:\n\n1. Return valid JSON only.\n2. Do not include markdown, code fences, notes, or explanations.\n3. Use empty strings only when a value cannot be determined.\n4. The id field must be copied exactly from the provided input ID.\n5. Do not try to extract id from the raw text body.\n6. Ignore tracking links, headers, greetings, signatures, and unrelated text, but do not ignore useful contact numbers, quantity details, address details, or project timing mentioned in the message.\n\n7. Split the full name into first_name and last_name.\n   - If there is only one name, put it in first_name and leave last_name empty.\n\n8. For email_address:\n   - Return only the email value.\n   - Extract the best contact email if present.\n\n9. For mobile_number:\n   - If the raw lead contains a field labeled Phone, treat that value as mobile_number by default.\n   - If the raw lead contains a field labeled Mobile, treat that value as mobile_number.\n   - mobile_number must be an Australian mobile number starting with 04.\n   - A valid Australian mobile number has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output mobile_number as digits only with no spaces, for example: 0417786747\n   - If the Phone or Mobile field contains a valid 04 number, always place it in mobile_number.\n   - Never place a valid 04 mobile number in phone_number.\n   - If no valid mobile number can be determined, return an empty string.\n\n10. For phone_number:\n   - phone_number is for landline numbers only.\n   - Only extract phone_number from the message when a landline is mentioned there.\n   - Do not copy the lead’s Phone field into phone_number if it is a mobile.\n   - A valid Brisbane / Queensland landline starts with 07 and has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output phone_number in this format: 07 1234 1234\n   - If no valid landline appears in the message, return an empty string.\n\n11. Do not put the same number in both mobile_number and phone_number.\n\n12. If only one number is found and it starts with 04, put it in mobile_number and leave phone_number empty.\n\n13. For suburb:\n   - Return only the suburb value.\n   - Extract suburb from any explicit suburb field, address field, message text, or combined Australian location line.\n   - If the input contains a combined location such as \"Sunnybank QLD 4109\", extract suburb as \"Sunnybank\".\n   - Do not include the state or postal code in suburb.\n\n14. For state:\n   - Extract the state value from any explicit state field or address-style line.\n   - Convert Australian abbreviations to full names:\n     - NSW = New South Wales\n     - QLD = Queensland\n     - VIC = Victoria\n     - SA = South Australia\n     - WA = Western Australia\n     - TAS = Tasmania\n     - NT = Northern Territory\n     - ACT = Australian Capital Territory\n   - Do not output state abbreviations.\n\n15. For postal_code:\n   - Extract the postal code if it appears anywhere in the raw input.\n   - A valid Australian postal code is exactly 4 digits.\n   - Prefer a 4-digit code that appears near suburb, state, or address text.\n   - If a combined location appears such as \"Suburb ST 1234\", extract 1234 as postal_code.\n   - If the postal code is not explicitly present, infer it from suburb and state.\n   -  Do not return an empty string if suburb is available and the postal code can be reasonably determined from the suburb. \n\n16. For message:\n   - Return only the meaningful customer message content.\n   - Exclude headers, form labels, signatures, legal disclaimers, tracking text, and unrelated metadata.\n   - Keep useful job details, measurements, item counts, urgency, and location mentions if they are part of the customer’s message.\n\n17. For quantity:\n   - Extract the quantity from the message when it clearly refers to the number of items for the job, such as doors, windows, mirrors, tracks, panels, screens, rollers, or similar repair or replacement items.\n   - Prefer explicit numbers such as 1, 2, 3, 4.\n   - You may convert simple written numbers like one, two, three, four into digits.\n   - Return quantity as a string containing only the number.\n   - If no clear quantity is mentioned, return an empty string.\n\n18. For IdLikeToGetMyProjectUnderway:\n   - Extract the project timing or urgency from the message.\n   - Examples include: today, tomorrow, next week, this week, ASAP, urgently, this weekend, Monday, in two weeks.\n   - Return a short timing phrase only.\n   - If no timing or urgency is mentioned, return an empty string.\n\n19. Build address using these parts in this order:\n   - suburb\n   - state\n   - postal_code\n   - Australia\n\n20. Join address parts with a single space only.\n\n21. Do not add commas in address.\n\n22. Only include address parts that exist.\n\n23. If suburb, state, and postal_code are all empty, address must be an empty string.\n\n24. Output exactly this structure:\n{\n  \"id\": \"\",\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email_address\": \"\",\n  \"mobile_number\": \"\",\n  \"phone_number\": \"\",\n  \"suburb\": \"\",\n  \"state\": \"\",\n  \"postal_code\": \"\",\n  \"address\": \"\",\n  \"message\": \"\",\n  \"quantity\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\"\n}, "
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -977,10 +977,10 @@
   "staticData": {
     "node:Gmail Trigger": {
       "Gmail Trigger": {
-        "lastTimeChecked": 1775458918,
+        "lastTimeChecked": 1775764480,
         "possibleDuplicates": [
-          "19d619ae2a8ecda2",
-          "19d5cef82d5cb22d"
+          "19d73d15adaecd45",
+          "19d71e17cc3bcd25"
         ]
       }
     }
@@ -988,10 +988,107 @@
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "pinData": {},
-  "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
-  "activeVersionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
-  "versionCounter": 212,
+  "pinData": {
+    "Gmail Trigger": [
+      {
+        "json": {
+          "id": "19d619ae2a8ecda2",
+          "threadId": "19d619ae2a8ecda2",
+          "labelIds": [
+            "UNREAD",
+            "Label_1912529792301078672",
+            "IMPORTANT",
+            "CATEGORY_PERSONAL",
+            "INBOX"
+          ],
+          "sizeEstimate": 8126,
+          "headers": {
+            "delivered-to": "Delivered-To: windowrevival@gmail.com",
+            "received": "Received: from mail.lpage.com.au ([172.246.46.224]:36710)\r\n\tby sg2plzcpnl507423.prod.sin2.secureserver.net with esmtps  (TLS1.3) tls TLS_AES_256_GCM_SHA384\r\n\t(Exim 4.99.1)\r\n\t(envelope-from <bounces-111428614-2867134056@mail.lpage.com.au>)\r\n\tid 1w9dyr-00000004zss-2cH7\r\n\tfor sales@windowrevival.com.au;\r\n\tMon, 06 Apr 2026 00:02:49 -0700",
+            "x-forwarded-encrypted": "X-Forwarded-Encrypted: i=2; AJvYcCVfx7JpNRbli6NKfxgQQlKXNbIpREnDdggtmvLuAoYtn3E6TjYTQpbxxFby7rQgIJJ9f+BjeydwWW78JrU6@gmail.com",
+            "x-received": "X-Received: by 2002:a17:90b:39c5:b0:35b:96bb:47ba with SMTP id 98e67ed59e1d1-35de69a6474mr10429334a91.26.1775459033908;\r\n        Mon, 06 Apr 2026 00:03:53 -0700 (PDT)",
+            "arc-seal": "ARC-Seal: i=1; a=rsa-sha256; t=1775459033; cv=none;\r\n        d=google.com; s=arc-20240605;\r\n        b=UgC2MHj73YmYrB2w3zV25z0PqCRLclg8SB6tocXgSTX19sZtg6e85fzF7c6Za+2GGy\r\n         emBZhKsfI653jRqprAwvs1ZC5dKGeDoxikv3g5qSdMkBAjzRdCtMu5fmziQa7lmI/7hk\r\n         DMQsXA0z2KBqkNvTBZSGLtuuy4tUHnbPcN/FZdujufAK2vb4OPbx5nRTdxiDaJ/HHUIE\r\n         NAajVE3LnVxdgbMdgWu9QTZ9QIvROmtMDjvikRQPYViuFZ4PEweeC9pI32eoU0r0YQWq\r\n         b5HRIRfkFlCpicdODh1iqJEf+NRQDm6U6D6boP4TqJi94l59k/ptnRYpiBk0SV3FdXXc\r\n         uj/w==",
+            "arc-message-signature": "ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;\r\n        h=mime-version:content-transfer-encoding:feedback-id:reply-to\r\n         :origin-messageid:date:from:list-unsubscribe-post:message-id:subject\r\n         :to:list-unsubscribe:dkim-signature;\r\n        bh=sTQyyRJUKPGdnSnMorw5B4mSyK7QRZ/twveAN+TH93U=;\r\n        fh=tiYnviDLsKf5sB3WAMp82Y/wsSZCzLCT18CkFy2qrB0=;\r\n        b=Ln0VjPD3Q4n9c6MwymangVz7/DQmm7Fb6+OXZpKk/H+FrnlzCKmWX9mY7ybSAOgA59\r\n         G8R6uTW5GyMw/kAUXKewhtnaVlXauJ6l9Yyn2xkFnXw0XgOsok0WdwO8r/UPYYl1hnpa\r\n         MTGJtmzz8kREMD1LIuVipw5wMCsZIm1T0/dc4LiQQr6V352Zn4PjaDeeLd0Mj9fGdVTY\r\n         cfYKTZQogVBV3yWiP+FsrfSkKnqz6htkqmQmGiNRHAHoYU+IrYg/u9tuc6KqL+5A6TI1\r\n         PXacxZW3z4kqaZARy+C101hv8b98HRAmrIcYNFCVqvK5cSSEN4viLRnJkbzDDqxYlj5S\r\n         SIdA==;\r\n        dara=google.com",
+            "arc-authentication-results": "ARC-Authentication-Results: i=1; mx.google.com;\r\n       dkim=pass header.i=@mail.lpage.com.au header.s=mail header.b=IokBh9jZ;\r\n       spf=pass (google.com: domain of srs0=jxzi=cf=mail.lpage.com.au=bounces-111428614-2867134056@bounce.secureserver.net designates 182.50.132.195 as permitted sender) smtp.mailfrom=\"srs0=jxzi=cf=mail.lpage.com.au=bounces-111428614-2867134056@bounce.secureserver.net\";\r\n       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=mail.lpage.com.au",
+            "return-path": "Return-Path: <srs0=jxzi=cf=mail.lpage.com.au=bounces-111428614-2867134056@bounce.secureserver.net>",
+            "received-spf": "Received-SPF: pass (google.com: domain of srs0=jxzi=cf=mail.lpage.com.au=bounces-111428614-2867134056@bounce.secureserver.net designates 182.50.132.195 as permitted sender) client-ip=182.50.132.195;",
+            "authentication-results": "Authentication-Results: mx.google.com;\r\n       dkim=pass header.i=@mail.lpage.com.au header.s=mail header.b=IokBh9jZ;\r\n       spf=pass (google.com: domain of srs0=jxzi=cf=mail.lpage.com.au=bounces-111428614-2867134056@bounce.secureserver.net designates 182.50.132.195 as permitted sender) smtp.mailfrom=\"srs0=jxzi=cf=mail.lpage.com.au=bounces-111428614-2867134056@bounce.secureserver.net\";\r\n       dmarc=pass (p=NONE sp=NONE dis=NONE) header.from=mail.lpage.com.au",
+            "x-cmae-analysis": "X-CMAE-Analysis: v=2.4 cv=eIu5Snp1 c=1 sm=1 tr=0 ts=69d35a99\r\n a=3CalYPD7c+ro3/CVEo5dnQ==:117 a=3CalYPD7c+ro3/CVEo5dnQ==:17\r\n a=4W0gMHOXrtIA:10 a=IkcTkHD0fZMA:10 a=fGYPQxYm8b8A:10 a=A5OVakUREuEA:10\r\n a=cFt1fJJvFYAA:10 a=x7bEGLp0ZPQA:10 a=e9kJ3l4Dk2gA:10 a=f3VtQCuLAAAA:8\r\n a=4jraHwQkAAAA:8 a=JtzI2Kgd0ye-9lffSNYA:9 a=tsZZIrtwm0ZIwJyJ:21\r\n a=_W_S_7VecoQA:10 a=QEXdDO2ut3YA:10 a=RGOzid_oEbSt8ehB5dmn:22",
+            "x-secureserver-acct": "X-SECURESERVER-ACCT: pv5jnapr5duc",
+            "dkim-signature": "DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mail.lpage.com.au;\r\n q=dns/txt; s=mail; bh=sTQyyRJUKPGdnSnMorw5B4mSyK7QRZ/twveAN+TH93U=;\r\n h=from:reply-to:subject:date:to:mime-version:content-type:content-transfer-encoding:list-unsubscribe:x-csa-complaints:list-unsubscribe-post:message-id:x-sib-id:feedback-id;\r\n        b=IokBh9jZ2eGuwqDXq/XNh0vexkSDnt3ZUsjKeA5sKQNpfl7GOyN9YRq80JkQpLFwtJ3z19HPVGxG\r\n        36pbZPHDKRp+X5X2+jfTDeD1w93XvIuD7BSgGvCqnAyKitbiUiaiUEPbkNHlMtye8G01tCzDGFW1\r\n        EOeKZqD6XRX83pW0Ams=",
+            "list-unsubscribe": "List-Unsubscribe: <https://r.mail.lpage.com.au/tr/un/li/B8HX8loEcCqSxo5ZKsfkqvc5pga-51nXAO1VoJk1BcvE2XxdlayKhNi4tfjSnRsuxxOVkq-2eCb-NxJ96VKcPTHAzrEiZPFGcr9xo_RL3ydfIWz_Wk2JjqBUFYoTUWzPeN1kr-6YXi7HVLlp8vj9nfDLSXI4suIUHCIGsqHVwORHNLCHJWFaEq75Izr8KTejiK8WfY2sfapLSY-D7S_4gzhRPzNA8OHJAdejn_TuOuMqX7-LU9ReRE0F>",
+            "to": "To: <sales@windowrevival.com.au>",
+            "subject": "Subject: Free Quote | Gold Coast",
+            "message-id": "Message-Id: <202604060701.91786317933@smtp-relay.mailin.fr>",
+            "list-unsubscribe-post": "List-Unsubscribe-Post: List-Unsubscribe=One-Click",
+            "from": "From: \"Google Ads LP\" <submissions@mail.lpage.com.au>",
+            "x-csa-complaints": "X-CSA-Complaints: csa-complaints@eco.de",
+            "x-mailin-eid": "X-Mailin-EID: MTExNDI4NjE0fnNhbGVzQHdpbmRvd3Jldml2YWwuY29tLmF1fjwyMDI2MDQwNjA3MDEuOTE3ODYzMTc5MzNAc210cC1yZWxheS5tYWlsaW4uZnI%2Bfm1haWwubHBhZ2UuY29tLmF1",
+            "date": "Date: Mon, 06 Apr 2026 07:01:58 +0000",
+            "x-sib-id": "X-sib-id: x35BgM8qHlAdpxCGYrkOVJJPQUG6KwP0bP5q9A_xSMTPzq-ovF83tDfEIBPFZplEZZOL_Bo3kUsgLXvHRL_eQtww8oyWcvFgOSLY2l9B_-kFtM3r_Vpw1tp69QLRlAmwxtXuhaEatGm0M1HKPLA9yShllhW9Xy8hxPtgpCqXmNlfN3qNTX0MGA",
+            "origin-messageid": "Origin-messageId: <202604060701.91786317933@smtp-relay.mailin.fr>",
+            "reply-to": "Reply-To: <natfdc@iinet.net.au>",
+            "feedback-id": "Feedback-ID: 172.246.46.224:3139819_-1:3139819:Sendinblue",
+            "content-type": "Content-Type: text/html; charset=utf-8",
+            "content-transfer-encoding": "Content-Transfer-Encoding: quoted-printable",
+            "x-api-version": "X-Api-Version: v3",
+            "x-mailer": "X-Mailer: WPMailSMTP/Mailer/sendinblue 4.7.1",
+            "mime-version": "Mime-Version: 1.0",
+            "x-antiabuse": "X-AntiAbuse: Sender Address Domain - mail.lpage.com.au",
+            "x-get-message-sender-via": "X-Get-Message-Sender-Via: sg2plzcpnl507423.prod.sin2.secureserver.net: redirect/forwarder owner sales@windowrevival.com.au -> windowrevival@gmail.com",
+            "x-authenticated-sender": "X-Authenticated-Sender: sg2plzcpnl507423.prod.sin2.secureserver.net: sales@windowrevival.com.au",
+            "x-source": "X-Source: ",
+            "x-source-args": "X-Source-Args: ",
+            "x-source-dir": "X-Source-Dir: ",
+            "x-entitlement-id": "X-ENTITLEMENT-ID: a9ff2ff3-646a-11e8-8132-3417ebe60eb6",
+            "x-cmae-envelope": "X-CMAE-Envelope: MS4xfIs2g6Z/xy42XS2Lx2HmDjG553tyLXeKzaxzpO3jI+Ifyu5ch+MjAOxo1eo7wRR+yQmoOrCf86kswi8XP7WyhUsW5yPp1ZOqvVr/PYDM7aUMoP9P3YQz\r\n QtgRH6PH1hJW6EpLCbJ7kFKSriZ8IOjVzv0tD00TLZreXKlXqD3MU2+U5QkQ5jV03rtZsr9/kmrD+sMWuzL+n2XoqM47Bcz9IckYrPJR2D2Si7twhhuUCo7h\r\n snONKJgVhbEC/Bke/HzO4Eh0Chapd3PYaUzoJmjDTwg="
+          },
+          "html": "<html><head></head><body><img width=\"1\" height=\"1\" src=\"https://r.mail.lpage.com.au/tr/op/FJPySBbCfSaiZhb4jupsUZY14rfuIKB_j0N18Qll_x-9Vi6x3DgICAeHR2GASnycyERC93BwT8VI4D0Y2nYTPG-mVXDxvSxKo9s8IqAoPpbCjDG-vpdKoQ1ZdydO9ue_ibcouUmqwN9ZgIk3w1i_ykDwRq6DtFIuB3RLGgnDRfMrMtK-yjbGNwyYpoFR9E8W2HtGNvKJ1KqjblQYHPB1fK7S\" style=\"mso-hide:all\"/><i>Hey Window Revival,<br/><br/>\n\nA NEW LEAD from your GOOGLE ADS just came in from your landing page! <br/><br/>Please follow up with them at your earliest convenience as they’re ready to hear from you today.</i><br/> <br/>\n<strong>Name:</strong> Nat<br/><br/>\n<strong>Phone:</strong> 0435215917<br/><br/>\n<strong>Email:</strong> natfdc@iinet.net.au<br/><br/>\n<strong>Suburb:</strong> Helensvale<br/><br/>\n<strong>State:</strong> Qld<br/><br/>\n<strong>Message:</strong> I need the fly screen replaced on 3 sliding glass doors<br/><br/>\n</body></html>\n",
+          "text": "[https://r.mail.lpage.com.au/tr/op/FJPySBbCfSaiZhb4jupsUZY14rfuIKB_j0N18Qll_x-9Vi6x3DgICAeHR2GASnycyERC93BwT8VI4D0Y2nYTPG-mVXDxvSxKo9s8IqAoPpbCjDG-vpdKoQ1ZdydO9ue_ibcouUmqwN9ZgIk3w1i_ykDwRq6DtFIuB3RLGgnDRfMrMtK-yjbGNwyYpoFR9E8W2HtGNvKJ1KqjblQYHPB1fK7S]Hey\nWindow Revival,\n\nA NEW LEAD from your GOOGLE ADS just came in from your landing page!\n\nPlease follow up with them at your earliest convenience as they’re ready to hear\nfrom you today.\n\nName: Nat\n\nPhone: 0435215917\n\nEmail: natfdc@iinet.net.au\n\nSuburb: Helensvale\n\nState: Qld\n\nMessage: I need the fly screen replaced on 3 sliding glass doors\n\n",
+          "textAsHtml": "<p>[<a href=\"https://r.mail.lpage.com.au/tr/op/FJPySBbCfSaiZhb4jupsUZY14rfuIKB_j0N18Qll_x-9Vi6x3DgICAeHR2GASnycyERC93BwT8VI4D0Y2nYTPG-mVXDxvSxKo9s8IqAoPpbCjDG-vpdKoQ1ZdydO9ue_ibcouUmqwN9ZgIk3w1i_ykDwRq6DtFIuB3RLGgnDRfMrMtK-yjbGNwyYpoFR9E8W2HtGNvKJ1KqjblQYHPB1fK7S\">https://r.mail.lpage.com.au/tr/op/FJPySBbCfSaiZhb4jupsUZY14rfuIKB_j0N18Qll_x-9Vi6x3DgICAeHR2GASnycyERC93BwT8VI4D0Y2nYTPG-mVXDxvSxKo9s8IqAoPpbCjDG-vpdKoQ1ZdydO9ue_ibcouUmqwN9ZgIk3w1i_ykDwRq6DtFIuB3RLGgnDRfMrMtK-yjbGNwyYpoFR9E8W2HtGNvKJ1KqjblQYHPB1fK7S</a>]Hey<br/>Window Revival,</p><p>A NEW LEAD from your GOOGLE ADS just came in from your landing page!</p><p>Please follow up with them at your earliest convenience as they&rsquo;re ready to hear<br/>from you today.</p><p>Name: Nat</p><p>Phone: 0435215917</p><p>Email: <a href=\"mailto:natfdc@iinet.net.au\">natfdc@iinet.net.au</a></p><p>Suburb: Helensvale</p><p>State: Qld</p><p>Message: I need the fly screen replaced on 3 sliding glass doors</p>",
+          "subject": "Free Quote | Gold Coast",
+          "date": "2026-04-06T07:01:58.000Z",
+          "to": {
+            "value": [
+              {
+                "address": "sales@windowrevival.com.au",
+                "name": ""
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><a href=\"mailto:sales@windowrevival.com.au\" class=\"mp_address_email\">sales@windowrevival.com.au</a></span>",
+            "text": "sales@windowrevival.com.au"
+          },
+          "from": {
+            "value": [
+              {
+                "address": "submissions@mail.lpage.com.au",
+                "name": "Google Ads LP"
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><span class=\"mp_address_name\">Google Ads LP</span> &lt;<a href=\"mailto:submissions@mail.lpage.com.au\" class=\"mp_address_email\">submissions@mail.lpage.com.au</a>&gt;</span>",
+            "text": "\"Google Ads LP\" <submissions@mail.lpage.com.au>"
+          },
+          "messageId": "<202604060701.91786317933@smtp-relay.mailin.fr>",
+          "replyTo": {
+            "value": [
+              {
+                "address": "natfdc@iinet.net.au",
+                "name": ""
+              }
+            ],
+            "html": "<span class=\"mp_address_group\"><a href=\"mailto:natfdc@iinet.net.au\" class=\"mp_address_email\">natfdc@iinet.net.au</a></span>",
+            "text": "natfdc@iinet.net.au"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "b6559d3a-8e36-40f0-a33b-90a30ce8cc75",
+  "activeVersionId": "b6559d3a-8e36-40f0-a33b-90a30ce8cc75",
+  "versionCounter": 238,
   "triggerCount": 1,
   "shared": [
     {
@@ -1014,9 +1111,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-01T14:10:28.000Z",
-    "createdAt": "2026-04-01T14:10:23.714Z",
-    "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
+    "updatedAt": "2026-04-06T21:40:28.000Z",
+    "createdAt": "2026-04-06T21:40:09.548Z",
+    "versionId": "b6559d3a-8e36-40f0-a33b-90a30ce8cc75",
     "workflowId": "XuEJUSibmhjQPGYh",
     "nodes": [
       {
@@ -1121,7 +1218,7 @@
           "text": "=Extract the lead details from this input and return JSON only.\n\nInput ID:\n{{ $json.id }}\n\nRaw text:\n{{ $json.text }}",
           "hasOutputParser": true,
           "options": {
-            "systemMessage": "You are a data extraction assistant.\n\nExtract these fields from the provided input:\n- id\n- first_name\n- last_name\n- email_address\n- mobile_number\n- phone_number\n- suburb\n- state\n- postal_code\n- address\n- message\n- quantity\n- IdLikeToGetMyProjectUnderway\n\nRules:\n1. Return valid JSON only.\n2. Do not include markdown, code fences, notes, or explanations.\n3. Use empty strings only when a value cannot be determined.\n4. The id field must be copied exactly from the provided input ID.\n5. Do not try to extract id from the raw text body.\n6. Ignore tracking links, headers, greetings, and unrelated text, but do not ignore useful contact numbers, quantity details, or project timing mentioned in the message.\n7. Split the full name into first_name and last_name.\n   - If there is only one name, put it in first_name and leave last_name empty.\n8. For email_address, return only the email value.\n9. For mobile_number:\n   - If the raw lead contains a field labeled Phone, treat that value as mobile_number by default.\n   - If the raw lead contains a field labeled Mobile, treat that value as mobile_number.\n   - mobile_number must be an Australian mobile number starting with 04.\n   - A valid Australian mobile number has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output mobile_number as digits only with no spaces, for example: 0417786747\n   - If the Phone or Mobile field contains a valid 04 number, always place it in mobile_number.\n   - Never place a valid 04 mobile number in phone_number.\n   - If no valid mobile number can be determined, return an empty string.\n10. For phone_number:\n   - phone_number is for landline numbers only.\n   - Only extract phone_number from the message when a landline is mentioned there.\n   - Do not copy the lead’s Phone field into phone_number if it is a mobile.\n   - A valid Brisbane / Queensland landline starts with 07 and has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output phone_number in this format: 07 1234 1234\n   - If no valid landline appears in the message, return an empty string.\n11. Do not put the same number in both mobile_number and phone_number.\n12. If only one number is found and it starts with 04, put it in mobile_number and leave phone_number empty.\n13. For suburb, return only the suburb value.\n14. For state:\n   - Extract the state value.\n   - Convert Australian abbreviations to full names:\n     - NSW = New South Wales\n     - QLD = Queensland\n     - VIC = Victoria\n     - SA = South Australia\n     - WA = Western Australia\n     - TAS = Tasmania\n     - NT = Northern Territory\n     - ACT = Australian Capital Territory\n   - Do not output state abbreviations.\n15. For postal_code:\n   - Extract it if explicitly present.\n   - If not explicitly present, infer it from suburb + Australian state when highly confident and unambiguous.\n   - If not confident, return an empty string.\n16. For message, return only the message content.\n17. For quantity:\n   - Extract the quantity from the message when it clearly refers to the number of items for the job, such as doors, windows, mirrors, tracks, panels, screens, rollers, or similar repair or replacement items.\n   - Prefer explicit numbers such as 1, 2, 3, 4.\n   - You may convert simple written numbers like one, two, three, four into digits.\n   - Return quantity as a string containing only the number.\n   - If no clear quantity is mentioned, return an empty string.\n18. For IdLikeToGetMyProjectUnderway:\n   - Extract the project timing or urgency from the message.\n   - Examples include: today, tomorrow, next week, this week, ASAP, urgently, this weekend, Monday, in two weeks.\n   - Return a short timing phrase only.\n   - If no timing or urgency is mentioned, return an empty string.\n19. Build address using these parts in this order:\n   - suburb\n   - state\n   - postal_code\n   - Australia\n20. Join address parts with a single space only.\n21. Do not add commas in address.\n22. Only include address parts that exist.\n23. Output exactly this structure:\n{\n  \"id\": \"\",\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email_address\": \"\",\n  \"mobile_number\": \"\",\n  \"phone_number\": \"\",\n  \"suburb\": \"\",\n  \"state\": \"\",\n  \"postal_code\": \"\",\n  \"address\": \"\",\n  \"message\": \"\",\n  \"quantity\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\"\n}"
+            "systemMessage": "You are a data extraction assistant.\n\nExtract these fields from the provided input:\n- id\n- first_name\n- last_name\n- email_address\n- mobile_number\n- phone_number\n- suburb\n- state\n- postal_code\n- address\n- message\n- quantity\n- IdLikeToGetMyProjectUnderway\n\nRules:\n\n1. Return valid JSON only.\n2. Do not include markdown, code fences, notes, or explanations.\n3. Use empty strings only when a value cannot be determined.\n4. The id field must be copied exactly from the provided input ID.\n5. Do not try to extract id from the raw text body.\n6. Ignore tracking links, headers, greetings, signatures, and unrelated text, but do not ignore useful contact numbers, quantity details, address details, or project timing mentioned in the message.\n\n7. Split the full name into first_name and last_name.\n   - If there is only one name, put it in first_name and leave last_name empty.\n\n8. For email_address:\n   - Return only the email value.\n   - Extract the best contact email if present.\n\n9. For mobile_number:\n   - If the raw lead contains a field labeled Phone, treat that value as mobile_number by default.\n   - If the raw lead contains a field labeled Mobile, treat that value as mobile_number.\n   - mobile_number must be an Australian mobile number starting with 04.\n   - A valid Australian mobile number has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output mobile_number as digits only with no spaces, for example: 0417786747\n   - If the Phone or Mobile field contains a valid 04 number, always place it in mobile_number.\n   - Never place a valid 04 mobile number in phone_number.\n   - If no valid mobile number can be determined, return an empty string.\n\n10. For phone_number:\n   - phone_number is for landline numbers only.\n   - Only extract phone_number from the message when a landline is mentioned there.\n   - Do not copy the lead’s Phone field into phone_number if it is a mobile.\n   - A valid Brisbane / Queensland landline starts with 07 and has 10 digits total after removing spaces, dashes, brackets, and other separators.\n   - Output phone_number in this format: 07 1234 1234\n   - If no valid landline appears in the message, return an empty string.\n\n11. Do not put the same number in both mobile_number and phone_number.\n\n12. If only one number is found and it starts with 04, put it in mobile_number and leave phone_number empty.\n\n13. For suburb:\n   - Return only the suburb value.\n   - Extract suburb from any explicit suburb field, address field, message text, or combined Australian location line.\n   - If the input contains a combined location such as \"Sunnybank QLD 4109\", extract suburb as \"Sunnybank\".\n   - Do not include the state or postal code in suburb.\n\n14. For state:\n   - Extract the state value from any explicit state field or address-style line.\n   - Convert Australian abbreviations to full names:\n     - NSW = New South Wales\n     - QLD = Queensland\n     - VIC = Victoria\n     - SA = South Australia\n     - WA = Western Australia\n     - TAS = Tasmania\n     - NT = Northern Territory\n     - ACT = Australian Capital Territory\n   - Do not output state abbreviations.\n\n15. For postal_code:\n   - Extract the postal code if it appears anywhere in the raw input.\n   - A valid Australian postal code is exactly 4 digits.\n   - Prefer a 4-digit code that appears near suburb, state, or address text.\n   - If a combined location appears such as \"Suburb ST 1234\", extract 1234 as postal_code.\n   - If the postal code is not explicitly present, infer it from suburb and state.\n   -  Do not return an empty string if suburb is available and the postal code can be reasonably determined from the suburb. \n\n16. For message:\n   - Return only the meaningful customer message content.\n   - Exclude headers, form labels, signatures, legal disclaimers, tracking text, and unrelated metadata.\n   - Keep useful job details, measurements, item counts, urgency, and location mentions if they are part of the customer’s message.\n\n17. For quantity:\n   - Extract the quantity from the message when it clearly refers to the number of items for the job, such as doors, windows, mirrors, tracks, panels, screens, rollers, or similar repair or replacement items.\n   - Prefer explicit numbers such as 1, 2, 3, 4.\n   - You may convert simple written numbers like one, two, three, four into digits.\n   - Return quantity as a string containing only the number.\n   - If no clear quantity is mentioned, return an empty string.\n\n18. For IdLikeToGetMyProjectUnderway:\n   - Extract the project timing or urgency from the message.\n   - Examples include: today, tomorrow, next week, this week, ASAP, urgently, this weekend, Monday, in two weeks.\n   - Return a short timing phrase only.\n   - If no timing or urgency is mentioned, return an empty string.\n\n19. Build address using these parts in this order:\n   - suburb\n   - state\n   - postal_code\n   - Australia\n\n20. Join address parts with a single space only.\n\n21. Do not add commas in address.\n\n22. Only include address parts that exist.\n\n23. If suburb, state, and postal_code are all empty, address must be an empty string.\n\n24. Output exactly this structure:\n{\n  \"id\": \"\",\n  \"first_name\": \"\",\n  \"last_name\": \"\",\n  \"email_address\": \"\",\n  \"mobile_number\": \"\",\n  \"phone_number\": \"\",\n  \"suburb\": \"\",\n  \"state\": \"\",\n  \"postal_code\": \"\",\n  \"address\": \"\",\n  \"message\": \"\",\n  \"quantity\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\"\n}, "
           }
         },
         "type": "@n8n/n8n-nodes-langchain.agent",
@@ -1977,32 +2074,16 @@
       }
     },
     "authors": "Christine Kam",
-    "name": "Version ca5e1e14",
+    "name": "Version b6559d3a",
     "description": "",
     "autosaved": true,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-04-01T14:10:28.015Z",
-        "id": 849,
+        "createdAt": "2026-04-06T21:40:28.735Z",
+        "id": 889,
         "workflowId": "XuEJUSibmhjQPGYh",
-        "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
+        "versionId": "b6559d3a-8e36-40f0-a33b-90a30ce8cc75",
         "event": "activated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      },
-      {
-        "createdAt": "2026-04-02T05:45:30.412Z",
-        "id": 851,
-        "workflowId": "XuEJUSibmhjQPGYh",
-        "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
-        "event": "activated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      },
-      {
-        "createdAt": "2026-04-02T05:45:29.896Z",
-        "id": 850,
-        "workflowId": "XuEJUSibmhjQPGYh",
-        "versionId": "ca5e1e14-a720-4a61-929b-d15ac8023546",
-        "event": "deactivated",
         "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
       }
     ]
