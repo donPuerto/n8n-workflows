@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-25T22:54:21.305Z",
+  "updatedAt": "2026-04-08T22:24:54.937Z",
   "createdAt": "2026-01-01T03:52:58.551Z",
   "id": "Dm34kcocvPR7PllT",
   "name": "03. Discord File Upload v2 - Hi Pages Lead",
@@ -1085,7 +1085,13 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner"
   },
   "staticData": {
     "node:Schedule Trigger": {
@@ -1095,10 +1101,31 @@
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "pinData": {},
-  "versionId": "de27c9a9-ef74-40f3-af91-2dbae15f0b7e",
-  "activeVersionId": "de27c9a9-ef74-40f3-af91-2dbae15f0b7e",
-  "versionCounter": 1218,
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2026-04-09T08:20:12.004+10:00",
+          "Readable date": "April 9th 2026, 8:20:12 am",
+          "Readable time": "8:20:12 am",
+          "Day of week": "Thursday",
+          "Year": "2026",
+          "Month": "April",
+          "Day of month": "09",
+          "Hour": "08",
+          "Minute": "20",
+          "Second": "12",
+          "Timezone": "Australia/Brisbane (UTC+10:00)"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "6ad1497d-0ffb-4f0d-b299-f00d506276a3",
+  "activeVersionId": "6ad1497d-0ffb-4f0d-b299-f00d506276a3",
+  "versionCounter": 1228,
   "triggerCount": 1,
   "shared": [
     {
@@ -1121,9 +1148,9 @@
   ],
   "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-25T22:54:24.000Z",
-    "createdAt": "2026-03-25T22:54:21.306Z",
-    "versionId": "de27c9a9-ef74-40f3-af91-2dbae15f0b7e",
+    "updatedAt": "2026-04-08T22:26:42.000Z",
+    "createdAt": "2026-04-08T22:24:54.938Z",
+    "versionId": "6ad1497d-0ffb-4f0d-b299-f00d506276a3",
     "workflowId": "Dm34kcocvPR7PllT",
     "nodes": [
       {
@@ -2203,15 +2230,15 @@
       }
     },
     "authors": "Christine Kam",
-    "name": "Version de27c9a9",
+    "name": "Version 6ad1497d",
     "description": "",
     "autosaved": true,
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-03-25T22:54:24.277Z",
-        "id": 753,
+        "createdAt": "2026-04-08T22:26:42.558Z",
+        "id": 1008,
         "workflowId": "Dm34kcocvPR7PllT",
-        "versionId": "de27c9a9-ef74-40f3-af91-2dbae15f0b7e",
+        "versionId": "6ad1497d-0ffb-4f0d-b299-f00d506276a3",
         "event": "activated",
         "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
       }
