@@ -52,7 +52,7 @@
             {
               "id": "b8b4ee34-137f-41dc-b880-f1ad7329af6a",
               "name": "image_url",
-              "value": "https://blog.disane.dev/content/images/2023/11/n8n.io.png",
+              "value": "https://your-image-host.example/your-image.png",
               "type": "string"
             },
             {
