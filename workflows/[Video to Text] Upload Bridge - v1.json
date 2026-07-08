@@ -1,0 +1,505 @@
+{
+  "updatedAt": "2026-04-26T09:16:57.308Z",
+  "createdAt": "2026-04-23T15:15:34.280Z",
+  "id": "5l6zmlAzuPWF3puK",
+  "name": "[Video to Text] Upload Bridge - v1",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "video-to-text-upload",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "n1",
+      "name": "Webhook Upload",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        160,
+        304
+      ],
+      "webhookId": "e08a7478-12d9-4b95-b3e6-9825f86086b8",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aXsApdZEwxno7Tkr",
+          "name": "Video to Text API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const src = $input.first().json?.body ?? $input.first().json ?? {};\nconst fileName = (src.file_name || 'upload.bin').toString();\nconst mimeType = (src.mime_type || 'application/octet-stream').toString();\nconst base64 = (src.file_base64 || '').toString().trim();\nif (!base64) throw new Error('file_base64 is required');\nconst folderId = (src.folder_id || '').toString().trim();\nreturn [{\n  json: { file_name: fileName, mime_type: mimeType, folder_id: folderId },\n  binary: { fileData: { data: base64, mimeType, fileName } }\n}];"
+      },
+      "id": "n2",
+      "name": "Normalize Upload Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "fileData",
+        "name": "={{ $json.file_name }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.folder_id }}"
+        },
+        "options": {
+          "simplifyOutput": true
+        }
+      },
+      "id": "n3",
+      "name": "Google Drive Upload",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        640,
+        304
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => { const id = $json.id || $json.fileId || ''; const web = $json.webViewLink || $json.webContentLink || ''; const folder = $('Normalize Upload Payload').first().json.folder_id || ''; return JSON.stringify({ drive_file_id: id, drive_web_view_link: web, source_url: web, drive_folder_id: folder }); })() }}",
+        "options": {}
+      },
+      "id": "n4",
+      "name": "Set Upload Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "video-to-text-delete",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "n5",
+      "name": "Webhook Delete",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        160,
+        528
+      ],
+      "webhookId": "da78e05e-7a9e-41a9-97f2-765d92ab3d75",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aXsApdZEwxno7Tkr",
+          "name": "Video to Text API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const src = $input.first().json?.body ?? $input.first().json ?? {};\nconst driveFileId = (src.drive_file_id || '').toString().trim();\nif (!driveFileId) throw new Error('drive_file_id is required');\nreturn [{ json: { drive_file_id: driveFileId } }];"
+      },
+      "id": "n6",
+      "name": "Normalize Delete Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.drive_file_id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "n7",
+      "name": "Google Drive Delete",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        640,
+        528
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"ok\":true,\"deleted\":true}",
+        "options": {}
+      },
+      "id": "n8",
+      "name": "Set Delete Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        528
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Upload": {
+      "main": [
+        [
+          {
+            "node": "Normalize Upload Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Upload Payload": {
+      "main": [
+        [
+          {
+            "node": "Google Drive Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Upload": {
+      "main": [
+        [
+          {
+            "node": "Set Upload Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Delete": {
+      "main": [
+        [
+          {
+            "node": "Normalize Delete Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Delete Payload": {
+      "main": [
+        [
+          {
+            "node": "Google Drive Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Delete": {
+      "main": [
+        [
+          {
+            "node": "Set Delete Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "03d3d80a-f0d9-4889-b9c2-6defb1c83b22",
+  "activeVersionId": "5362742a-f8c1-4de4-9819-e268867cf2c8",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2026-04-23T15:15:34.281Z",
+      "createdAt": "2026-04-23T15:15:34.281Z",
+      "role": "workflow:owner",
+      "workflowId": "5l6zmlAzuPWF3puK",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-23T15:37:46.807Z",
+    "createdAt": "2026-04-23T15:37:46.807Z",
+    "versionId": "5362742a-f8c1-4de4-9819-e268867cf2c8",
+    "workflowId": "5l6zmlAzuPWF3puK",
+    "nodes": [
+      {
+        "id": "n1",
+        "name": "Webhook Upload",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          160,
+          300
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "video-to-text-upload",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "aXsApdZEwxno7Tkr",
+            "name": "Video to Text API Key"
+          }
+        },
+        "webhookId": "e08a7478-12d9-4b95-b3e6-9825f86086b8"
+      },
+      {
+        "id": "n2",
+        "name": "Normalize Upload Payload",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          390,
+          300
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const src = $input.first().json?.body ?? $input.first().json ?? {};\nconst fileName = (src.file_name || 'upload.bin').toString();\nconst mimeType = (src.mime_type || 'application/octet-stream').toString();\nconst base64 = (src.file_base64 || '').toString().trim();\nif (!base64) throw new Error('file_base64 is required');\nconst folderId = (src.folder_id || '').toString().trim();\nreturn [{\n  json: { file_name: fileName, mime_type: mimeType, folder_id: folderId },\n  binary: { fileData: { data: base64, mimeType, fileName } }\n}];"
+        }
+      },
+      {
+        "id": "n3",
+        "name": "Google Drive Upload",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          630,
+          300
+        ],
+        "parameters": {
+          "resource": "file",
+          "operation": "upload",
+          "inputDataFieldName": "fileData",
+          "name": "={{ $json.file_name }}",
+          "folderId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $json.folder_id }}"
+          },
+          "options": {
+            "simplifyOutput": true
+          }
+        },
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "YO4qnGhKlEgotzkB",
+            "name": "DP: Google Drive Account"
+          }
+        }
+      },
+      {
+        "id": "n4",
+        "name": "Set Upload Response",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          880,
+          300
+        ],
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => { const id = $json.id || $json.fileId || ''; const web = $json.webViewLink || $json.webContentLink || ''; const folder = $('Normalize Upload Payload').first().json.folder_id || ''; return JSON.stringify({ drive_file_id: id, drive_web_view_link: web, source_url: web, drive_folder_id: folder }); })() }}"
+        }
+      },
+      {
+        "id": "n5",
+        "name": "Webhook Delete",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          160,
+          520
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "video-to-text-delete",
+          "authentication": "headerAuth",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "aXsApdZEwxno7Tkr",
+            "name": "Video to Text API Key"
+          }
+        },
+        "webhookId": "da78e05e-7a9e-41a9-97f2-765d92ab3d75"
+      },
+      {
+        "id": "n6",
+        "name": "Normalize Delete Payload",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          390,
+          520
+        ],
+        "parameters": {
+          "mode": "runOnceForAllItems",
+          "jsCode": "const src = $input.first().json?.body ?? $input.first().json ?? {};\nconst driveFileId = (src.drive_file_id || '').toString().trim();\nif (!driveFileId) throw new Error('drive_file_id is required');\nreturn [{ json: { drive_file_id: driveFileId } }];"
+        }
+      },
+      {
+        "id": "n7",
+        "name": "Google Drive Delete",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          630,
+          520
+        ],
+        "parameters": {
+          "operation": "deleteFile",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $json.drive_file_id }}",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "YO4qnGhKlEgotzkB",
+            "name": "DP: Google Drive Account"
+          }
+        }
+      },
+      {
+        "id": "n8",
+        "name": "Set Delete Response",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          880,
+          520
+        ],
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={\"ok\":true,\"deleted\":true}"
+        }
+      }
+    ],
+    "connections": {
+      "Webhook Upload": {
+        "main": [
+          [
+            {
+              "node": "Normalize Upload Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Upload Payload": {
+        "main": [
+          [
+            {
+              "node": "Google Drive Upload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Drive Upload": {
+        "main": [
+          [
+            {
+              "node": "Set Upload Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook Delete": {
+        "main": [
+          [
+            {
+              "node": "Normalize Delete Payload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Delete Payload": {
+        "main": [
+          [
+            {
+              "node": "Google Drive Delete",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Drive Delete": {
+        "main": [
+          [
+            {
+              "node": "Set Delete Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}
