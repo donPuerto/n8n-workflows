@@ -1,9 +1,8 @@
 {
-  "updatedAt": "2026-04-08T22:24:54.937Z",
+  "updatedAt": "2026-06-15T22:25:40.868Z",
   "createdAt": "2026-01-01T03:52:58.551Z",
   "id": "Dm34kcocvPR7PllT",
   "name": "03. Discord File Upload v2 - Hi Pages Lead",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -54,10 +53,10 @@
         },
         "channelId": {
           "__rl": true,
-          "value": "912496260823519232",
+          "value": "1510773975423385875",
           "mode": "list",
-          "cachedResultName": "leads・new",
-          "cachedResultUrl": "https://discord.com/channels/753455160209965106/912496260823519232"
+          "cachedResultName": "new-leads",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106/1510773975423385875"
         },
         "content": "===========\nLead Type: {{ $json.leadType }}\nTimestamp: {{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\nId: {{ $json.id }}\nFirst Name: {{ $json.firstName }}\nLast Name: {{ $json.lastName }}\nMobile Number: {{ $json.mobileNumber }}\nPhone Number: {{ $json.phoneNumber }}\nEmail Address: {{ $json.emailAddress }}\nAddress: {{ $json.address }}\nState: {{ $json.state }}\nSuburb: {{ $json.suburb }}\n\nEnquiry: {{ $json.enquiry }}\n\nQuantity: {{ $json.quantity }}\nI'd Like to Get My Project Underway: {{ $json.IdLikeToGetMyProjectUnderway }}\nHow they heard about us?: {{ $json.howTheyHeardAboutUs }}\nLead Qualifier: {{ $json.leadQualifier }}\nReferred by: {{ $json.leadQualifier }}\n",
         "options": {}
@@ -431,12 +430,12 @@
         "operation": "analyze",
         "modelId": {
           "__rl": true,
-          "value": "gpt-4o-mini",
+          "value": "gpt-4.1-mini",
           "mode": "list",
-          "cachedResultName": "GPT-4O-MINI"
+          "cachedResultName": "GPT-4.1-MINI"
         },
-        "text": "=HiPages parsing rules (IMPORTANT):\n\nYou are analyzing this image:\n{{ $json.image.proxyURL }}\n\nExtract customer details directly from the text visible in the image.\n\nInstructions:\n\nUse ONLY what is clearly readable in the image.\nDo NOT guess.\nDo NOT hallucinate.\nIf a field is not clearly present/readable, return an empty string \"\".\n\nRespond with JSON only.\nDo NOT wrap the JSON in markdown.\nDo NOT include explanations.\nDo NOT include any keys other than those in the output JSON below.\n\nName:\nIf a full name is visible, put the first word into \"firstName\" and the last word into \"lastName\".\nIf only one name is visible, put it in \"firstName\" and leave \"lastName\" as \"\".\nDo NOT use business names unless clearly identifying a person.\n\nPhone:\nIf a mobile number is visible, put it in \"mobileNumber\".\nIf a landline is visible, put it in \"phoneNumber\".\n\nEmail:\nIf clearly visible, put it in \"emailAddress\".\n\nAddress:\nIf a full street address is visible, put the full street address into \"address\".\nIf only suburb/locality is visible, put that into \"address\".\nAlways fill \"suburb\" if suburb/locality is visible.\nIf \"address\" contains only suburb/locality (no street), copy it into \"suburb\".\n\nState classification (ONLY use one of these values):\n\"NSW\"\n\"Brisbane\"\n\"Gold Coast\"\n\nRules:\nIf suburb/postcode clearly belongs to NSW → \"NSW\"\nIf suburb/postcode clearly belongs to Brisbane metro → \"Brisbane\"\nIf suburb/postcode clearly belongs to Gold Coast region → \"Gold Coast\"\nIf not confidently determined → \"\"\n\nPostcode:\nFill \"postalCode\" only if clearly visible.\n\nIdLikeToGetMyProjectUnderway:\nOnly fill \"IdLikeToGetMyProjectUnderway\" if this exact field (or a clearly equivalent label like \"Start by\" / \"Start date\" / \"When to start\") is visible in the image.\nExamples:\n- If the image shows \"Start by ASAP\" → set \"IdLikeToGetMyProjectUnderway\" = \"ASAP\"\n- If the image shows a date/time → copy it exactly\nIf not visible, return \"\".\n\nQuantity:\nOnly fill \"Quantity\" if a quantity (number of items/doors/windows/etc.) is clearly visible in the image.\nCopy the quantity exactly as shown (e.g., \"2\", \"two\", \"2 doors\", \"2x\").\nIf not visible, return \"\".\n\nEnquiry field (MANDATORY):\nThe \"enquiry\" field MUST contain the job description text extracted from the image.\nDo NOT summarize.\nDo NOT reword.\nYou may lightly clean obvious OCR formatting issues (extra spaces/line breaks) but do NOT change the wording.\nIf no usable job details are visible, return \"\" for \"enquiry\".\n\nReturn EXACTLY this JSON structure (no extra keys):\n\n{\n  \"firstName\": \"\",\n  \"lastName\": \"\",\n  \"mobileNumber\": \"\",\n  \"phoneNumber\": \"\",\n  \"emailAddress\": \"\",\n  \"address\": \"\",\n  \"state\": \"\",\n  \"suburb\": \"\",\n  \"postalCode\": \"\",\n  \"enquiry\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\",\n  \"Quantity\": \"\"\n}\n",
-        "imageUrls": "={{ $json.image.url }}\n",
+        "text": "HiPages parsing rules (IMPORTANT):\n\nYou are analyzing this image:\n{{ $json.image.proxyURL }}\n\nExtract customer details directly from the text visible in the image.\n\nInstructions:\n\nUse ONLY what is clearly readable in the image.\nDo NOT guess.\nDo NOT hallucinate.\nIf a field is not clearly present/readable, return an empty string \"\".\n\nRespond with JSON only.\nDo NOT wrap the JSON in markdown.\nDo NOT include explanations.\nDo NOT include any keys other than those in the output JSON below.\n\nName:\nIf a full name is visible, put the first word into \"firstName\" and the last word into \"lastName\".\nIf only one name is visible, put it in \"firstName\" and leave \"lastName\" as \"\".\nDo NOT use business names unless clearly identifying a person.\n\nPhone:\nIf a mobile number is visible, put it in \"mobileNumber\".\nIf a landline is visible, put it in \"phoneNumber\".\n\nEmail:\nIf clearly visible, put it in \"emailAddress\".\n\nAddress:\nIf a full street address is visible, put the full street address into \"address\".\nIf only suburb/locality is visible, put that into \"address\".\nAlways fill \"suburb\" if suburb/locality is visible.\nIf \"address\" contains only suburb/locality (no street), copy it into \"suburb\".\n\nState classification (ONLY use one of these values):\n\"NSW\"\n\"Brisbane\"\n\"Gold Coast\"\n\nRules:\nIf suburb/postcode clearly belongs to NSW → \"NSW\"\nIf suburb/postcode clearly belongs to Brisbane metro → \"Brisbane\"\nIf suburb/postcode clearly belongs to Gold Coast region → \"Gold Coast\"\nIf not confidently determined → \"\"\n\nPostcode:\nFill \"postalCode\" only if clearly visible.\n\nIdLikeToGetMyProjectUnderway:\nOnly fill \"IdLikeToGetMyProjectUnderway\" if this exact field (or a clearly equivalent label like \"Start by\" / \"Start date\" / \"When to start\") is visible in the image.\nExamples:\n- If the image shows \"Start by ASAP\" → set \"IdLikeToGetMyProjectUnderway\" = \"ASAP\"\n- If the image shows a date/time → copy it exactly\nIf not visible, return \"\".\n\nQuantity:\nOnly fill \"Quantity\" if a quantity (number of items/doors/windows/etc.) is clearly visible in the image.\nCopy the quantity exactly as shown (e.g., \"2\", \"two\", \"2 doors\", \"2x\").\nIf not visible, return \"\".\n\nEnquiry field (MANDATORY):\nThe \"enquiry\" field MUST contain the job description text extracted from the image.\nDo NOT summarize.\nDo NOT reword.\nYou may lightly clean obvious OCR formatting issues (extra spaces/line breaks) but do NOT change the wording.\nIf no usable job details are visible, return \"\" for \"enquiry\".\n\nReturn EXACTLY this JSON structure (no extra keys):\n\n{\n  \"firstName\": \"\",\n  \"lastName\": \"\",\n  \"mobileNumber\": \"\",\n  \"phoneNumber\": \"\",\n  \"emailAddress\": \"\",\n  \"address\": \"\",\n  \"state\": \"\",\n  \"suburb\": \"\",\n  \"postalCode\": \"\",\n  \"enquiry\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\",\n  \"Quantity\": \"\"\n}\n",
+        "imageUrls": "={{ $json.image.url }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.openAi",
@@ -1105,16 +1104,16 @@
     "Schedule Trigger": [
       {
         "json": {
-          "timestamp": "2026-04-09T08:20:12.004+10:00",
-          "Readable date": "April 9th 2026, 8:20:12 am",
-          "Readable time": "8:20:12 am",
-          "Day of week": "Thursday",
+          "timestamp": "2026-06-15T09:10:47.005+10:00",
+          "Readable date": "June 15th 2026, 9:10:47 am",
+          "Readable time": "9:10:47 am",
+          "Day of week": "Monday",
           "Year": "2026",
-          "Month": "April",
-          "Day of month": "09",
-          "Hour": "08",
-          "Minute": "20",
-          "Second": "12",
+          "Month": "June",
+          "Day of month": "15",
+          "Hour": "09",
+          "Minute": "10",
+          "Second": "47",
           "Timezone": "Australia/Brisbane (UTC+10:00)"
         },
         "pairedItem": {
@@ -1123,9 +1122,8 @@
       }
     ]
   },
-  "versionId": "6ad1497d-0ffb-4f0d-b299-f00d506276a3",
-  "activeVersionId": "6ad1497d-0ffb-4f0d-b299-f00d506276a3",
-  "versionCounter": 1228,
+  "versionId": "8457fd1b-3798-445b-a4e8-7724eb5e65eb",
+  "activeVersionId": "8c83c9c3-132a-4f7e-9c8f-f0955ee466ef",
   "triggerCount": 1,
   "shared": [
     {
@@ -1133,24 +1131,13 @@
       "createdAt": "2026-01-01T03:52:58.556Z",
       "role": "workflow:owner",
       "workflowId": "Dm34kcocvPR7PllT",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-04-08T22:26:42.000Z",
-    "createdAt": "2026-04-08T22:24:54.938Z",
-    "versionId": "6ad1497d-0ffb-4f0d-b299-f00d506276a3",
+    "updatedAt": "2026-05-31T22:38:47.000Z",
+    "createdAt": "2026-05-31T22:38:28.601Z",
+    "versionId": "8c83c9c3-132a-4f7e-9c8f-f0955ee466ef",
     "workflowId": "Dm34kcocvPR7PllT",
     "nodes": [
       {
@@ -1200,10 +1187,10 @@
           },
           "channelId": {
             "__rl": true,
-            "value": "912496260823519232",
+            "value": "1510773975423385875",
             "mode": "list",
-            "cachedResultName": "leads・new",
-            "cachedResultUrl": "https://discord.com/channels/753455160209965106/912496260823519232"
+            "cachedResultName": "new-leads",
+            "cachedResultUrl": "https://discord.com/channels/753455160209965106/1510773975423385875"
           },
           "content": "===========\nLead Type: {{ $json.leadType }}\nTimestamp: {{ $now.setZone('Australia/Brisbane').toFormat('LL/dd/yyyy, HH:mm:ss') }}\nId: {{ $json.id }}\nFirst Name: {{ $json.firstName }}\nLast Name: {{ $json.lastName }}\nMobile Number: {{ $json.mobileNumber }}\nPhone Number: {{ $json.phoneNumber }}\nEmail Address: {{ $json.emailAddress }}\nAddress: {{ $json.address }}\nState: {{ $json.state }}\nSuburb: {{ $json.suburb }}\n\nEnquiry: {{ $json.enquiry }}\n\nQuantity: {{ $json.quantity }}\nI'd Like to Get My Project Underway: {{ $json.IdLikeToGetMyProjectUnderway }}\nHow they heard about us?: {{ $json.howTheyHeardAboutUs }}\nLead Qualifier: {{ $json.leadQualifier }}\nReferred by: {{ $json.leadQualifier }}\n",
           "options": {}
@@ -1577,12 +1564,12 @@
           "operation": "analyze",
           "modelId": {
             "__rl": true,
-            "value": "gpt-4o-mini",
+            "value": "gpt-4.1-mini",
             "mode": "list",
-            "cachedResultName": "GPT-4O-MINI"
+            "cachedResultName": "GPT-4.1-MINI"
           },
-          "text": "=HiPages parsing rules (IMPORTANT):\n\nYou are analyzing this image:\n{{ $json.image.proxyURL }}\n\nExtract customer details directly from the text visible in the image.\n\nInstructions:\n\nUse ONLY what is clearly readable in the image.\nDo NOT guess.\nDo NOT hallucinate.\nIf a field is not clearly present/readable, return an empty string \"\".\n\nRespond with JSON only.\nDo NOT wrap the JSON in markdown.\nDo NOT include explanations.\nDo NOT include any keys other than those in the output JSON below.\n\nName:\nIf a full name is visible, put the first word into \"firstName\" and the last word into \"lastName\".\nIf only one name is visible, put it in \"firstName\" and leave \"lastName\" as \"\".\nDo NOT use business names unless clearly identifying a person.\n\nPhone:\nIf a mobile number is visible, put it in \"mobileNumber\".\nIf a landline is visible, put it in \"phoneNumber\".\n\nEmail:\nIf clearly visible, put it in \"emailAddress\".\n\nAddress:\nIf a full street address is visible, put the full street address into \"address\".\nIf only suburb/locality is visible, put that into \"address\".\nAlways fill \"suburb\" if suburb/locality is visible.\nIf \"address\" contains only suburb/locality (no street), copy it into \"suburb\".\n\nState classification (ONLY use one of these values):\n\"NSW\"\n\"Brisbane\"\n\"Gold Coast\"\n\nRules:\nIf suburb/postcode clearly belongs to NSW → \"NSW\"\nIf suburb/postcode clearly belongs to Brisbane metro → \"Brisbane\"\nIf suburb/postcode clearly belongs to Gold Coast region → \"Gold Coast\"\nIf not confidently determined → \"\"\n\nPostcode:\nFill \"postalCode\" only if clearly visible.\n\nIdLikeToGetMyProjectUnderway:\nOnly fill \"IdLikeToGetMyProjectUnderway\" if this exact field (or a clearly equivalent label like \"Start by\" / \"Start date\" / \"When to start\") is visible in the image.\nExamples:\n- If the image shows \"Start by ASAP\" → set \"IdLikeToGetMyProjectUnderway\" = \"ASAP\"\n- If the image shows a date/time → copy it exactly\nIf not visible, return \"\".\n\nQuantity:\nOnly fill \"Quantity\" if a quantity (number of items/doors/windows/etc.) is clearly visible in the image.\nCopy the quantity exactly as shown (e.g., \"2\", \"two\", \"2 doors\", \"2x\").\nIf not visible, return \"\".\n\nEnquiry field (MANDATORY):\nThe \"enquiry\" field MUST contain the job description text extracted from the image.\nDo NOT summarize.\nDo NOT reword.\nYou may lightly clean obvious OCR formatting issues (extra spaces/line breaks) but do NOT change the wording.\nIf no usable job details are visible, return \"\" for \"enquiry\".\n\nReturn EXACTLY this JSON structure (no extra keys):\n\n{\n  \"firstName\": \"\",\n  \"lastName\": \"\",\n  \"mobileNumber\": \"\",\n  \"phoneNumber\": \"\",\n  \"emailAddress\": \"\",\n  \"address\": \"\",\n  \"state\": \"\",\n  \"suburb\": \"\",\n  \"postalCode\": \"\",\n  \"enquiry\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\",\n  \"Quantity\": \"\"\n}\n",
-          "imageUrls": "={{ $json.image.url }}\n",
+          "text": "HiPages parsing rules (IMPORTANT):\n\nYou are analyzing this image:\n{{ $json.image.proxyURL }}\n\nExtract customer details directly from the text visible in the image.\n\nInstructions:\n\nUse ONLY what is clearly readable in the image.\nDo NOT guess.\nDo NOT hallucinate.\nIf a field is not clearly present/readable, return an empty string \"\".\n\nRespond with JSON only.\nDo NOT wrap the JSON in markdown.\nDo NOT include explanations.\nDo NOT include any keys other than those in the output JSON below.\n\nName:\nIf a full name is visible, put the first word into \"firstName\" and the last word into \"lastName\".\nIf only one name is visible, put it in \"firstName\" and leave \"lastName\" as \"\".\nDo NOT use business names unless clearly identifying a person.\n\nPhone:\nIf a mobile number is visible, put it in \"mobileNumber\".\nIf a landline is visible, put it in \"phoneNumber\".\n\nEmail:\nIf clearly visible, put it in \"emailAddress\".\n\nAddress:\nIf a full street address is visible, put the full street address into \"address\".\nIf only suburb/locality is visible, put that into \"address\".\nAlways fill \"suburb\" if suburb/locality is visible.\nIf \"address\" contains only suburb/locality (no street), copy it into \"suburb\".\n\nState classification (ONLY use one of these values):\n\"NSW\"\n\"Brisbane\"\n\"Gold Coast\"\n\nRules:\nIf suburb/postcode clearly belongs to NSW → \"NSW\"\nIf suburb/postcode clearly belongs to Brisbane metro → \"Brisbane\"\nIf suburb/postcode clearly belongs to Gold Coast region → \"Gold Coast\"\nIf not confidently determined → \"\"\n\nPostcode:\nFill \"postalCode\" only if clearly visible.\n\nIdLikeToGetMyProjectUnderway:\nOnly fill \"IdLikeToGetMyProjectUnderway\" if this exact field (or a clearly equivalent label like \"Start by\" / \"Start date\" / \"When to start\") is visible in the image.\nExamples:\n- If the image shows \"Start by ASAP\" → set \"IdLikeToGetMyProjectUnderway\" = \"ASAP\"\n- If the image shows a date/time → copy it exactly\nIf not visible, return \"\".\n\nQuantity:\nOnly fill \"Quantity\" if a quantity (number of items/doors/windows/etc.) is clearly visible in the image.\nCopy the quantity exactly as shown (e.g., \"2\", \"two\", \"2 doors\", \"2x\").\nIf not visible, return \"\".\n\nEnquiry field (MANDATORY):\nThe \"enquiry\" field MUST contain the job description text extracted from the image.\nDo NOT summarize.\nDo NOT reword.\nYou may lightly clean obvious OCR formatting issues (extra spaces/line breaks) but do NOT change the wording.\nIf no usable job details are visible, return \"\" for \"enquiry\".\n\nReturn EXACTLY this JSON structure (no extra keys):\n\n{\n  \"firstName\": \"\",\n  \"lastName\": \"\",\n  \"mobileNumber\": \"\",\n  \"phoneNumber\": \"\",\n  \"emailAddress\": \"\",\n  \"address\": \"\",\n  \"state\": \"\",\n  \"suburb\": \"\",\n  \"postalCode\": \"\",\n  \"enquiry\": \"\",\n  \"IdLikeToGetMyProjectUnderway\": \"\",\n  \"Quantity\": \"\"\n}\n",
+          "imageUrls": "={{ $json.image.url }}",
           "options": {}
         },
         "type": "@n8n/n8n-nodes-langchain.openAi",
@@ -1595,8 +1582,8 @@
         "name": "OCR / Analyze Image",
         "credentials": {
           "openAiApi": {
-            "id": "oQQrCQWqdo1CuRzx",
-            "name": "WRai: OpenAi account"
+            "id": "JQ6ARVQIEbbwoWxD",
+            "name": "DP: OpenAi Account"
           }
         }
       },
@@ -2230,18 +2217,9 @@
       }
     },
     "authors": "Christine Kam",
-    "name": "Version 6ad1497d",
+    "name": "Version 8c83c9c3",
     "description": "",
-    "autosaved": true,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-04-08T22:26:42.558Z",
-        "id": 1008,
-        "workflowId": "Dm34kcocvPR7PllT",
-        "versionId": "6ad1497d-0ffb-4f0d-b299-f00d506276a3",
-        "event": "activated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
-    ]
-  }
+    "autosaved": true
+  },
+  "tags": []
 }
