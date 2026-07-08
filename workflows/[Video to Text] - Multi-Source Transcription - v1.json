@@ -1,9 +1,8 @@
 {
-  "updatedAt": "2026-03-31T00:19:16.931Z",
+  "updatedAt": "2026-05-28T11:58:16.003Z",
   "createdAt": "2026-03-27T04:56:46.987Z",
   "id": "51GKzBSTM3iGhJH1",
   "name": "[Video to Text] - Multi-Source Transcription - v1",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -20,7 +19,7 @@
       "typeVersion": 2,
       "position": [
         0,
-        864
+        1568
       ],
       "webhookId": "video-to-text-api",
       "credentials": {
@@ -33,7 +32,7 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={{ (() => {\nconst body = $json.body || {};\nconst url = body.url || '';\nconst source = body.source || 'auto';\nconst transcriber = body.transcriber || 'assemblyai';\nconst gdrive_file_id = body.gdrive_file_id || '';\nconst callback_url = body.callback_url || '';\n\nlet detectedSource = source;\nif (source === 'auto' && url) {\n  if (url.includes('youtube.com') || url.includes('youtu.be')) {\n    detectedSource = 'youtube';\n  } else if (url.includes('drive.google.com')) {\n    detectedSource = 'gdrive';\n  } else {\n    detectedSource = 'social';\n  }\n}\nif (gdrive_file_id) detectedSource = 'gdrive';\n\nreturn JSON.stringify({ url, source: detectedSource, transcriber, gdrive_file_id, callback_url });\n})() }}",
+        "jsonOutput": "={{ (() => { const body = $json.body || {}; const url = body.url || \"\"; const source = body.source || \"auto\"; const transcriber = body.transcriber || \"assemblyai\"; const callback_url = body.callback_url || \"\"; const word_boost = Array.isArray(body.word_boost) ? body.word_boost.filter(Boolean) : []; const directMediaPattern = /\\.(mp3|wav|m4a|mp4|mov|webm)(\\?|$)/i; const isDirectMediaUrl = directMediaPattern.test(url) || url.includes(\"supabase.co/storage\") || url.includes(\"/api/tools/video-to-text/files/\"); let detectedSource = source; if (source === \"auto\" && url) { if (url.includes(\"youtube.com\") || url.includes(\"youtu.be\")) { detectedSource = \"youtube\"; } else if (isDirectMediaUrl) { detectedSource = \"upload\"; } else { detectedSource = \"social\"; } } if ((source === \"social\" || source === \"upload\" || source === \"supabase\") && isDirectMediaUrl) { detectedSource = \"upload\"; } return JSON.stringify({ url, source: detectedSource, transcriber, callback_url, word_boost }); })() }}",
         "options": {}
       },
       "id": "a0000002-0000-0000-0000-000000000002",
@@ -42,7 +41,7 @@
       "typeVersion": 3.4,
       "position": [
         224,
-        864
+        1568
       ]
     },
     {
@@ -52,10 +51,10 @@
             {
               "conditions": {
                 "options": {
-                  "caseSensitive": true,
+                  "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 2
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -76,10 +75,10 @@
             {
               "conditions": {
                 "options": {
-                  "caseSensitive": true,
+                  "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 2
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -100,16 +99,16 @@
             {
               "conditions": {
                 "options": {
-                  "caseSensitive": true,
+                  "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 2
+                  "version": 1
                 },
                 "conditions": [
                   {
-                    "id": "cond-gdrive",
+                    "id": "cond-upload",
                     "leftValue": "={{ $json.source }}",
-                    "rightValue": "gdrive",
+                    "rightValue": "upload",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -119,7 +118,7 @@
                 "combinator": "and"
               },
               "renameOutput": true,
-              "outputKey": "Google Drive"
+              "outputKey": "Upload"
             }
           ]
         },
@@ -133,7 +132,7 @@
       "typeVersion": 3.2,
       "position": [
         448,
-        832
+        1536
       ]
     },
     {
@@ -143,10 +142,10 @@
             {
               "conditions": {
                 "options": {
-                  "caseSensitive": true,
+                  "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 2
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -167,10 +166,10 @@
             {
               "conditions": {
                 "options": {
-                  "caseSensitive": true,
+                  "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 2
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -191,10 +190,10 @@
             {
               "conditions": {
                 "options": {
-                  "caseSensitive": true,
+                  "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 2
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -223,8 +222,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        656,
-        528
+        672,
+        320
       ],
       "notesInFlow": true,
       "notes": "YouTube path: choose transcriber"
@@ -253,10 +252,11 @@
       "typeVersion": 4.2,
       "position": [
         896,
-        192
+        352
       ],
       "notesInFlow": true,
-      "notes": "Gets direct MP3 download URL from YouTube via RapidAPI (500 free req/month)"
+      "continueOnFail": true,
+      "notes": "Gets direct MP3 download URL from YouTube via RapidAPI (500 free req/month). continueOnFail=true so errors flow to IF check."
     },
     {
       "parameters": {
@@ -274,8 +274,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1568,
-        192
+        1792,
+        496
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -286,34 +286,17 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://api.openai.com/v1/audio/transcriptions",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "openAiApi",
-        "sendBody": true,
-        "contentType": "multipart-form-data",
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "model",
-              "value": "whisper-1"
-            },
-            {
-              "parameterType": "formBinaryData",
-              "name": "file",
-              "inputDataFieldName": "data"
-            }
-          ]
-        },
+        "resource": "audio",
+        "operation": "transcribe",
         "options": {}
       },
       "id": "a0000009-0000-0000-0000-000000000009",
       "name": "Whisper: Transcribe YouTube Audio",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
       "position": [
-        2240,
-        400
+        2016,
+        -48
       ],
       "notesInFlow": true,
       "credentials": {
@@ -322,15 +305,17 @@
           "name": "DP: OpenAi Account"
         }
       },
-      "disabled": true,
-      "notes": "Whisper needs audio file — requires download first for YouTube"
+      "continueOnFail": true,
+      "notes": "Whisper-1: receives downloaded MP3 binary from RapidAPI download step. 25MB limit - avoid videos over ~20 min."
     },
     {
       "parameters": {
         "url": "=https://fastsaverapi.com/api/v1/download?url={{ encodeURIComponent($('Set: Extract & Detect Source').first().json.url) }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
-        "options": {}
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
       },
       "id": "a0000010-0000-0000-0000-000000000010",
       "name": "FastSaverAPI: Get Download URL",
@@ -338,7 +323,7 @@
       "typeVersion": 4.2,
       "position": [
         672,
-        800
+        1568
       ],
       "notesInFlow": true,
       "credentials": {
@@ -347,7 +332,60 @@
           "name": "FastSaverAPI Key"
         }
       },
-      "notes": "Extract audio download URL from social media"
+      "continueOnFail": true,
+      "notes": "Extract audio download URL from social media. continueOnFail=true so unsupported/expired URLs send error callback."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-fsa-ok",
+              "leftValue": "={{ $json.result?.audio || $json.result?.video || $json.result?.url || '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000056-0000-0000-0000-000000000056",
+      "name": "IF: FastSaverAPI OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        1568
+      ],
+      "notesInFlow": true,
+      "notes": "True ? download URL exists. False ? FastSaverAPI failed (unsupported platform, private video, expired URL)."
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const errMsg = $json.error?.message || $json.error?.description || $json.message || 'FastSaverAPI could not extract audio from this URL';\n  return JSON.stringify({\n    success: false,\n    error: errMsg,\n    error_code: 'FASTSAVERAPI_FETCH_FAILED',\n    error_stage: 'social_download',\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+        "options": {}
+      },
+      "id": "a0000057-0000-0000-0000-000000000057",
+      "name": "Set: Format Error (FastSaverAPI)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2688,
+        1744
+      ],
+      "notesInFlow": true,
+      "notes": "Formats FastSaverAPI error. Common causes: private video, unsupported platform, expired URL, quota exhausted."
     },
     {
       "parameters": {
@@ -365,8 +403,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        896,
-        800
+        1120,
+        1328
       ],
       "notesInFlow": true,
       "notes": "Download the actual audio binary"
@@ -380,7 +418,8 @@
                 "options": {
                   "caseSensitive": false,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -403,7 +442,8 @@
                 "options": {
                   "caseSensitive": false,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -426,7 +466,8 @@
                 "options": {
                   "caseSensitive": false,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -451,52 +492,34 @@
         }
       },
       "id": "a0000012-0000-0000-0000-000000000012",
-      "name": "Switch: Transcriber (Social/GDrive)",
+      "name": "Switch: Transcriber (Social/Upload)",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        1120,
-        944
+        1360,
+        1216
       ]
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://api.openai.com/v1/audio/transcriptions",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "openAiApi",
-        "sendBody": true,
-        "contentType": "multipart-form-data",
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "model",
-              "value": "whisper-1"
-            },
-            {
-              "parameterType": "formBinaryData",
-              "name": "file",
-              "inputDataFieldName": "data"
-            }
-          ]
-        },
+        "resource": "audio",
+        "operation": "transcribe",
         "options": {}
       },
       "id": "a0000013-0000-0000-0000-000000000013",
       "name": "Whisper: Transcribe Audio",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
       "position": [
-        2240,
-        784
+        2464,
+        1088
       ],
       "credentials": {
         "openAiApi": {
           "id": "JQ6ARVQIEbbwoWxD",
           "name": "DP: OpenAi Account"
         }
-      },
-      "disabled": true
+      }
     },
     {
       "parameters": {
@@ -514,8 +537,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1360,
-        1328
+        1568,
+        1584
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -540,8 +563,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1584,
-        1328
+        1792,
+        1584
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -559,8 +582,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1808,
-        1328
+        2016,
+        1584
       ]
     },
     {
@@ -575,8 +598,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2032,
-        1264
+        2240,
+        1472
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -591,7 +614,8 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 1
           },
           "conditions": [
             {
@@ -613,39 +637,14 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2256,
-        1328
+        2464,
+        1584
       ]
     },
     {
       "parameters": {
-        "operation": "download",
-        "fileId": {
-          "__rl": true,
-          "mode": "id",
-          "value": "={{ $('Set: Extract & Detect Source').first().json.gdrive_file_id }}"
-        },
-        "options": {}
-      },
-      "id": "a0000019-0000-0000-0000-000000000019",
-      "name": "Google Drive: Download File",
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
-      "position": [
-        896,
-        1072
-      ],
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "YO4qnGhKlEgotzkB",
-          "name": "DP: Google Drive Account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "mode": "raw",
-        "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const text = $json.text || $json.transcription || '';\n  return JSON.stringify({\n    success: true,\n    transcription: text,\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    word_count: text.split(/\\s+/).filter(w => w).length,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+        "jsonOutput": "={{ (() => { const input = $(\"Set: Extract & Detect Source\").first().json; const rawText = ($json.text || $json.transcription || \"\").trim(); const success = rawText.length > 0; return JSON.stringify({ success, transcription: rawText, source_url: input.url || \"\", source: input.source, transcriber: input.transcriber, word_count: success ? rawText.split(/\\s+/).filter(w => w).length : 0, error: success ? \"\" : \"No transcript text was detected from the selected source. Try clearer speech audio or switch transcriber.\", timestamp: new Date().toISOString() }); })() }}",
         "options": {}
       },
       "id": "a0000020-0000-0000-0000-000000000020",
@@ -653,15 +652,15 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2784,
-        656
+        2688,
+        112
       ]
     },
     {
       "parameters": {
-        "content": "## [Video to Text] - Multi-Source Transcription - v1\n\n**Trigger:** Webhook POST `/video-to-text`\n**Sources:** YouTube (RapidAPI MP3), Social Media (FastSaverAPI), Google Drive\n**Transcribers:** OpenAI Whisper | AssemblyAI | Deepgram Nova-2\n**Output:** JSON result POSTed to callback_url\n\n⚠️ **ASYNC API** — n8n runs in queue mode.\nEvery request returns {\"message\": \"Workflow was started\"} immediately.\nResults are POSTed to callback_url when done.\n\n### Request Body:\n```json\n{\n  \"url\": \"https://youtube.com/watch?v=xxx\",\n  \"source\": \"auto\",\n  \"transcriber\": \"assemblyai\",\n  \"gdrive_file_id\": \"\",\n  \"callback_url\": \"https://your-app.com/api/result\"\n}\n```\n\n### Callback Response:\n```json\n{\n  \"success\": true,\n  \"transcription\": \"Full text...\",\n  \"source_url\": \"...\",\n  \"source\": \"youtube\",\n  \"transcriber\": \"assemblyai\",\n  \"word_count\": 1234,\n  \"timestamp\": \"...\"\n}\n```\n\n### API Key\n`vtt_33872321dd87e4bd6275578fe674bf9102f7d4c96d4a62ee8ddbc54fc1368561`",
-        "height": 832,
-        "width": 580,
+        "content": "## [Video to Text] - Multi-Source Transcription - v1\n\n**Trigger:** Webhook POST `/video-to-text`\n**Sources:** YouTube, social/video URLs, Supabase upload URLs\n**Transcribers:** OpenAI Whisper (native node) | AssemblyAI | Deepgram\n**Output:** Result JSON POSTed to `callback_url`\n\n### Current flow\n- `youtube` -> RapidAPI MP3 -> FastSaver fallback -> transcriber path\n- `social` -> FastSaver download extraction -> transcriber path\n- `upload` -> Supabase signed/relay URL -> direct transcriber path\n- Whisper upload path downloads binary first so the native OpenAI node receives `data`\n\n### Request body\n```json\n{\n  \"url\": \"https://youtube.com/watch?v=xxx\",\n  \"source\": \"auto\",\n  \"transcriber\": \"whisper\",\n  \"callback_url\": \"https://your-app.com/api/result\"\n}\n```\n\n### Callback shape\n```json\n{\n  \"success\": true,\n  \"transcription\": \"Full text...\",\n  \"source_url\": \"...\",\n  \"source\": \"upload\",\n  \"transcriber\": \"whisper\",\n  \"word_count\": 1234,\n  \"timestamp\": \"...\"\n}\n```",
+        "height": 760,
+        "width": 520,
         "color": 4
       },
       "id": "a0000027-0000-0000-0000-000000000027",
@@ -669,15 +668,15 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -640,
-        496
+        -16,
+        224
       ]
     },
     {
       "parameters": {
-        "content": "## YouTube Path\n**RapidAPI youtube-mp36 → AssemblyAI / Deepgram / Whisper**\n1. Extract video ID from URL\n2. GET https://youtube-mp36.p.rapidapi.com/dl?id={videoId}\n3. Returns { link: \"https://...mp3\" }\n4. AssemblyAI: download binary → upload to AAI → poll\n5. Deepgram: send MP3 URL directly → sync response\n6. Whisper: DISABLED\n\n⚠️ YouTube IPs are blocked from n8n VPS — must use RapidAPI\n⚠️ RapidAPI temp URLs are IP-restricted — must download binary before sending to AssemblyAI",
+        "content": "## YouTube Path\n**RapidAPI youtube-mp36 -> FastSaver fallback -> Whisper / AssemblyAI / Deepgram**\n1. Extract video ID from URL\n2. Try `youtube-mp36` to get a temporary MP3 link\n3. If RapidAPI has no `link`, try FastSaver as downloader fallback\n4. Whisper: download MP3 binary -> native OpenAI `Transcribe` node\n5. AssemblyAI: download MP3 binary -> upload -> submit -> poll\n6. Deepgram: download MP3 binary -> transcribe\n\nNotes:\n- Downloader availability depends on the specific YouTube video\n- Some videos fail at both downloader providers before transcription starts",
         "height": 336,
-        "width": 500,
+        "width": 760,
         "color": 6
       },
       "id": "a0000028-0000-0000-0000-000000000028",
@@ -685,15 +684,15 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        800,
-        -240
+        528,
+        -160
       ]
     },
     {
       "parameters": {
-        "content": "### Social Media Path\nFastSaverAPI extracts audio from TikTok, Instagram, Facebook, Twitter, etc.\nFree tier: 200 points/month, 1 req/sec.",
-        "height": 120,
-        "width": 460,
+        "content": "### Social + Upload Path\n- Social links use FastSaver to extract audio/video download URLs\n- Supabase uploads do not use Google Drive anymore\n- Upload URLs route directly into the selected transcriber path\n- Whisper upload path adds a download step so the native OpenAI node receives binary `data`",
+        "height": 210,
+        "width": 660,
         "color": 6
       },
       "id": "a0000029-0000-0000-0000-000000000029",
@@ -701,31 +700,15 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        256,
-        208
+        688,
+        576
       ]
     },
     {
       "parameters": {
-        "content": "### Google Drive Path\nDownloads file from Google Drive, then sends to chosen transcriber.",
-        "height": 212,
-        "width": 436,
-        "color": 6
-      },
-      "id": "a0000030-0000-0000-0000-000000000030",
-      "name": "Sticky: Google Drive Section",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        736,
-        1296
-      ]
-    },
-    {
-      "parameters": {
-        "content": "### AssemblyAI Polling (async)\nSubmit transcript → Code node 15s delay → Poll status\n→ IF completed → continue, else → loop back\n\n⚠️ Uses Code node for delay (NOT Wait node)\nWait node closes webhook connection — Code node does not.\n\nBudget 60-120s per video.",
-        "height": 224,
-        "width": 660,
+        "content": "### AssemblyAI Polling (async)\nSubmit transcript -> 15s delay -> poll status\n-> IF `completed` continue\n-> ELSE loop and poll again\n\nUsed only for AssemblyAI.\nDeepgram and Whisper return in the same execution path.",
+        "height": 220,
+        "width": 640,
         "color": 5
       },
       "id": "a0000031-0000-0000-0000-000000000031",
@@ -733,15 +716,15 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        2512,
-        992
+        2720,
+        512
       ]
     },
     {
       "parameters": {
-        "content": "### Output: Callback Only\n\nIF callback_url provided → POST result JSON to callback_url\nIF no callback_url → workflow ends silently\n\nResult shape:\n{\n  success, transcription, source_url,\n  source, transcriber, word_count, timestamp\n}\n\nNo Google Docs — use callback_url in your web app.",
-        "height": 284,
-        "width": 508,
+        "content": "### Output: Callback + Summary UI\nIf callback_url exists -> POST result JSON back to the app\nIf no callback_url -> workflow ends silently\n\nDeepgram transcript formatting preserves paragraph breaks so the Nuxt summary modal receives cleaner text.\nThe Nuxt app generates the detailed Fathom-style summary when the user clicks the Summary button.\nFor multi-part uploads, the Nuxt app combines all completed split-file transcripts in upload order after callbacks finish.\n\nThe Nuxt app stores upload metadata in Supabase.\nThis workflow returns the finished transcription payload.",
+        "height": 220,
+        "width": 620,
         "color": 6
       },
       "id": "a0000032-0000-0000-0000-000000000032",
@@ -749,8 +732,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        3216,
-        336
+        3344,
+        192
       ]
     },
     {
@@ -762,8 +745,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1792,
-        192
+        2016,
+        496
       ],
       "notes": "Wait 15s before polling AssemblyAI"
     },
@@ -779,8 +762,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2016,
-        112
+        2240,
+        464
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -819,19 +802,19 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        2240,
-        192
+        2464,
+        496
       ],
-      "notes": "completed → Format Response, else → loop back"
+      "notes": "completed ? Format Response, else ? loop back"
     },
     {
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": true,
+            "caseSensitive": false,
             "leftValue": "",
             "typeValidation": "strict",
-            "version": 2
+            "version": 1
           },
           "conditions": [
             {
@@ -853,8 +836,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        3008,
-        656
+        2912,
+        192
       ]
     },
     {
@@ -871,8 +854,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3232,
-        640
+        3136,
+        192
       ],
       "notes": "POST transcription result to caller callback_url"
     },
@@ -892,8 +875,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1120,
-        192
+        1344,
+        320
       ],
       "notes": "Download MP3 binary from RapidAPI temp URL"
     },
@@ -913,8 +896,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1344,
-        192
+        1568,
+        320
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -922,17 +905,17 @@
           "name": "DP: AssemblyAI API Key"
         }
       },
-      "notes": "Upload MP3 binary to AssemblyAI — returns upload_url"
+      "notes": "Upload MP3 binary to AssemblyAI - returns upload_url"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true",
+        "url": "https://api.deepgram.com/v1/listen?model=whisper-large&smart_format=true&punctuate=true&paragraphs=true",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ url: $(\"RapidAPI: YouTube to MP3 (Deepgram)\").first().json.link }) }}",
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
         "options": {}
       },
       "id": "a0000040-0000-0000-0000-000000000040",
@@ -941,7 +924,7 @@
       "typeVersion": 4.2,
       "position": [
         2016,
-        592
+        864
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -949,17 +932,18 @@
           "name": "DP: Deepgram API Key"
         }
       },
-      "notes": "Deepgram Nova-2: transcribe from MP3 URL directly (no upload needed)"
+      "continueOnFail": true,
+      "notes": "Deepgram Nova-2: transcribe binary MP3 downloaded by n8n VPS. Same pattern as AssemblyAI/Whisper - no CDN IP restriction issues."
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true",
+        "url": "https://api.deepgram.com/v1/listen?model=whisper-large&smart_format=true&punctuate=true&paragraphs=true",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
-        "contentType": "binaryData",
-        "inputDataFieldName": "data",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ url: $(\"Set: Extract & Detect Source\").first().json.url }) }}",
         "options": {}
       },
       "id": "a0000041-0000-0000-0000-000000000041",
@@ -967,8 +951,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2016,
-        976
+        2240,
+        1280
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -981,7 +965,7 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={{ (() => { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+        "jsonOutput": "={{ (() => { const alt = $json?.results?.channels?.[0]?.alternatives?.[0] || {}; const paragraphBlocks = Array.isArray(alt?.paragraphs?.paragraphs) ? alt.paragraphs.paragraphs.map(paragraph => { const sentenceText = Array.isArray(paragraph?.sentences) ? paragraph.sentences.map(sentence => sentence?.text || \"\").filter(Boolean).join(\" \").trim() : \"\"; return (sentenceText || paragraph?.transcript || \"\").trim(); }).filter(Boolean) : []; const paraText = paragraphBlocks.join(\"\\n\\n\"); const wordText = Array.isArray(alt.words) ? alt.words.map(w => w.punctuated_word || w.word || \"\").filter(Boolean).join(\" \").trim() : \"\"; const text = (paraText || alt.transcript || wordText || \"\").trim(); return JSON.stringify({ text, deepgram_raw_len: text.length, deepgram_paragraph_count: paragraphBlocks.length }); })() }}",
         "options": {}
       },
       "id": "a0000042-0000-0000-0000-000000000042",
@@ -989,15 +973,15 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2240,
-        592
+        2464,
+        896
       ],
-      "notes": "Extract transcript text from Deepgram response"
+      "notes": "Extract transcript text from Deepgram response while preserving paragraph breaks for cleaner reading and better summary generation."
     },
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={{ (() => { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+        "jsonOutput": "={{ (() => { const alt = $json?.results?.channels?.[0]?.alternatives?.[0] || {}; const paragraphBlocks = Array.isArray(alt?.paragraphs?.paragraphs) ? alt.paragraphs.paragraphs.map(paragraph => { const sentenceText = Array.isArray(paragraph?.sentences) ? paragraph.sentences.map(sentence => sentence?.text || \"\").filter(Boolean).join(\" \").trim() : \"\"; return (sentenceText || paragraph?.transcript || \"\").trim(); }).filter(Boolean) : []; const paraText = paragraphBlocks.join(\"\\n\\n\"); const wordText = Array.isArray(alt.words) ? alt.words.map(w => w.punctuated_word || w.word || \"\").filter(Boolean).join(\" \").trim() : \"\"; const text = (paraText || alt.transcript || wordText || \"\").trim(); return JSON.stringify({ text, deepgram_raw_len: text.length, deepgram_paragraph_count: paragraphBlocks.length }); })() }}",
         "options": {}
       },
       "id": "a0000043-0000-0000-0000-000000000043",
@@ -1005,10 +989,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2240,
-        976
+        2464,
+        1280
       ],
-      "notes": "Extract transcript text from Deepgram response"
+      "notes": "Extract transcript text from Deepgram response while preserving paragraph breaks for cleaner reading and better summary generation."
     },
     {
       "parameters": {
@@ -1033,10 +1017,365 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1792,
-        592
+        1344,
+        816
       ],
-      "notes": "Gets MP3 URL for Deepgram path (separate from AssemblyAI path)"
+      "continueOnFail": true,
+      "notes": "Gets MP3 URL for Deepgram path. continueOnFail=true so errors flow to IF check."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-rapid-aai-ok",
+              "leftValue": "={{ $json.link || '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000045-0000-0000-0000-000000000045",
+      "name": "IF: RapidAPI OK? (AssemblyAI)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        352
+      ],
+      "notesInFlow": true,
+      "notes": "True ? link exists, continue download. False ? RapidAPI errored, send error callback."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-rapid-dg-ok",
+              "leftValue": "={{ $json.link || '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000046-0000-0000-0000-000000000046",
+      "name": "IF: RapidAPI OK? (Deepgram)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        816
+      ],
+      "notesInFlow": true,
+      "notes": "True ? link exists, transcribe. False ? RapidAPI errored, send error callback."
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const errMsg = $json.error?.message || $json.error?.description || $json.msg || $json.message || 'RapidAPI failed to return a download URL';\n  const apiStatus = $json.status || 'error';\n  const httpCode = $json.statusCode || $json.error?.statusCode || null;\n  return JSON.stringify({\n    success: false,\n    error: errMsg,\n    error_code: 'RAPIDAPI_FETCH_FAILED',\n    error_stage: 'youtube_download',\n    api_status: apiStatus,\n    http_status: httpCode,\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+        "options": {}
+      },
+      "id": "a0000047-0000-0000-0000-000000000047",
+      "name": "Set: Format Error (RapidAPI)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1792,
+        304
+      ],
+      "notesInFlow": true,
+      "notes": "Formats RapidAPI error payload. Includes error message, stage, API status, and original request context."
+    },
+    {
+      "parameters": {
+        "content": "### YouTube Downloader Error Handling\nBoth YouTube RapidAPI nodes use `continueOnFail: true`.\n\nFlow:\n- If `link` exists -> continue to transcription\n- If `link` is missing -> try FastSaver fallback\n- If FastSaver also fails -> format downloader error and callback to UI\n\nCommon causes:\n- quota exhausted\n- invalid or blocked video\n- provider cannot extract media for that specific URL",
+        "height": 320,
+        "width": 560,
+        "color": 7
+      },
+      "id": "a0000048-0000-0000-0000-000000000048",
+      "name": "Sticky: RapidAPI Error Handling",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        -528
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ (() => { const url = $(\"Set: Extract & Detect Source\").first().json.url; const match = url.match(new RegExp(\"(?:v=|youtu.be/)([a-zA-Z0-9_-]{11})\")); return \"https://youtube-mp36.p.rapidapi.com/dl?id=\" + (match ? match[1] : \"\"); })() }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-rapidapi-key",
+              "value": "b8599adad4mshaa463d039fabfd0p175df4jsn40d478261b9b"
+            },
+            {
+              "name": "x-rapidapi-host",
+              "value": "youtube-mp36.p.rapidapi.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a0000051-0000-0000-0000-000000000051",
+      "name": "RapidAPI: YouTube to MP3 (Whisper)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        -48
+      ],
+      "notesInFlow": true,
+      "continueOnFail": true,
+      "notes": "Gets MP3 URL for Whisper path. continueOnFail=true so errors flow to IF check."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-rapid-wh-ok",
+              "leftValue": "={{ $json.link || '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000052-0000-0000-0000-000000000052",
+      "name": "IF: RapidAPI OK? (Whisper)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        -48
+      ],
+      "notesInFlow": true,
+      "notes": "True ? link exists, download binary. False ? RapidAPI errored, send error callback."
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "a0000053-0000-0000-0000-000000000053",
+      "name": "Download: YouTube MP3 (Whisper)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1792,
+        -48
+      ],
+      "notesInFlow": true,
+      "continueOnFail": true,
+      "notes": "Downloads MP3 binary from RapidAPI CDN URL. n8n VPS downloads it so Whisper receives a binary, not a URL."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-wh-yt-ok",
+              "leftValue": "={{ $json.text ? 'ok' : 'fail' }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000054-0000-0000-0000-000000000054",
+      "name": "IF: Whisper OK? (YouTube)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2464,
+        -48
+      ],
+      "notesInFlow": true,
+      "notes": "True ? text exists, format response. False ? Whisper returned error, send error callback."
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "a0000055-0000-0000-0000-000000000055",
+      "name": "Download: YouTube MP3 (Deepgram)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1792,
+        864
+      ],
+      "notesInFlow": true,
+      "continueOnFail": true,
+      "notes": "Downloads MP3 binary from RapidAPI CDN URL. n8n VPS downloads it so Deepgram receives binary - avoids IP-restriction issues."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-dg-yt-ok",
+              "leftValue": "={{ $json.results ? 'ok' : 'fail' }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000049-0000-0000-0000-000000000049",
+      "name": "IF: Deepgram OK? (YouTube)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2240,
+        864
+      ],
+      "notesInFlow": true,
+      "notes": "True ? results exist, extract transcript. False ? Deepgram returned error (e.g. REMOTE_CONTENT_ERROR from broken RapidAPI URL), send error callback."
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const errCode = $json.err_code || $json.error?.code || 'TRANSCRIPTION_FAILED';\n  const errMsg = $json.err_msg || $json.error?.message || $json.error?.description || 'Transcription service returned an error';\n  return JSON.stringify({\n    success: false,\n    error: errMsg,\n    error_code: errCode,\n    error_stage: 'transcription',\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+        "options": {}
+      },
+      "id": "a0000050-0000-0000-0000-000000000050",
+      "name": "Set: Format Error (Transcription)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2688,
+        -80
+      ],
+      "notesInFlow": true,
+      "notes": "Formats transcription error payload. Covers Deepgram REMOTE_CONTENT_ERROR, AssemblyAI failures, Whisper rejections."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-upload-whisper",
+              "leftValue": "={{ $(\"Set: Extract & Detect Source\").first().json.transcriber }}",
+              "rightValue": "whisper",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0000091-0000-0000-0000-000000000091",
+      "name": "IF: Upload Uses Whisper?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        1744
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $(\"Set: Extract & Detect Source\").first().json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "a0000092-0000-0000-0000-000000000092",
+      "name": "Download: Upload Source File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        1744
+      ]
     }
   ],
   "connections": {
@@ -1082,7 +1421,7 @@
         ],
         [
           {
-            "node": "Google Drive: Download File",
+            "node": "IF: Upload Uses Whisper?",
             "type": "main",
             "index": 0
           }
@@ -1093,7 +1432,7 @@
       "main": [
         [
           {
-            "node": "Whisper: Transcribe YouTube Audio",
+            "node": "RapidAPI: YouTube to MP3 (Whisper)",
             "type": "main",
             "index": 0
           }
@@ -1114,11 +1453,80 @@
         ]
       ]
     },
+    "RapidAPI: YouTube to MP3 (Whisper)": {
+      "main": [
+        [
+          {
+            "node": "IF: RapidAPI OK? (Whisper)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: RapidAPI OK? (Whisper)": {
+      "main": [
+        [
+          {
+            "node": "Download: YouTube MP3 (Whisper)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set: Format Error (RapidAPI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download: YouTube MP3 (Whisper)": {
+      "main": [
+        [
+          {
+            "node": "Whisper: Transcribe YouTube Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "FastSaverAPI: Get Download URL": {
       "main": [
         [
           {
+            "node": "IF: FastSaverAPI OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: FastSaverAPI OK?": {
+      "main": [
+        [
+          {
             "node": "Download Audio File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set: Format Error (FastSaverAPI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Format Error (FastSaverAPI)": {
+      "main": [
+        [
+          {
+            "node": "IF: Has Callback URL?",
             "type": "main",
             "index": 0
           }
@@ -1129,43 +1537,7 @@
       "main": [
         [
           {
-            "node": "Switch: Transcriber (Social/GDrive)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Drive: Download File": {
-      "main": [
-        [
-          {
-            "node": "Switch: Transcriber (Social/GDrive)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch: Transcriber (Social/GDrive)": {
-      "main": [
-        [
-          {
-            "node": "Whisper: Transcribe Audio",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "AssemblyAI: Upload Audio",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Deepgram: Transcribe Audio",
+            "node": "Switch: Transcriber (Social/Upload)",
             "type": "main",
             "index": 0
           }
@@ -1260,7 +1632,25 @@
       "main": [
         [
           {
+            "node": "IF: Whisper OK? (YouTube)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Whisper OK? (YouTube)": {
+      "main": [
+        [
+          {
             "node": "Set: Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set: Format Error (Transcription)",
             "type": "main",
             "index": 0
           }
@@ -1271,7 +1661,25 @@
       "main": [
         [
           {
+            "node": "IF: RapidAPI OK? (AssemblyAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: RapidAPI OK? (AssemblyAI)": {
+      "main": [
+        [
+          {
             "node": "Download: YouTube MP3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FastSaverAPI: Get Download URL",
             "type": "main",
             "index": 0
           }
@@ -1367,7 +1775,36 @@
       "main": [
         [
           {
+            "node": "IF: Deepgram OK? (YouTube)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Deepgram OK? (YouTube)": {
+      "main": [
+        [
+          {
             "node": "Set: Format Deepgram (YouTube)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set: Format Error (Transcription)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Format Error (Transcription)": {
+      "main": [
+        [
+          {
+            "node": "IF: Has Callback URL?",
             "type": "main",
             "index": 0
           }
@@ -1411,7 +1848,101 @@
       "main": [
         [
           {
+            "node": "IF: RapidAPI OK? (Deepgram)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: RapidAPI OK? (Deepgram)": {
+      "main": [
+        [
+          {
+            "node": "Download: YouTube MP3 (Deepgram)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FastSaverAPI: Get Download URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download: YouTube MP3 (Deepgram)": {
+      "main": [
+        [
+          {
             "node": "Deepgram: Transcribe YouTube URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set: Format Error (RapidAPI)": {
+      "main": [
+        [
+          {
+            "node": "IF: Has Callback URL?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Upload Uses Whisper?": {
+      "main": [
+        [
+          {
+            "node": "Download: Upload Source File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch: Transcriber (Social/Upload)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download: Upload Source File": {
+      "main": [
+        [
+          {
+            "node": "Whisper: Transcribe Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Transcriber (Social/Upload)": {
+      "main": [
+        [
+          {
+            "node": "Whisper: Transcribe Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AssemblyAI: Upload Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Deepgram: Transcribe Audio",
             "type": "main",
             "index": 0
           }
@@ -1422,7 +1953,7 @@
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false,
+    "availableInMCP": true,
     "binaryMode": "separate",
     "timeSavedMode": "fixed",
     "saveDataErrorExecution": "all",
@@ -1433,9 +1964,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "3f4fb65c-420c-4a88-baf6-20c9b0cf4402",
-  "activeVersionId": "3f4fb65c-420c-4a88-baf6-20c9b0cf4402",
-  "versionCounter": 192,
+  "versionId": "ac7c8570-bbe0-4ba1-9e19-5a2a6877e162",
+  "activeVersionId": "ac7c8570-bbe0-4ba1-9e19-5a2a6877e162",
   "triggerCount": 1,
   "shared": [
     {
@@ -1443,24 +1973,13 @@
       "createdAt": "2026-03-27T04:56:46.990Z",
       "role": "workflow:owner",
       "workflowId": "51GKzBSTM3iGhJH1",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
   "activeVersion": {
-    "updatedAt": "2026-03-31T00:58:12.000Z",
-    "createdAt": "2026-03-31T00:19:16.932Z",
-    "versionId": "3f4fb65c-420c-4a88-baf6-20c9b0cf4402",
+    "updatedAt": "2026-05-28T11:58:19.000Z",
+    "createdAt": "2026-05-28T11:58:16.004Z",
+    "versionId": "ac7c8570-bbe0-4ba1-9e19-5a2a6877e162",
     "workflowId": "51GKzBSTM3iGhJH1",
     "nodes": [
       {
@@ -1476,7 +1995,7 @@
         "typeVersion": 2,
         "position": [
           0,
-          864
+          1568
         ],
         "webhookId": "video-to-text-api",
         "credentials": {
@@ -1489,7 +2008,7 @@
       {
         "parameters": {
           "mode": "raw",
-          "jsonOutput": "={{ (() => {\nconst body = $json.body || {};\nconst url = body.url || '';\nconst source = body.source || 'auto';\nconst transcriber = body.transcriber || 'assemblyai';\nconst gdrive_file_id = body.gdrive_file_id || '';\nconst callback_url = body.callback_url || '';\n\nlet detectedSource = source;\nif (source === 'auto' && url) {\n  if (url.includes('youtube.com') || url.includes('youtu.be')) {\n    detectedSource = 'youtube';\n  } else if (url.includes('drive.google.com')) {\n    detectedSource = 'gdrive';\n  } else {\n    detectedSource = 'social';\n  }\n}\nif (gdrive_file_id) detectedSource = 'gdrive';\n\nreturn JSON.stringify({ url, source: detectedSource, transcriber, gdrive_file_id, callback_url });\n})() }}",
+          "jsonOutput": "={{ (() => { const body = $json.body || {}; const url = body.url || \"\"; const source = body.source || \"auto\"; const transcriber = body.transcriber || \"assemblyai\"; const callback_url = body.callback_url || \"\"; const word_boost = Array.isArray(body.word_boost) ? body.word_boost.filter(Boolean) : []; const directMediaPattern = /\\.(mp3|wav|m4a|mp4|mov|webm)(\\?|$)/i; const isDirectMediaUrl = directMediaPattern.test(url) || url.includes(\"supabase.co/storage\") || url.includes(\"/api/tools/video-to-text/files/\"); let detectedSource = source; if (source === \"auto\" && url) { if (url.includes(\"youtube.com\") || url.includes(\"youtu.be\")) { detectedSource = \"youtube\"; } else if (isDirectMediaUrl) { detectedSource = \"upload\"; } else { detectedSource = \"social\"; } } if ((source === \"social\" || source === \"upload\" || source === \"supabase\") && isDirectMediaUrl) { detectedSource = \"upload\"; } return JSON.stringify({ url, source: detectedSource, transcriber, callback_url, word_boost }); })() }}",
           "options": {}
         },
         "id": "a0000002-0000-0000-0000-000000000002",
@@ -1498,7 +2017,7 @@
         "typeVersion": 3.4,
         "position": [
           224,
-          864
+          1568
         ]
       },
       {
@@ -1508,10 +2027,10 @@
               {
                 "conditions": {
                   "options": {
-                    "caseSensitive": true,
+                    "caseSensitive": false,
                     "leftValue": "",
                     "typeValidation": "strict",
-                    "version": 2
+                    "version": 1
                   },
                   "conditions": [
                     {
@@ -1532,10 +2051,10 @@
               {
                 "conditions": {
                   "options": {
-                    "caseSensitive": true,
+                    "caseSensitive": false,
                     "leftValue": "",
                     "typeValidation": "strict",
-                    "version": 2
+                    "version": 1
                   },
                   "conditions": [
                     {
@@ -1556,16 +2075,16 @@
               {
                 "conditions": {
                   "options": {
-                    "caseSensitive": true,
+                    "caseSensitive": false,
                     "leftValue": "",
                     "typeValidation": "strict",
-                    "version": 2
+                    "version": 1
                   },
                   "conditions": [
                     {
-                      "id": "cond-gdrive",
+                      "id": "cond-upload",
                       "leftValue": "={{ $json.source }}",
-                      "rightValue": "gdrive",
+                      "rightValue": "upload",
                       "operator": {
                         "type": "string",
                         "operation": "equals"
@@ -1575,7 +2094,7 @@
                   "combinator": "and"
                 },
                 "renameOutput": true,
-                "outputKey": "Google Drive"
+                "outputKey": "Upload"
               }
             ]
           },
@@ -1589,7 +2108,7 @@
         "typeVersion": 3.2,
         "position": [
           448,
-          832
+          1536
         ]
       },
       {
@@ -1599,10 +2118,10 @@
               {
                 "conditions": {
                   "options": {
-                    "caseSensitive": true,
+                    "caseSensitive": false,
                     "leftValue": "",
                     "typeValidation": "strict",
-                    "version": 2
+                    "version": 1
                   },
                   "conditions": [
                     {
@@ -1623,10 +2142,10 @@
               {
                 "conditions": {
                   "options": {
-                    "caseSensitive": true,
+                    "caseSensitive": false,
                     "leftValue": "",
                     "typeValidation": "strict",
-                    "version": 2
+                    "version": 1
                   },
                   "conditions": [
                     {
@@ -1647,10 +2166,10 @@
               {
                 "conditions": {
                   "options": {
-                    "caseSensitive": true,
+                    "caseSensitive": false,
                     "leftValue": "",
                     "typeValidation": "strict",
-                    "version": 2
+                    "version": 1
                   },
                   "conditions": [
                     {
@@ -1679,8 +2198,8 @@
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3.2,
         "position": [
-          656,
-          528
+          672,
+          320
         ],
         "notesInFlow": true,
         "notes": "YouTube path: choose transcriber"
@@ -1709,10 +2228,11 @@
         "typeVersion": 4.2,
         "position": [
           896,
-          192
+          352
         ],
         "notesInFlow": true,
-        "notes": "Gets direct MP3 download URL from YouTube via RapidAPI (500 free req/month)"
+        "continueOnFail": true,
+        "notes": "Gets direct MP3 download URL from YouTube via RapidAPI (500 free req/month). continueOnFail=true so errors flow to IF check."
       },
       {
         "parameters": {
@@ -1730,8 +2250,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1568,
-          192
+          1792,
+          496
         ],
         "credentials": {
           "httpHeaderAuth": {
@@ -1742,34 +2262,17 @@
       },
       {
         "parameters": {
-          "method": "POST",
-          "url": "https://api.openai.com/v1/audio/transcriptions",
-          "authentication": "predefinedCredentialType",
-          "nodeCredentialType": "openAiApi",
-          "sendBody": true,
-          "contentType": "multipart-form-data",
-          "bodyParameters": {
-            "parameters": [
-              {
-                "name": "model",
-                "value": "whisper-1"
-              },
-              {
-                "parameterType": "formBinaryData",
-                "name": "file",
-                "inputDataFieldName": "data"
-              }
-            ]
-          },
+          "resource": "audio",
+          "operation": "transcribe",
           "options": {}
         },
         "id": "a0000009-0000-0000-0000-000000000009",
         "name": "Whisper: Transcribe YouTube Audio",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.2,
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
         "position": [
-          2240,
-          400
+          2016,
+          -48
         ],
         "notesInFlow": true,
         "credentials": {
@@ -1778,15 +2281,17 @@
             "name": "DP: OpenAi Account"
           }
         },
-        "disabled": true,
-        "notes": "Whisper needs audio file — requires download first for YouTube"
+        "continueOnFail": true,
+        "notes": "Whisper-1: receives downloaded MP3 binary from RapidAPI download step. 25MB limit - avoid videos over ~20 min."
       },
       {
         "parameters": {
           "url": "=https://fastsaverapi.com/api/v1/download?url={{ encodeURIComponent($('Set: Extract & Detect Source').first().json.url) }}",
           "authentication": "genericCredentialType",
           "genericAuthType": "httpHeaderAuth",
-          "options": {}
+          "options": {
+            "allowUnauthorizedCerts": true
+          }
         },
         "id": "a0000010-0000-0000-0000-000000000010",
         "name": "FastSaverAPI: Get Download URL",
@@ -1794,7 +2299,7 @@
         "typeVersion": 4.2,
         "position": [
           672,
-          800
+          1568
         ],
         "notesInFlow": true,
         "credentials": {
@@ -1803,7 +2308,60 @@
             "name": "FastSaverAPI Key"
           }
         },
-        "notes": "Extract audio download URL from social media"
+        "continueOnFail": true,
+        "notes": "Extract audio download URL from social media. continueOnFail=true so unsupported/expired URLs send error callback."
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "cond-fsa-ok",
+                "leftValue": "={{ $json.result?.audio || $json.result?.video || $json.result?.url || '' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000056-0000-0000-0000-000000000056",
+        "name": "IF: FastSaverAPI OK?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          896,
+          1568
+        ],
+        "notesInFlow": true,
+        "notes": "True ? download URL exists. False ? FastSaverAPI failed (unsupported platform, private video, expired URL)."
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const errMsg = $json.error?.message || $json.error?.description || $json.message || 'FastSaverAPI could not extract audio from this URL';\n  return JSON.stringify({\n    success: false,\n    error: errMsg,\n    error_code: 'FASTSAVERAPI_FETCH_FAILED',\n    error_stage: 'social_download',\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+          "options": {}
+        },
+        "id": "a0000057-0000-0000-0000-000000000057",
+        "name": "Set: Format Error (FastSaverAPI)",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2688,
+          1744
+        ],
+        "notesInFlow": true,
+        "notes": "Formats FastSaverAPI error. Common causes: private video, unsupported platform, expired URL, quota exhausted."
       },
       {
         "parameters": {
@@ -1821,8 +2379,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          896,
-          800
+          1120,
+          1328
         ],
         "notesInFlow": true,
         "notes": "Download the actual audio binary"
@@ -1836,7 +2394,8 @@
                   "options": {
                     "caseSensitive": false,
                     "leftValue": "",
-                    "typeValidation": "strict"
+                    "typeValidation": "strict",
+                    "version": 1
                   },
                   "conditions": [
                     {
@@ -1859,7 +2418,8 @@
                   "options": {
                     "caseSensitive": false,
                     "leftValue": "",
-                    "typeValidation": "strict"
+                    "typeValidation": "strict",
+                    "version": 1
                   },
                   "conditions": [
                     {
@@ -1882,7 +2442,8 @@
                   "options": {
                     "caseSensitive": false,
                     "leftValue": "",
-                    "typeValidation": "strict"
+                    "typeValidation": "strict",
+                    "version": 1
                   },
                   "conditions": [
                     {
@@ -1907,52 +2468,34 @@
           }
         },
         "id": "a0000012-0000-0000-0000-000000000012",
-        "name": "Switch: Transcriber (Social/GDrive)",
+        "name": "Switch: Transcriber (Social/Upload)",
         "type": "n8n-nodes-base.switch",
         "typeVersion": 3.2,
         "position": [
-          1120,
-          944
+          1360,
+          1216
         ]
       },
       {
         "parameters": {
-          "method": "POST",
-          "url": "https://api.openai.com/v1/audio/transcriptions",
-          "authentication": "predefinedCredentialType",
-          "nodeCredentialType": "openAiApi",
-          "sendBody": true,
-          "contentType": "multipart-form-data",
-          "bodyParameters": {
-            "parameters": [
-              {
-                "name": "model",
-                "value": "whisper-1"
-              },
-              {
-                "parameterType": "formBinaryData",
-                "name": "file",
-                "inputDataFieldName": "data"
-              }
-            ]
-          },
+          "resource": "audio",
+          "operation": "transcribe",
           "options": {}
         },
         "id": "a0000013-0000-0000-0000-000000000013",
         "name": "Whisper: Transcribe Audio",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.2,
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
         "position": [
-          2240,
-          784
+          2464,
+          1088
         ],
         "credentials": {
           "openAiApi": {
             "id": "JQ6ARVQIEbbwoWxD",
             "name": "DP: OpenAi Account"
           }
-        },
-        "disabled": true
+        }
       },
       {
         "parameters": {
@@ -1970,8 +2513,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1360,
-          1328
+          1568,
+          1584
         ],
         "credentials": {
           "httpHeaderAuth": {
@@ -1996,8 +2539,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1584,
-          1328
+          1792,
+          1584
         ],
         "credentials": {
           "httpHeaderAuth": {
@@ -2015,8 +2558,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1808,
-          1328
+          2016,
+          1584
         ]
       },
       {
@@ -2031,8 +2574,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          2032,
-          1264
+          2240,
+          1472
         ],
         "credentials": {
           "httpHeaderAuth": {
@@ -2047,7 +2590,8 @@
             "options": {
               "caseSensitive": true,
               "leftValue": "",
-              "typeValidation": "strict"
+              "typeValidation": "strict",
+              "version": 1
             },
             "conditions": [
               {
@@ -2069,39 +2613,14 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
         "position": [
-          2256,
-          1328
+          2464,
+          1584
         ]
       },
       {
         "parameters": {
-          "operation": "download",
-          "fileId": {
-            "__rl": true,
-            "mode": "id",
-            "value": "={{ $('Set: Extract & Detect Source').first().json.gdrive_file_id }}"
-          },
-          "options": {}
-        },
-        "id": "a0000019-0000-0000-0000-000000000019",
-        "name": "Google Drive: Download File",
-        "type": "n8n-nodes-base.googleDrive",
-        "typeVersion": 3,
-        "position": [
-          896,
-          1072
-        ],
-        "credentials": {
-          "googleDriveOAuth2Api": {
-            "id": "YO4qnGhKlEgotzkB",
-            "name": "DP: Google Drive Account"
-          }
-        }
-      },
-      {
-        "parameters": {
           "mode": "raw",
-          "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const text = $json.text || $json.transcription || '';\n  return JSON.stringify({\n    success: true,\n    transcription: text,\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    word_count: text.split(/\\s+/).filter(w => w).length,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+          "jsonOutput": "={{ (() => { const input = $(\"Set: Extract & Detect Source\").first().json; const rawText = ($json.text || $json.transcription || \"\").trim(); const success = rawText.length > 0; return JSON.stringify({ success, transcription: rawText, source_url: input.url || \"\", source: input.source, transcriber: input.transcriber, word_count: success ? rawText.split(/\\s+/).filter(w => w).length : 0, error: success ? \"\" : \"No transcript text was detected from the selected source. Try clearer speech audio or switch transcriber.\", timestamp: new Date().toISOString() }); })() }}",
           "options": {}
         },
         "id": "a0000020-0000-0000-0000-000000000020",
@@ -2109,15 +2628,15 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          2784,
-          656
+          2688,
+          112
         ]
       },
       {
         "parameters": {
-          "content": "## [Video to Text] - Multi-Source Transcription - v1\n\n**Trigger:** Webhook POST `/video-to-text`\n**Sources:** YouTube (RapidAPI MP3), Social Media (FastSaverAPI), Google Drive\n**Transcribers:** OpenAI Whisper | AssemblyAI | Deepgram Nova-2\n**Output:** JSON result POSTed to callback_url\n\n⚠️ **ASYNC API** — n8n runs in queue mode.\nEvery request returns {\"message\": \"Workflow was started\"} immediately.\nResults are POSTed to callback_url when done.\n\n### Request Body:\n```json\n{\n  \"url\": \"https://youtube.com/watch?v=xxx\",\n  \"source\": \"auto\",\n  \"transcriber\": \"assemblyai\",\n  \"gdrive_file_id\": \"\",\n  \"callback_url\": \"https://your-app.com/api/result\"\n}\n```\n\n### Callback Response:\n```json\n{\n  \"success\": true,\n  \"transcription\": \"Full text...\",\n  \"source_url\": \"...\",\n  \"source\": \"youtube\",\n  \"transcriber\": \"assemblyai\",\n  \"word_count\": 1234,\n  \"timestamp\": \"...\"\n}\n```\n\n### API Key\n`vtt_33872321dd87e4bd6275578fe674bf9102f7d4c96d4a62ee8ddbc54fc1368561`",
-          "height": 832,
-          "width": 580,
+          "content": "## [Video to Text] - Multi-Source Transcription - v1\n\n**Trigger:** Webhook POST `/video-to-text`\n**Sources:** YouTube, social/video URLs, Supabase upload URLs\n**Transcribers:** OpenAI Whisper (native node) | AssemblyAI | Deepgram\n**Output:** Result JSON POSTed to `callback_url`\n\n### Current flow\n- `youtube` -> RapidAPI MP3 -> FastSaver fallback -> transcriber path\n- `social` -> FastSaver download extraction -> transcriber path\n- `upload` -> Supabase signed/relay URL -> direct transcriber path\n- Whisper upload path downloads binary first so the native OpenAI node receives `data`\n\n### Request body\n```json\n{\n  \"url\": \"https://youtube.com/watch?v=xxx\",\n  \"source\": \"auto\",\n  \"transcriber\": \"whisper\",\n  \"callback_url\": \"https://your-app.com/api/result\"\n}\n```\n\n### Callback shape\n```json\n{\n  \"success\": true,\n  \"transcription\": \"Full text...\",\n  \"source_url\": \"...\",\n  \"source\": \"upload\",\n  \"transcriber\": \"whisper\",\n  \"word_count\": 1234,\n  \"timestamp\": \"...\"\n}\n```",
+          "height": 760,
+          "width": 520,
           "color": 4
         },
         "id": "a0000027-0000-0000-0000-000000000027",
@@ -2125,15 +2644,15 @@
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          -640,
-          496
+          -16,
+          224
         ]
       },
       {
         "parameters": {
-          "content": "## YouTube Path\n**RapidAPI youtube-mp36 → AssemblyAI / Deepgram / Whisper**\n1. Extract video ID from URL\n2. GET https://youtube-mp36.p.rapidapi.com/dl?id={videoId}\n3. Returns { link: \"https://...mp3\" }\n4. AssemblyAI: download binary → upload to AAI → poll\n5. Deepgram: send MP3 URL directly → sync response\n6. Whisper: DISABLED\n\n⚠️ YouTube IPs are blocked from n8n VPS — must use RapidAPI\n⚠️ RapidAPI temp URLs are IP-restricted — must download binary before sending to AssemblyAI",
+          "content": "## YouTube Path\n**RapidAPI youtube-mp36 -> FastSaver fallback -> Whisper / AssemblyAI / Deepgram**\n1. Extract video ID from URL\n2. Try `youtube-mp36` to get a temporary MP3 link\n3. If RapidAPI has no `link`, try FastSaver as downloader fallback\n4. Whisper: download MP3 binary -> native OpenAI `Transcribe` node\n5. AssemblyAI: download MP3 binary -> upload -> submit -> poll\n6. Deepgram: download MP3 binary -> transcribe\n\nNotes:\n- Downloader availability depends on the specific YouTube video\n- Some videos fail at both downloader providers before transcription starts",
           "height": 336,
-          "width": 500,
+          "width": 760,
           "color": 6
         },
         "id": "a0000028-0000-0000-0000-000000000028",
@@ -2141,15 +2660,15 @@
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          800,
-          -240
+          528,
+          -160
         ]
       },
       {
         "parameters": {
-          "content": "### Social Media Path\nFastSaverAPI extracts audio from TikTok, Instagram, Facebook, Twitter, etc.\nFree tier: 200 points/month, 1 req/sec.",
-          "height": 120,
-          "width": 460,
+          "content": "### Social + Upload Path\n- Social links use FastSaver to extract audio/video download URLs\n- Supabase uploads do not use Google Drive anymore\n- Upload URLs route directly into the selected transcriber path\n- Whisper upload path adds a download step so the native OpenAI node receives binary `data`",
+          "height": 210,
+          "width": 660,
           "color": 6
         },
         "id": "a0000029-0000-0000-0000-000000000029",
@@ -2157,31 +2676,15 @@
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          256,
-          208
+          688,
+          576
         ]
       },
       {
         "parameters": {
-          "content": "### Google Drive Path\nDownloads file from Google Drive, then sends to chosen transcriber.",
-          "height": 212,
-          "width": 436,
-          "color": 6
-        },
-        "id": "a0000030-0000-0000-0000-000000000030",
-        "name": "Sticky: Google Drive Section",
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          736,
-          1296
-        ]
-      },
-      {
-        "parameters": {
-          "content": "### AssemblyAI Polling (async)\nSubmit transcript → Code node 15s delay → Poll status\n→ IF completed → continue, else → loop back\n\n⚠️ Uses Code node for delay (NOT Wait node)\nWait node closes webhook connection — Code node does not.\n\nBudget 60-120s per video.",
-          "height": 224,
-          "width": 660,
+          "content": "### AssemblyAI Polling (async)\nSubmit transcript -> 15s delay -> poll status\n-> IF `completed` continue\n-> ELSE loop and poll again\n\nUsed only for AssemblyAI.\nDeepgram and Whisper return in the same execution path.",
+          "height": 220,
+          "width": 640,
           "color": 5
         },
         "id": "a0000031-0000-0000-0000-000000000031",
@@ -2189,15 +2692,15 @@
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          2512,
-          992
+          2720,
+          512
         ]
       },
       {
         "parameters": {
-          "content": "### Output: Callback Only\n\nIF callback_url provided → POST result JSON to callback_url\nIF no callback_url → workflow ends silently\n\nResult shape:\n{\n  success, transcription, source_url,\n  source, transcriber, word_count, timestamp\n}\n\nNo Google Docs — use callback_url in your web app.",
-          "height": 284,
-          "width": 508,
+          "content": "### Output: Callback + Summary UI\nIf callback_url exists -> POST result JSON back to the app\nIf no callback_url -> workflow ends silently\n\nDeepgram transcript formatting preserves paragraph breaks so the Nuxt summary modal receives cleaner text.\nThe Nuxt app generates the detailed Fathom-style summary when the user clicks the Summary button.\nFor multi-part uploads, the Nuxt app combines all completed split-file transcripts in upload order after callbacks finish.\n\nThe Nuxt app stores upload metadata in Supabase.\nThis workflow returns the finished transcription payload.",
+          "height": 220,
+          "width": 620,
           "color": 6
         },
         "id": "a0000032-0000-0000-0000-000000000032",
@@ -2205,8 +2708,8 @@
         "type": "n8n-nodes-base.stickyNote",
         "typeVersion": 1,
         "position": [
-          3216,
-          336
+          3344,
+          192
         ]
       },
       {
@@ -2218,8 +2721,8 @@
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          1792,
-          192
+          2016,
+          496
         ],
         "notes": "Wait 15s before polling AssemblyAI"
       },
@@ -2235,8 +2738,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          2016,
-          112
+          2240,
+          464
         ],
         "credentials": {
           "httpHeaderAuth": {
@@ -2275,19 +2778,19 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2,
         "position": [
-          2240,
-          192
+          2464,
+          496
         ],
-        "notes": "completed → Format Response, else → loop back"
+        "notes": "completed ? Format Response, else ? loop back"
       },
       {
         "parameters": {
           "conditions": {
             "options": {
-              "caseSensitive": true,
+              "caseSensitive": false,
               "leftValue": "",
               "typeValidation": "strict",
-              "version": 2
+              "version": 1
             },
             "conditions": [
               {
@@ -2309,8 +2812,8 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.2,
         "position": [
-          3008,
-          656
+          2912,
+          192
         ]
       },
       {
@@ -2327,8 +2830,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          3232,
-          640
+          3136,
+          192
         ],
         "notes": "POST transcription result to caller callback_url"
       },
@@ -2348,8 +2851,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1120,
-          192
+          1344,
+          320
         ],
         "notes": "Download MP3 binary from RapidAPI temp URL"
       },
@@ -2369,8 +2872,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1344,
-          192
+          1568,
+          320
         ],
         "credentials": {
           "httpHeaderAuth": {
@@ -2378,17 +2881,17 @@
             "name": "DP: AssemblyAI API Key"
           }
         },
-        "notes": "Upload MP3 binary to AssemblyAI — returns upload_url"
+        "notes": "Upload MP3 binary to AssemblyAI - returns upload_url"
       },
       {
         "parameters": {
           "method": "POST",
-          "url": "https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true",
+          "url": "https://api.deepgram.com/v1/listen?model=whisper-large&smart_format=true&punctuate=true&paragraphs=true",
           "authentication": "genericCredentialType",
           "genericAuthType": "httpHeaderAuth",
           "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "={{ JSON.stringify({ url: $(\"RapidAPI: YouTube to MP3 (Deepgram)\").first().json.link }) }}",
+          "contentType": "binaryData",
+          "inputDataFieldName": "data",
           "options": {}
         },
         "id": "a0000040-0000-0000-0000-000000000040",
@@ -2397,7 +2900,7 @@
         "typeVersion": 4.2,
         "position": [
           2016,
-          592
+          864
         ],
         "credentials": {
           "httpHeaderAuth": {
@@ -2405,17 +2908,18 @@
             "name": "DP: Deepgram API Key"
           }
         },
-        "notes": "Deepgram Nova-2: transcribe from MP3 URL directly (no upload needed)"
+        "continueOnFail": true,
+        "notes": "Deepgram Nova-2: transcribe binary MP3 downloaded by n8n VPS. Same pattern as AssemblyAI/Whisper - no CDN IP restriction issues."
       },
       {
         "parameters": {
           "method": "POST",
-          "url": "https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true",
+          "url": "https://api.deepgram.com/v1/listen?model=whisper-large&smart_format=true&punctuate=true&paragraphs=true",
           "authentication": "genericCredentialType",
           "genericAuthType": "httpHeaderAuth",
           "sendBody": true,
-          "contentType": "binaryData",
-          "inputDataFieldName": "data",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ url: $(\"Set: Extract & Detect Source\").first().json.url }) }}",
           "options": {}
         },
         "id": "a0000041-0000-0000-0000-000000000041",
@@ -2423,8 +2927,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          2016,
-          976
+          2240,
+          1280
         ],
         "credentials": {
           "httpHeaderAuth": {
@@ -2437,7 +2941,7 @@
       {
         "parameters": {
           "mode": "raw",
-          "jsonOutput": "={{ (() => { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+          "jsonOutput": "={{ (() => { const alt = $json?.results?.channels?.[0]?.alternatives?.[0] || {}; const paragraphBlocks = Array.isArray(alt?.paragraphs?.paragraphs) ? alt.paragraphs.paragraphs.map(paragraph => { const sentenceText = Array.isArray(paragraph?.sentences) ? paragraph.sentences.map(sentence => sentence?.text || \"\").filter(Boolean).join(\" \").trim() : \"\"; return (sentenceText || paragraph?.transcript || \"\").trim(); }).filter(Boolean) : []; const paraText = paragraphBlocks.join(\"\\n\\n\"); const wordText = Array.isArray(alt.words) ? alt.words.map(w => w.punctuated_word || w.word || \"\").filter(Boolean).join(\" \").trim() : \"\"; const text = (paraText || alt.transcript || wordText || \"\").trim(); return JSON.stringify({ text, deepgram_raw_len: text.length, deepgram_paragraph_count: paragraphBlocks.length }); })() }}",
           "options": {}
         },
         "id": "a0000042-0000-0000-0000-000000000042",
@@ -2445,15 +2949,15 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          2240,
-          592
+          2464,
+          896
         ],
-        "notes": "Extract transcript text from Deepgram response"
+        "notes": "Extract transcript text from Deepgram response while preserving paragraph breaks for cleaner reading and better summary generation."
       },
       {
         "parameters": {
           "mode": "raw",
-          "jsonOutput": "={{ (() => { const text = $json?.results?.channels?.[0]?.alternatives?.[0]?.transcript || \"\"; return JSON.stringify({ text }); })() }}",
+          "jsonOutput": "={{ (() => { const alt = $json?.results?.channels?.[0]?.alternatives?.[0] || {}; const paragraphBlocks = Array.isArray(alt?.paragraphs?.paragraphs) ? alt.paragraphs.paragraphs.map(paragraph => { const sentenceText = Array.isArray(paragraph?.sentences) ? paragraph.sentences.map(sentence => sentence?.text || \"\").filter(Boolean).join(\" \").trim() : \"\"; return (sentenceText || paragraph?.transcript || \"\").trim(); }).filter(Boolean) : []; const paraText = paragraphBlocks.join(\"\\n\\n\"); const wordText = Array.isArray(alt.words) ? alt.words.map(w => w.punctuated_word || w.word || \"\").filter(Boolean).join(\" \").trim() : \"\"; const text = (paraText || alt.transcript || wordText || \"\").trim(); return JSON.stringify({ text, deepgram_raw_len: text.length, deepgram_paragraph_count: paragraphBlocks.length }); })() }}",
           "options": {}
         },
         "id": "a0000043-0000-0000-0000-000000000043",
@@ -2461,10 +2965,10 @@
         "type": "n8n-nodes-base.set",
         "typeVersion": 3.4,
         "position": [
-          2240,
-          976
+          2464,
+          1280
         ],
-        "notes": "Extract transcript text from Deepgram response"
+        "notes": "Extract transcript text from Deepgram response while preserving paragraph breaks for cleaner reading and better summary generation."
       },
       {
         "parameters": {
@@ -2489,10 +2993,365 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          1792,
-          592
+          1344,
+          816
         ],
-        "notes": "Gets MP3 URL for Deepgram path (separate from AssemblyAI path)"
+        "continueOnFail": true,
+        "notes": "Gets MP3 URL for Deepgram path. continueOnFail=true so errors flow to IF check."
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "cond-rapid-aai-ok",
+                "leftValue": "={{ $json.link || '' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000045-0000-0000-0000-000000000045",
+        "name": "IF: RapidAPI OK? (AssemblyAI)",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1120,
+          352
+        ],
+        "notesInFlow": true,
+        "notes": "True ? link exists, continue download. False ? RapidAPI errored, send error callback."
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "cond-rapid-dg-ok",
+                "leftValue": "={{ $json.link || '' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000046-0000-0000-0000-000000000046",
+        "name": "IF: RapidAPI OK? (Deepgram)",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1568,
+          816
+        ],
+        "notesInFlow": true,
+        "notes": "True ? link exists, transcribe. False ? RapidAPI errored, send error callback."
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const errMsg = $json.error?.message || $json.error?.description || $json.msg || $json.message || 'RapidAPI failed to return a download URL';\n  const apiStatus = $json.status || 'error';\n  const httpCode = $json.statusCode || $json.error?.statusCode || null;\n  return JSON.stringify({\n    success: false,\n    error: errMsg,\n    error_code: 'RAPIDAPI_FETCH_FAILED',\n    error_stage: 'youtube_download',\n    api_status: apiStatus,\n    http_status: httpCode,\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+          "options": {}
+        },
+        "id": "a0000047-0000-0000-0000-000000000047",
+        "name": "Set: Format Error (RapidAPI)",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1792,
+          304
+        ],
+        "notesInFlow": true,
+        "notes": "Formats RapidAPI error payload. Includes error message, stage, API status, and original request context."
+      },
+      {
+        "parameters": {
+          "content": "### YouTube Downloader Error Handling\nBoth YouTube RapidAPI nodes use `continueOnFail: true`.\n\nFlow:\n- If `link` exists -> continue to transcription\n- If `link` is missing -> try FastSaver fallback\n- If FastSaver also fails -> format downloader error and callback to UI\n\nCommon causes:\n- quota exhausted\n- invalid or blocked video\n- provider cannot extract media for that specific URL",
+          "height": 320,
+          "width": 560,
+          "color": 7
+        },
+        "id": "a0000048-0000-0000-0000-000000000048",
+        "name": "Sticky: RapidAPI Error Handling",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1696,
+          -528
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{ (() => { const url = $(\"Set: Extract & Detect Source\").first().json.url; const match = url.match(new RegExp(\"(?:v=|youtu.be/)([a-zA-Z0-9_-]{11})\")); return \"https://youtube-mp36.p.rapidapi.com/dl?id=\" + (match ? match[1] : \"\"); })() }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "x-rapidapi-key",
+                "value": "b8599adad4mshaa463d039fabfd0p175df4jsn40d478261b9b"
+              },
+              {
+                "name": "x-rapidapi-host",
+                "value": "youtube-mp36.p.rapidapi.com"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "a0000051-0000-0000-0000-000000000051",
+        "name": "RapidAPI: YouTube to MP3 (Whisper)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1344,
+          -48
+        ],
+        "notesInFlow": true,
+        "continueOnFail": true,
+        "notes": "Gets MP3 URL for Whisper path. continueOnFail=true so errors flow to IF check."
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "cond-rapid-wh-ok",
+                "leftValue": "={{ $json.link || '' }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000052-0000-0000-0000-000000000052",
+        "name": "IF: RapidAPI OK? (Whisper)",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1568,
+          -48
+        ],
+        "notesInFlow": true,
+        "notes": "True ? link exists, download binary. False ? RapidAPI errored, send error callback."
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.link }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "a0000053-0000-0000-0000-000000000053",
+        "name": "Download: YouTube MP3 (Whisper)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1792,
+          -48
+        ],
+        "notesInFlow": true,
+        "continueOnFail": true,
+        "notes": "Downloads MP3 binary from RapidAPI CDN URL. n8n VPS downloads it so Whisper receives a binary, not a URL."
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "cond-wh-yt-ok",
+                "leftValue": "={{ $json.text ? 'ok' : 'fail' }}",
+                "rightValue": "ok",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000054-0000-0000-0000-000000000054",
+        "name": "IF: Whisper OK? (YouTube)",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          2464,
+          -48
+        ],
+        "notesInFlow": true,
+        "notes": "True ? text exists, format response. False ? Whisper returned error, send error callback."
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.link }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "a0000055-0000-0000-0000-000000000055",
+        "name": "Download: YouTube MP3 (Deepgram)",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1792,
+          864
+        ],
+        "notesInFlow": true,
+        "continueOnFail": true,
+        "notes": "Downloads MP3 binary from RapidAPI CDN URL. n8n VPS downloads it so Deepgram receives binary - avoids IP-restriction issues."
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "cond-dg-yt-ok",
+                "leftValue": "={{ $json.results ? 'ok' : 'fail' }}",
+                "rightValue": "ok",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000049-0000-0000-0000-000000000049",
+        "name": "IF: Deepgram OK? (YouTube)",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          2240,
+          864
+        ],
+        "notesInFlow": true,
+        "notes": "True ? results exist, extract transcript. False ? Deepgram returned error (e.g. REMOTE_CONTENT_ERROR from broken RapidAPI URL), send error callback."
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ (() => {\n  const input = $('Set: Extract & Detect Source').first().json;\n  const errCode = $json.err_code || $json.error?.code || 'TRANSCRIPTION_FAILED';\n  const errMsg = $json.err_msg || $json.error?.message || $json.error?.description || 'Transcription service returned an error';\n  return JSON.stringify({\n    success: false,\n    error: errMsg,\n    error_code: errCode,\n    error_stage: 'transcription',\n    source_url: input.url || '',\n    source: input.source,\n    transcriber: input.transcriber,\n    timestamp: new Date().toISOString()\n  });\n})() }}",
+          "options": {}
+        },
+        "id": "a0000050-0000-0000-0000-000000000050",
+        "name": "Set: Format Error (Transcription)",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2688,
+          -80
+        ],
+        "notesInFlow": true,
+        "notes": "Formats transcription error payload. Covers Deepgram REMOTE_CONTENT_ERROR, AssemblyAI failures, Whisper rejections."
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "cond-upload-whisper",
+                "leftValue": "={{ $(\"Set: Extract & Detect Source\").first().json.transcriber }}",
+                "rightValue": "whisper",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a0000091-0000-0000-0000-000000000091",
+        "name": "IF: Upload Uses Whisper?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          672,
+          1744
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{ $(\"Set: Extract & Detect Source\").first().json.url }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "a0000092-0000-0000-0000-000000000092",
+        "name": "Download: Upload Source File",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          896,
+          1744
+        ]
       }
     ],
     "connections": {
@@ -2538,7 +3397,7 @@
           ],
           [
             {
-              "node": "Google Drive: Download File",
+              "node": "IF: Upload Uses Whisper?",
               "type": "main",
               "index": 0
             }
@@ -2549,7 +3408,7 @@
         "main": [
           [
             {
-              "node": "Whisper: Transcribe YouTube Audio",
+              "node": "RapidAPI: YouTube to MP3 (Whisper)",
               "type": "main",
               "index": 0
             }
@@ -2570,11 +3429,80 @@
           ]
         ]
       },
+      "RapidAPI: YouTube to MP3 (Whisper)": {
+        "main": [
+          [
+            {
+              "node": "IF: RapidAPI OK? (Whisper)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: RapidAPI OK? (Whisper)": {
+        "main": [
+          [
+            {
+              "node": "Download: YouTube MP3 (Whisper)",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Set: Format Error (RapidAPI)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download: YouTube MP3 (Whisper)": {
+        "main": [
+          [
+            {
+              "node": "Whisper: Transcribe YouTube Audio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
       "FastSaverAPI: Get Download URL": {
         "main": [
           [
             {
+              "node": "IF: FastSaverAPI OK?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: FastSaverAPI OK?": {
+        "main": [
+          [
+            {
               "node": "Download Audio File",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Set: Format Error (FastSaverAPI)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set: Format Error (FastSaverAPI)": {
+        "main": [
+          [
+            {
+              "node": "IF: Has Callback URL?",
               "type": "main",
               "index": 0
             }
@@ -2585,43 +3513,7 @@
         "main": [
           [
             {
-              "node": "Switch: Transcriber (Social/GDrive)",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Google Drive: Download File": {
-        "main": [
-          [
-            {
-              "node": "Switch: Transcriber (Social/GDrive)",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Switch: Transcriber (Social/GDrive)": {
-        "main": [
-          [
-            {
-              "node": "Whisper: Transcribe Audio",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "AssemblyAI: Upload Audio",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Deepgram: Transcribe Audio",
+              "node": "Switch: Transcriber (Social/Upload)",
               "type": "main",
               "index": 0
             }
@@ -2716,7 +3608,25 @@
         "main": [
           [
             {
+              "node": "IF: Whisper OK? (YouTube)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: Whisper OK? (YouTube)": {
+        "main": [
+          [
+            {
               "node": "Set: Format Response",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Set: Format Error (Transcription)",
               "type": "main",
               "index": 0
             }
@@ -2727,7 +3637,25 @@
         "main": [
           [
             {
+              "node": "IF: RapidAPI OK? (AssemblyAI)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: RapidAPI OK? (AssemblyAI)": {
+        "main": [
+          [
+            {
               "node": "Download: YouTube MP3",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "FastSaverAPI: Get Download URL",
               "type": "main",
               "index": 0
             }
@@ -2823,7 +3751,36 @@
         "main": [
           [
             {
+              "node": "IF: Deepgram OK? (YouTube)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: Deepgram OK? (YouTube)": {
+        "main": [
+          [
+            {
               "node": "Set: Format Deepgram (YouTube)",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Set: Format Error (Transcription)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set: Format Error (Transcription)": {
+        "main": [
+          [
+            {
+              "node": "IF: Has Callback URL?",
               "type": "main",
               "index": 0
             }
@@ -2867,7 +3824,101 @@
         "main": [
           [
             {
+              "node": "IF: RapidAPI OK? (Deepgram)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: RapidAPI OK? (Deepgram)": {
+        "main": [
+          [
+            {
+              "node": "Download: YouTube MP3 (Deepgram)",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "FastSaverAPI: Get Download URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download: YouTube MP3 (Deepgram)": {
+        "main": [
+          [
+            {
               "node": "Deepgram: Transcribe YouTube URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set: Format Error (RapidAPI)": {
+        "main": [
+          [
+            {
+              "node": "IF: Has Callback URL?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: Upload Uses Whisper?": {
+        "main": [
+          [
+            {
+              "node": "Download: Upload Source File",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Switch: Transcriber (Social/Upload)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download: Upload Source File": {
+        "main": [
+          [
+            {
+              "node": "Whisper: Transcribe Audio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch: Transcriber (Social/Upload)": {
+        "main": [
+          [
+            {
+              "node": "Whisper: Transcribe Audio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "AssemblyAI: Upload Audio",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Deepgram: Transcribe Audio",
               "type": "main",
               "index": 0
             }
@@ -2876,18 +3927,9 @@
       }
     },
     "authors": "Don Puerto",
-    "name": "Version 3f4fb65c",
+    "name": "Version ac7c8570",
     "description": "",
-    "autosaved": true,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-03-31T00:58:12.759Z",
-        "id": 847,
-        "workflowId": "51GKzBSTM3iGhJH1",
-        "versionId": "3f4fb65c-420c-4a88-baf6-20c9b0cf4402",
-        "event": "activated",
-        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
-    ]
-  }
+    "autosaved": true
+  },
+  "tags": []
 }
