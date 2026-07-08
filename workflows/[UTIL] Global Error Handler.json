@@ -1,0 +1,125 @@
+{
+  "updatedAt": "2026-02-21T15:04:04.328Z",
+  "createdAt": "2026-02-21T15:04:04.328Z",
+  "id": "ubE9U4JpO8VA3rM0",
+  "name": "[UTIL] Global Error Handler",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b1000001-0000-0000-0000-000000000001",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1",
+              "name": "workflowName",
+              "value": "={{ $json.workflow.name }}",
+              "type": "string"
+            },
+            {
+              "id": "e2",
+              "name": "executionId",
+              "value": "={{ $json.execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e3",
+              "name": "failedNode",
+              "value": "={{ $json.execution.lastNodeExecuted }}",
+              "type": "string"
+            },
+            {
+              "id": "e4",
+              "name": "errorMessage",
+              "value": "={{ $json.error.message }}",
+              "type": "string"
+            },
+            {
+              "id": "e5",
+              "name": "errorStack",
+              "value": "={{ $json.error.stack }}",
+              "type": "string"
+            },
+            {
+              "id": "e6",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1000001-0000-0000-0000-000000000002",
+      "name": "Format Error Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Add Notification Node Here\n\nConnect a **Slack**, **Email**, or **Telegram** node after Format Error Payload.\n\nAvailable fields on the error payload:\n- `workflowName`\n- `executionId`\n- `failedNode`\n- `errorMessage`\n- `errorStack`\n- `timestamp`",
+        "height": 240,
+        "width": 360,
+        "color": 7
+      },
+      "id": "b1000001-0000-0000-0000-000000000003",
+      "name": "Sticky Note - Add Notification",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        680,
+        180
+      ]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Error Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "ec6aca35-a0b3-4c4a-8741-94e87a4737df",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-21T15:04:04.333Z",
+      "createdAt": "2026-02-21T15:04:04.333Z",
+      "role": "workflow:owner",
+      "workflowId": "ubE9U4JpO8VA3rM0",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
