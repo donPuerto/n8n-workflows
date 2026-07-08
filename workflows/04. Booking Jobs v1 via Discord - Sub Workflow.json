@@ -1,11 +1,10 @@
 {
-  "updatedAt": "2026-03-01T02:33:11.988Z",
+  "updatedAt": "2026-05-25T22:51:39.000Z",
   "createdAt": "2026-02-27T00:07:25.116Z",
   "id": "Pgf21DPBfM7iggSs",
   "name": "04. Booking Jobs v1 via Discord - Sub Workflow",
-  "description": null,
   "active": false,
-  "isArchived": false,
+  "isArchived": true,
   "nodes": [
     {
       "parameters": {
@@ -927,9 +926,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "e15a0886-6a72-4eb2-9873-9418e3b198a4",
+  "versionId": "38bf2301-fcdf-40db-b441-ce6cede0d79a",
   "activeVersionId": null,
-  "versionCounter": 70,
   "triggerCount": 0,
   "shared": [
     {
@@ -937,19 +935,10 @@
       "createdAt": "2026-02-27T00:07:25.120Z",
       "role": "workflow:owner",
       "workflowId": "Pgf21DPBfM7iggSs",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
+  "activeVersion": null,
   "tags": [
     {
       "updatedAt": "2025-11-25T13:05:18.454Z",
@@ -957,6 +946,5 @@
       "id": "xn6seEX74pkTOLqC",
       "name": "@lead"
     }
-  ],
-  "activeVersion": null
+  ]
 }
