@@ -1,0 +1,319 @@
+{
+  "updatedAt": "2026-07-08T08:37:34.806Z",
+  "createdAt": "2026-07-08T08:37:34.806Z",
+  "id": "1DdOtHBL4bQBS1ZT",
+  "name": "[Backup] Workflows -> GitHub + Gmail v4",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "1302da51-e05f-4217-95ce-78a049a6541c",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "00b9a7d7-1aa1-4c6f-82d3-c8cdd51339b0",
+      "name": "Get Workflows",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "credentials": {
+        "n8nApi": {
+          "id": "m0mRpO0w7IZZq2ku",
+          "name": "DP: n8n Account"
+        }
+      }
+    },
+    {
+      "id": "5a69f771-b08e-4d06-90b4-f9a2bfd2b935",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "25656065-48cb-4b66-8e42-528bfbfcbb6f",
+      "name": "Build File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        96
+      ],
+      "parameters": {
+        "jsCode": "const out = [];\nfor (const it of $input.all()) {\n  const wf = it.json;\n  const name = wf.name || 'workflow';\n  const safeName = name.replace(/[<>:\"/\\\\|?*]+/g, '').trim();\n  const content = JSON.stringify(wf, null, 2);\n  out.push({ json: { name: name, safeName: safeName, path: 'workflows/' + safeName + '.json', content: content, workflowId: wf.id } });\n}\nreturn out;"
+      }
+    },
+    {
+      "id": "b8b22a75-2d80-44b6-93ce-b6423df32ba2",
+      "name": "Upsert to GitHub",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        96
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "donPuerto"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "n8n-workflows"
+        },
+        "filePath": "={{ $json.path }}",
+        "binaryData": false,
+        "fileContent": "={{ $json.content }}",
+        "commitMessage": "=Backup {{ $json.name }}",
+        "operation": "edit"
+      },
+      "credentials": {
+        "githubApi": {
+          "id": "H2VTfwuqfmPzjb9v",
+          "name": "DP: GitHub API"
+        }
+      },
+      "onError": "continueErrorOutput",
+      "webhookId": "0a1a1bb7-e37d-4755-a395-6aad98575e89"
+    },
+    {
+      "id": "0257d5c7-907e-4840-baea-29652483200e",
+      "name": "Merge Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1120,
+        96
+      ],
+      "parameters": {
+        "mode": "append"
+      }
+    },
+    {
+      "id": "f46a0cb2-2524-4eee-b165-7a4664d1a64b",
+      "name": "Create on GitHub",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        176
+      ],
+      "parameters": {
+        "authentication": "accessToken",
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "donPuerto"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "n8n-workflows"
+        },
+        "filePath": "={{ $json.path }}",
+        "binaryData": false,
+        "fileContent": "={{ $json.content }}",
+        "commitMessage": "=Backup {{ $json.name }}",
+        "operation": "create"
+      },
+      "credentials": {
+        "githubApi": {
+          "id": "H2VTfwuqfmPzjb9v",
+          "name": "DP: GitHub API"
+        }
+      },
+      "webhookId": "13192320-c410-49f6-b413-acb159496e9b"
+    },
+    {
+      "id": "c8d5b1f9-e394-4cc3-a167-ce9037ba552d",
+      "name": "Build Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        96
+      ],
+      "parameters": {
+        "jsCode": "const rows = [];\nfor (const it of $input.all()) {\n  const j = it.json || {};\n  const c = j.content || j;\n  const url = c.html_url || j.html_url || '';\n  const nm = (c.name || j.name || '').replace(/\\.json$/, '') || 'unknown';\n  if (url) rows.push({ name: nm, url: url });\n}\nconst seen = {}; const uniq = [];\nfor (const r of rows) { if (!seen[r.url]) { seen[r.url] = 1; uniq.push(r); } }\nuniq.sort((a,b) => a.name.localeCompare(b.name));\nconst list = uniq.map(r => '<li><a href=\"' + r.url + '\">' + r.name + '</a></li>').join('');\nconst html = '<div style=\"font-family:Arial,sans-serif;max-width:640px\"><h2>n8n Backup to GitHub</h2>'\n  + '<p>' + uniq.length + ' workflow(s) backed up to <a href=\"https://github.com/donPuerto/n8n-workflows/tree/main/workflows\">donPuerto/n8n-workflows</a>.</p>'\n  + '<ul>' + list + '</ul></div>';\nreturn [{ json: { subject: 'n8n Backup: ' + uniq.length + ' workflows to GitHub', html: html, count: uniq.length } }];"
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "5d4a0801-5cd5-46af-8934-293c2e6f0ce6",
+      "name": "Send Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1568,
+        96
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "don.puerto.1003@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RhxDT8POCR7oU2yl",
+          "name": "DP: Gmail Account"
+        }
+      },
+      "webhookId": "d3e97d2d-65af-4744-8e1f-a528b285fd1b"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Workflows": {
+      "main": [
+        [
+          {
+            "node": "Build File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build File": {
+      "main": [
+        [
+          {
+            "node": "Upsert to GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert to GitHub": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create on GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Results": {
+      "main": [
+        [
+          {
+            "node": "Build Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create on GitHub": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Build Summary": {
+      "main": [
+        [
+          {
+            "node": "Send Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": null,
+  "versionId": "dcf2a72d-7070-4240-b10d-26a38b2d7798",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-07-08T08:37:34.808Z",
+      "createdAt": "2026-07-08T08:37:34.808Z",
+      "role": "workflow:owner",
+      "workflowId": "1DdOtHBL4bQBS1ZT",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
