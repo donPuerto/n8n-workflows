@@ -3,7 +3,6 @@
   "createdAt": "2026-04-05T07:10:45.213Z",
   "id": "72Dweeo7gfWjgQyx",
   "name": "Test Merge Params",
-  "description": null,
   "active": false,
   "isArchived": true,
   "nodes": [
@@ -52,7 +51,6 @@
   "pinData": null,
   "versionId": "bbe2c656-ca4a-4765-9c23-e62d89770d8a",
   "activeVersionId": null,
-  "versionCounter": 2,
   "triggerCount": 0,
   "shared": [
     {
@@ -60,19 +58,9 @@
       "createdAt": "2026-04-05T07:10:45.215Z",
       "role": "workflow:owner",
       "workflowId": "72Dweeo7gfWjgQyx",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
