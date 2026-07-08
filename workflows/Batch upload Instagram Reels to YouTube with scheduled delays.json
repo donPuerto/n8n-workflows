@@ -3,7 +3,6 @@
   "createdAt": "2026-03-06T00:15:03.605Z",
   "id": "BQOKGmCqTKgYDjgg",
   "name": "Batch upload Instagram Reels to YouTube with scheduled delays",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -595,7 +594,6 @@
   "pinData": {},
   "versionId": "c827b1ab-4855-4c19-9035-4f182d753f61",
   "activeVersionId": null,
-  "versionCounter": 3,
   "triggerCount": 0,
   "shared": [
     {
@@ -603,19 +601,9 @@
       "createdAt": "2026-03-06T00:15:03.609Z",
       "role": "workflow:owner",
       "workflowId": "BQOKGmCqTKgYDjgg",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
