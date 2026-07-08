@@ -3,7 +3,6 @@
   "createdAt": "2026-02-14T13:38:20.371Z",
   "id": "Ff4l8nf0SUrwaAC0EJ6so",
   "name": "RAG Gemini File Search v1",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -735,7 +734,6 @@
   "pinData": {},
   "versionId": "34fc874a-426a-4564-b765-8751efffbad5",
   "activeVersionId": null,
-  "versionCounter": 10,
   "triggerCount": 0,
   "shared": [
     {
@@ -743,19 +741,9 @@
       "createdAt": "2026-02-14T13:38:20.373Z",
       "role": "workflow:owner",
       "workflowId": "Ff4l8nf0SUrwaAC0EJ6so",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
