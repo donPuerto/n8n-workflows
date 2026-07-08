@@ -3,7 +3,6 @@
   "createdAt": "2025-12-07T00:04:58.689Z",
   "id": "KZzKDj69bIXRwbf2",
   "name": "04 Facebook Auto Posting",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -1184,7 +1183,6 @@
   "pinData": {},
   "versionId": "87000e46-e1d7-40fa-9404-f61e2f7f3d7d",
   "activeVersionId": null,
-  "versionCounter": 178,
   "triggerCount": 4,
   "shared": [
     {
@@ -1192,19 +1190,9 @@
       "createdAt": "2025-12-07T00:04:58.694Z",
       "role": "workflow:owner",
       "workflowId": "KZzKDj69bIXRwbf2",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
