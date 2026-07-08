@@ -1,0 +1,224 @@
+{
+  "updatedAt": "2026-05-20T04:10:43.000Z",
+  "createdAt": "2026-05-19T16:38:11.734Z",
+  "id": "JhShowEaACWDg1MW",
+  "name": "Procore Punch List → Asana Task",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "id": "278f2dd3-e15d-4c0c-925c-83cc7d72bc91",
+      "name": "Procore Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        96
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "procore-punch-list",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "webhookId": "183896d4-2f19-427e-aab3-a969ddfd8f97"
+    },
+    {
+      "id": "60bfe1dc-e5d7-41b3-93bb-b63c373b535f",
+      "name": "Create or Update?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        96
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.body.event_type }}",
+              "rightValue": "create",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cond2",
+              "leftValue": "={{ $json.body.event_type }}",
+              "rightValue": "update",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "2c28fb1f-821a-43ad-804f-d62f6a4c8085",
+      "name": "Get Procore Punch Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.procore.com/rest/v1.0/projects/{{ $json.body.project_id }}/punch_items/{{ $json.body.resource_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {}
+      },
+      "credentials": {
+        "oAuth2Api": {
+          "id": "procore-oauth2",
+          "name": "Procore OAuth2"
+        }
+      }
+    },
+    {
+      "id": "e0646c1b-3749-4396-948b-2729e2b72601",
+      "name": "Create Asana Task",
+      "type": "n8n-nodes-base.asana",
+      "typeVersion": 1,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "resource": "task",
+        "operation": "create",
+        "workspace": "={{ $vars.ASANA_WORKSPACE_ID }}",
+        "name": "=[Procore] {{ $json.title }}",
+        "additionalFields": {
+          "notes": "={{ $json.description }}\n\nProcore Punch Item ID: {{ $json.id }}\nStatus: {{ $json.status }}",
+          "due_on": "={{ $json.due_date }}",
+          "projects": [
+            "={{ $vars.ASANA_PROJECT_ID }}"
+          ]
+        }
+      },
+      "credentials": {
+        "asanaApi": {
+          "id": "asana-api",
+          "name": "Asana API"
+        }
+      }
+    },
+    {
+      "id": "c1dfed28-228c-41f1-a282-3a8bd542de83",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"asana_task\": \"{{ $json.gid }}\" }"
+      }
+    },
+    {
+      "id": "a2bf2f5a-28c7-4ff4-b1e2-ebc51265189d",
+      "name": "Ignore Event",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        192
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"status\": \"ignored\" }"
+      }
+    }
+  ],
+  "connections": {
+    "Procore Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create or Update?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or Update?": {
+      "main": [
+        [
+          {
+            "node": "Get Procore Punch Item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ignore Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Procore Punch Item": {
+      "main": [
+        [
+          {
+            "node": "Create Asana Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Asana Task": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "pinData": null,
+  "versionId": "19e383a2-3a17-4539-9f2d-10edcb552c9c",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-19T16:38:11.738Z",
+      "createdAt": "2026-05-19T16:38:11.738Z",
+      "role": "workflow:owner",
+      "workflowId": "JhShowEaACWDg1MW",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
