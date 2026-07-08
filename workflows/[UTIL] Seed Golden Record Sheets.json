@@ -1,0 +1,258 @@
+{
+  "updatedAt": "2026-05-17T11:48:34.000Z",
+  "createdAt": "2026-04-03T06:30:59.767Z",
+  "id": "Za2Ss2bMDRx643Fk",
+  "name": "[UTIL] Seed Golden Record Sheets",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "0c9d34ea-8885-4ac9-b90c-4b18364ecbb4",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { contact_id: 'CRM-001', full_name: 'John Doe', phone: '555-0101', email: '', address: '1234 Oak St Springfield IL', source: 'county', status: 'active' }},\n  { json: { contact_id: 'CRM-002', full_name: 'Mary Smith', phone: '555-0202', email: 'mary.smith@gmail.com', address: '567 Elm Ave Chicago IL', source: 'county', status: 'active' }},\n  { json: { contact_id: 'CRM-003', full_name: 'Robert Johnson', phone: '555-0303', email: 'rjohnson@mail.com', address: '789 Pine Rd Chicago IL', source: 'facebook', status: 'active' }},\n  { json: { contact_id: 'CRM-004', full_name: 'Sarah Williams', phone: '555-0404', email: 'sarah.w@email.com', address: '321 Maple Dr Aurora IL', source: 'manual', status: 'active' }},\n  { json: { contact_id: 'CRM-005', full_name: 'James Davis', phone: '555-0505', email: '', address: '654 Cedar Blvd Naperville IL', source: 'county', status: 'active' }}\n];"
+      },
+      "id": "04a22184-1250-4d1b-b8e9-97afad00861d",
+      "name": "Code: CRM Seed Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "17BQ45Vnc1zHQeEcUeG-PAInwo_iXRjXJeg8QLHmnY14"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "GHL CRM Mock"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "contact_id",
+              "displayName": "contact_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f965aa99-e3bc-46f9-80bd-bf9109875932",
+      "name": "Write: GHL CRM Mock",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        304
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DBEwozLer2lI42WC",
+          "name": "DP: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { name: 'Mary Smith', phone: '555-9999', email: '', address: '567 Elm, Chicago IL 60601', notes: 'possible duplic8' }}\n];"
+      },
+      "id": "a77082fe-9384-4874-883c-e00386ed78fc",
+      "name": "Code: Source C Seed Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "17BQ45Vnc1zHQeEcUeG-PAInwo_iXRjXJeg8QLHmnY14"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Source C: Researcher Leads"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "515ebc21-94e5-42f2-8758-237efe72cbd0",
+      "name": "Write: Source C Researcher Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        512
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DBEwozLer2lI42WC",
+          "name": "DP: Google Sheets Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code: CRM Seed Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code: Source C Seed Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: CRM Seed Data": {
+      "main": [
+        [
+          {
+            "node": "Write: GHL CRM Mock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Source C Seed Data": {
+      "main": [
+        [
+          {
+            "node": "Write: Source C Researcher Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true
+  },
+  "pinData": {},
+  "versionId": "b219d106-0caa-4f4c-8373-0ff6b26bd970",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-03T06:30:59.770Z",
+      "createdAt": "2026-04-03T06:30:59.770Z",
+      "role": "workflow:owner",
+      "workflowId": "Za2Ss2bMDRx643Fk",
+      "projectId": "6TsYTzg0HY92xH2K"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
