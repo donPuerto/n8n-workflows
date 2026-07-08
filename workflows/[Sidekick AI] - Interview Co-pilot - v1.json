@@ -1,0 +1,1387 @@
+{
+  "updatedAt": "2026-04-16T04:17:13.073Z",
+  "createdAt": "2026-04-16T00:42:51.267Z",
+  "id": "5NaLs40u0cIysq8z",
+  "name": "[Sidekick AI] - Interview Co-pilot - v1",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# [Sidekick AI] - Interview Co-pilot - v1\n\n**Purpose:** Real-time AI interview co-pilot. Receives live speech transcripts, retrieves resume context via RAG (Supabase pgvector), generates talking points with Claude, converts to audio via Deepgram TTS, returns base64 audio + text.\n\n**Trigger:** POST /sidekick-listen\n**Input:** `{ is_final, transcript, session_id, job_role, company, conversation_history }`\n**Output:** `{ success, answer_text, audio_base64, audio_content_type, session_id, transcript, timestamp }`\n\n**Credentials:**\n- DP: Anthropic API (anthropicApi) — ID: EXYmmZ3H48sezXqR\n- DP: OpenAi Account (openAiApi) — ID: JQ6ARVQIEbbwoWxD\n- DP: Deepgram API Key (httpHeaderAuth) — ID: XN0IETiAq9yP0bY3\n- DP: Supabase Service Key (httpHeaderAuth) — ID: FEL6LQBmOZdqHPsi\n\n**⚠️ Queue Mode:** n8n runs in queue mode. Respond to Webhook only works via test webhook path in the n8n editor.",
+        "height": 540,
+        "width": 720
+      },
+      "id": "sa000015",
+      "name": "Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Input Gate\nOnly process **final** transcripts (`is_final: true`) with non-empty text.\nDeepgram sends many interim transcripts during speech — skip all of them with an immediate 200 OK.",
+        "height": 196,
+        "width": 472,
+        "color": 3
+      },
+      "id": "sa000016",
+      "name": "Input Gate Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        768,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## RAG Pipeline\n1. **Embed** transcript → OpenAI text-embedding-3-small (1536 dims)\n2. **Match** → Supabase pgvector match_documents() (top 3, threshold 0.3)\n3. **Inject** top resume chunks into Claude system prompt",
+        "height": 196,
+        "width": 440,
+        "color": 3
+      },
+      "id": "sa000024",
+      "name": "RAG Pipeline Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Native AI Nodes\nUses `chainLlm` + `lmChatAnthropic` sub-nodes (not HTTP Request).\n- Interview: 300 tokens, temp 0.4, STAR method\n- Small Talk: 80 tokens, temp 0.6, casual",
+        "height": 196,
+        "width": 380,
+        "color": 3
+      },
+      "id": "sa000025",
+      "name": "AI Chain Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚠️ Queue Mode\nRespond to Webhook only works synchronously.\nProduction use requires non-queue n8n.\nFor dev: use `/webhook-test/sidekick-listen`.",
+        "height": 148,
+        "width": 460,
+        "color": 5
+      },
+      "id": "sa000017",
+      "name": "Queue Mode Warning",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sidekick-listen",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "sa000001",
+      "name": "Webhook: Sidekick Listen",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        224,
+        416
+      ],
+      "webhookId": "sidekick-listen-v1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-is-final",
+              "leftValue": "={{ $json.body.is_final }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cond-has-transcript",
+              "leftValue": "={{ $json.body.transcript }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "sa000002",
+      "name": "IF: Is Final?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, status: 'interim', message: 'Interim transcript received' }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "sa000011",
+      "name": "Respond to Webhook: Skip",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body;\nconst transcript = body.transcript || '';\n\n// Build messages array from conversation history + current transcript\nconst history = (body.conversation_history || []).map(h => ({\n  role: h.role,\n  content: String(h.content)\n}));\nconst messages = [...history, { role: 'user', content: transcript }];\n\n// Question detection heuristic\nconst questionWords = ['what', 'how', 'why', 'when', 'where', 'who', 'tell me', 'describe', 'explain', 'can you', 'could you', 'would you', 'have you', 'do you', 'are you', 'walk me through', 'share', 'give me an example'];\nconst lowerTranscript = transcript.toLowerCase();\nconst is_question = questionWords.some(w => lowerTranscript.includes(w)) || transcript.trim().endsWith('?');\n\nreturn [{\n  json: {\n    session_id: body.session_id || 'default',\n    job_role: body.job_role || 'Software Engineer',\n    company: body.company || 'the company',\n    messages: messages,\n    transcript: transcript,\n    is_question: is_question\n  }\n}];"
+      },
+      "id": "sa000003",
+      "name": "Code: Build Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'text-embedding-3-small', input: $json.transcript }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "sa000018",
+      "name": "HTTP: Embed Transcript",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        320
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JQ6ARVQIEbbwoWxD",
+          "name": "DP: OpenAi Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://cidyudlrjfrjvwmytwhd.supabase.co/rest/v1/rpc/match_documents",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpZHl1ZGxyamZyanZ3bXl0d2hkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTQ5MzgzMCwiZXhwIjoyMDg3MDY5ODMwfQ.gUyI-v8WYjkcKvUTBaFEx7YmDGoFiTVJvXp8W1W7yQw"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ query_embedding: $json.data[0].embedding, match_count: 3 }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "sa000019",
+      "name": "HTTP: RAG Match Documents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        320
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "FEL6LQBmOZdqHPsi",
+          "name": "DP: Supabase Service Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle both array-as-single-item and multiple-items responses from Supabase\nconst firstItem = $input.first().json;\nlet chunks;\nif (Array.isArray(firstItem)) {\n  // n8n wrapped the JSON array as a single item\n  chunks = firstItem;\n} else {\n  // n8n split the array into multiple items (or single result)\n  chunks = $input.all().map(i => i.json).filter(c => c && c.content);\n}\n\nconst context = $('Code: Build Context').first().json;\n\nconst ragContext = chunks.length > 0 && chunks[0] && chunks[0].content\n  ? chunks.slice(0, 3).map((c, i) => `[Resume Section ${i + 1}]\\n${c.content}`).join('\\n\\n')\n  : 'No resume context available — answer based on general best practices.';\n\nreturn [{\n  json: {\n    ...context,\n    rag_context: ragContext,\n    rag_count: chunks.length\n  }\n}];"
+      },
+      "id": "sa000020",
+      "name": "Code: Inject RAG Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "switch-is-question",
+                    "leftValue": "={{ $json.is_question }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "question"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "sa000004",
+      "name": "Switch: Is Question?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1568,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'SYSTEM: You are a real-time AI interview co-pilot. The user is in a live job interview for a ' + $json.job_role + ' position at ' + $json.company + '.\\n\\nResume context from vector database:\\n' + $json.rag_context + '\\n\\nInstructions: 2-4 sentences max. Use STAR method for behavioral questions. No markdown — pure spoken words. Draw from the resume context above. Start with the strongest point.\\n\\nCONVERSATION:\\n' + $json.messages.map(m => (m.role === 'user' ? 'Human' : 'Assistant') + ': ' + m.content).join('\\n') }}"
+      },
+      "id": "sa000005",
+      "name": "Chain: Interview LLM",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1792,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "model": "claude-haiku-4-5-20251001",
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "id": "sa000021",
+      "name": "Claude Haiku Interview",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        1872,
+        240
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "EXYmmZ3H48sezXqR",
+          "name": "DP: Anthropic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ 'SYSTEM: You are a friendly, natural conversationalist helping someone in a live job interview handle small talk gracefully. Keep responses brief (1-2 sentences), warm, and professionally confident. Pure spoken text only — no markdown.\\n\\nCONVERSATION:\\n' + $json.messages.map(m => (m.role === 'user' ? 'Human' : 'Assistant') + ': ' + m.content).join('\\n') }}"
+      },
+      "id": "sa000006",
+      "name": "Chain: Small Talk LLM",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1792,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "model": "claude-haiku-4-5-20251001",
+        "options": {
+          "temperature": 0.6
+        }
+      },
+      "id": "sa000022",
+      "name": "Claude Haiku Small Talk",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.2,
+      "position": [
+        1872,
+        752
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "EXYmmZ3H48sezXqR",
+          "name": "DP: Anthropic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// chainLlm outputs $json.text (not $json.content[0].text like the HTTP Anthropic node)\nconst responseText = $json.text || '';\nconst context = $('Code: Inject RAG Context').first().json;\n\n// Strip markdown formatting — TTS speaks raw text\nlet cleaned = responseText\n  .replace(/\\*\\*(.*?)\\*\\*/g, '$1')\n  .replace(/\\*(.*?)\\*/g, '$1')\n  .replace(/#{1,6}\\s/g, '')\n  .replace(/[-*+]\\s{1,}/g, '')\n  .replace(/\\n{2,}/g, ' ')\n  .replace(/\\n/g, ' ')\n  .trim();\n\n// Truncate to ~500 chars (~35 seconds of speech at normal pace)\nif (cleaned.length > 500) {\n  const lastPeriod = cleaned.lastIndexOf('.', 500);\n  cleaned = lastPeriod > 300 ? cleaned.substring(0, lastPeriod + 1) : cleaned.substring(0, 500);\n}\n\nreturn [{\n  json: {\n    answer_text: cleaned,\n    session_id: context.session_id,\n    transcript: context.transcript\n  }\n}];"
+      },
+      "id": "sa000007",
+      "name": "Code: Clean for TTS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepgram.com/v1/speak?model=aura-asteria-en",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.answer_text }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "sa000008",
+      "name": "HTTP: Deepgram TTS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        320
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "XN0IETiAq9yP0bY3",
+          "name": "DP: Deepgram API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst binaryData = item.binary?.data;\nconst cleanData = $('Code: Clean for TTS').first().json;\n\nlet audioBase64 = '';\nlet mimeType = 'audio/mpeg';\n\nif (binaryData) {\n  mimeType = binaryData.mimeType || 'audio/mpeg';\n  const rawData = String(binaryData.data || '');\n\n  if (rawData && !rawData.startsWith('filesystem')) {\n    // In-memory mode: .data is already a base64 string\n    audioBase64 = rawData;\n  } else {\n    // Filesystem mode (binaryMode=separate): use getBinaryDataBuffer with timeout\n    try {\n      const buf = await Promise.race([\n        this.helpers.getBinaryDataBuffer(0, 'data'),\n        new Promise((_, rej) => setTimeout(() => rej(new Error('binary read timeout')), 8000))\n      ]);\n      audioBase64 = buf.toString('base64');\n    } catch(e) {\n      audioBase64 = ''; // Audio processed but can't encode in this mode\n    }\n  }\n}\n\nreturn [{\n  json: {\n    success: true,\n    answer_text: cleanData.answer_text,\n    audio_base64: audioBase64,\n    audio_content_type: mimeType,\n    session_id: cleanData.session_id,\n    transcript: cleanData.transcript,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "sa000009",
+      "name": "Code: Package Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "sa000010",
+      "name": "Respond to Webhook: Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2816,
+        320
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "sa000012",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        224,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const errorData = $input.first().json;\nconst fallbacks = [\n  \"I'm processing that, give me just a moment.\",\n  \"Let me think about that briefly.\",\n  \"That's a great question, let me gather my thoughts.\",\n  \"I want to give you a thorough answer, one second.\"\n];\n\nconst randomFallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];\n\nreturn [{\n  json: {\n    success: false,\n    answer_text: randomFallback,\n    audio_base64: '',\n    error: errorData.error?.message || errorData.message || 'Processing error',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "sa000013",
+      "name": "Code: Error Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "sa000014",
+      "name": "Respond to Webhook: Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        848
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: Sidekick Listen": {
+      "main": [
+        [
+          {
+            "node": "IF: Is Final?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Is Final?": {
+      "main": [
+        [
+          {
+            "node": "Code: Build Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook: Skip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Context": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Embed Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Embed Transcript": {
+      "main": [
+        [
+          {
+            "node": "HTTP: RAG Match Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: RAG Match Documents": {
+      "main": [
+        [
+          {
+            "node": "Code: Inject RAG Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Inject RAG Context": {
+      "main": [
+        [
+          {
+            "node": "Switch: Is Question?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Is Question?": {
+      "main": [
+        [
+          {
+            "node": "Chain: Interview LLM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Chain: Small Talk LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Haiku Interview": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Chain: Interview LLM",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Haiku Small Talk": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Chain: Small Talk LLM",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chain: Interview LLM": {
+      "main": [
+        [
+          {
+            "node": "Code: Clean for TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chain: Small Talk LLM": {
+      "main": [
+        [
+          {
+            "node": "Code: Clean for TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Clean for TTS": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Deepgram TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Deepgram TTS": {
+      "main": [
+        [
+          {
+            "node": "Code: Package Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Package Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook: Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code: Error Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Error Handler": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook: Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "5a3d87d9-dd4f-40e4-ab61-458ecf7fbf7c",
+  "activeVersionId": "5a3d87d9-dd4f-40e4-ab61-458ecf7fbf7c",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-16T00:42:51.268Z",
+      "createdAt": "2026-04-16T00:42:51.268Z",
+      "role": "workflow:owner",
+      "workflowId": "5NaLs40u0cIysq8z",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-16T04:17:16.000Z",
+    "createdAt": "2026-04-16T04:17:13.075Z",
+    "versionId": "5a3d87d9-dd4f-40e4-ab61-458ecf7fbf7c",
+    "workflowId": "5NaLs40u0cIysq8z",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "# [Sidekick AI] - Interview Co-pilot - v1\n\n**Purpose:** Real-time AI interview co-pilot. Receives live speech transcripts, retrieves resume context via RAG (Supabase pgvector), generates talking points with Claude, converts to audio via Deepgram TTS, returns base64 audio + text.\n\n**Trigger:** POST /sidekick-listen\n**Input:** `{ is_final, transcript, session_id, job_role, company, conversation_history }`\n**Output:** `{ success, answer_text, audio_base64, audio_content_type, session_id, transcript, timestamp }`\n\n**Credentials:**\n- DP: Anthropic API (anthropicApi) — ID: EXYmmZ3H48sezXqR\n- DP: OpenAi Account (openAiApi) — ID: JQ6ARVQIEbbwoWxD\n- DP: Deepgram API Key (httpHeaderAuth) — ID: XN0IETiAq9yP0bY3\n- DP: Supabase Service Key (httpHeaderAuth) — ID: FEL6LQBmOZdqHPsi\n\n**⚠️ Queue Mode:** n8n runs in queue mode. Respond to Webhook only works via test webhook path in the n8n editor.",
+          "height": 540,
+          "width": 720
+        },
+        "id": "sa000015",
+        "name": "Overview",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -576,
+          432
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## Input Gate\nOnly process **final** transcripts (`is_final: true`) with non-empty text.\nDeepgram sends many interim transcripts during speech — skip all of them with an immediate 200 OK.",
+          "height": 196,
+          "width": 472,
+          "color": 3
+        },
+        "id": "sa000016",
+        "name": "Input Gate Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          768,
+          -32
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## RAG Pipeline\n1. **Embed** transcript → OpenAI text-embedding-3-small (1536 dims)\n2. **Match** → Supabase pgvector match_documents() (top 3, threshold 0.3)\n3. **Inject** top resume chunks into Claude system prompt",
+          "height": 196,
+          "width": 440,
+          "color": 3
+        },
+        "id": "sa000024",
+        "name": "RAG Pipeline Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1264,
+          -32
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## Native AI Nodes\nUses `chainLlm` + `lmChatAnthropic` sub-nodes (not HTTP Request).\n- Interview: 300 tokens, temp 0.4, STAR method\n- Small Talk: 80 tokens, temp 0.6, casual",
+          "height": 196,
+          "width": 380,
+          "color": 3
+        },
+        "id": "sa000025",
+        "name": "AI Chain Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2112,
+          -16
+        ]
+      },
+      {
+        "parameters": {
+          "content": "## ⚠️ Queue Mode\nRespond to Webhook only works synchronously.\nProduction use requires non-queue n8n.\nFor dev: use `/webhook-test/sidekick-listen`.",
+          "height": 148,
+          "width": 460,
+          "color": 5
+        },
+        "id": "sa000017",
+        "name": "Queue Mode Warning",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          2672,
+          560
+        ]
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "sidekick-listen",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "sa000001",
+        "name": "Webhook: Sidekick Listen",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          224,
+          416
+        ],
+        "webhookId": "sidekick-listen-v1"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "cond-is-final",
+                "leftValue": "={{ $json.body.is_final }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              },
+              {
+                "id": "cond-has-transcript",
+                "leftValue": "={{ $json.body.transcript }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "sa000002",
+        "name": "IF: Is Final?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          448,
+          416
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: true, status: 'interim', message: 'Interim transcript received' }) }}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "id": "sa000011",
+        "name": "Respond to Webhook: Skip",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          672,
+          512
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const body = $input.first().json.body;\nconst transcript = body.transcript || '';\n\n// Build messages array from conversation history + current transcript\nconst history = (body.conversation_history || []).map(h => ({\n  role: h.role,\n  content: String(h.content)\n}));\nconst messages = [...history, { role: 'user', content: transcript }];\n\n// Question detection heuristic\nconst questionWords = ['what', 'how', 'why', 'when', 'where', 'who', 'tell me', 'describe', 'explain', 'can you', 'could you', 'would you', 'have you', 'do you', 'are you', 'walk me through', 'share', 'give me an example'];\nconst lowerTranscript = transcript.toLowerCase();\nconst is_question = questionWords.some(w => lowerTranscript.includes(w)) || transcript.trim().endsWith('?');\n\nreturn [{\n  json: {\n    session_id: body.session_id || 'default',\n    job_role: body.job_role || 'Software Engineer',\n    company: body.company || 'the company',\n    messages: messages,\n    transcript: transcript,\n    is_question: is_question\n  }\n}];"
+        },
+        "id": "sa000003",
+        "name": "Code: Build Context",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          320
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.openai.com/v1/embeddings",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "openAiApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ model: 'text-embedding-3-small', input: $json.transcript }) }}",
+          "options": {
+            "timeout": 10000
+          }
+        },
+        "id": "sa000018",
+        "name": "HTTP: Embed Transcript",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          896,
+          320
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "JQ6ARVQIEbbwoWxD",
+            "name": "DP: OpenAi Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://cidyudlrjfrjvwmytwhd.supabase.co/rest/v1/rpc/match_documents",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpZHl1ZGxyamZyanZ3bXl0d2hkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTQ5MzgzMCwiZXhwIjoyMDg3MDY5ODMwfQ.gUyI-v8WYjkcKvUTBaFEx7YmDGoFiTVJvXp8W1W7yQw"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ query_embedding: $json.data[0].embedding, match_count: 3 }) }}",
+          "options": {
+            "timeout": 10000
+          }
+        },
+        "id": "sa000019",
+        "name": "HTTP: RAG Match Documents",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1120,
+          320
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "FEL6LQBmOZdqHPsi",
+            "name": "DP: Supabase Service Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Handle both array-as-single-item and multiple-items responses from Supabase\nconst firstItem = $input.first().json;\nlet chunks;\nif (Array.isArray(firstItem)) {\n  // n8n wrapped the JSON array as a single item\n  chunks = firstItem;\n} else {\n  // n8n split the array into multiple items (or single result)\n  chunks = $input.all().map(i => i.json).filter(c => c && c.content);\n}\n\nconst context = $('Code: Build Context').first().json;\n\nconst ragContext = chunks.length > 0 && chunks[0] && chunks[0].content\n  ? chunks.slice(0, 3).map((c, i) => `[Resume Section ${i + 1}]\\n${c.content}`).join('\\n\\n')\n  : 'No resume context available — answer based on general best practices.';\n\nreturn [{\n  json: {\n    ...context,\n    rag_context: ragContext,\n    rag_count: chunks.length\n  }\n}];"
+        },
+        "id": "sa000020",
+        "name": "Code: Inject RAG Context",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1344,
+          320
+        ]
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "conditions": [
+                    {
+                      "id": "switch-is-question",
+                      "leftValue": "={{ $json.is_question }}",
+                      "rightValue": true,
+                      "operator": {
+                        "type": "boolean",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "question"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "sa000004",
+        "name": "Switch: Is Question?",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          1568,
+          320
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ 'SYSTEM: You are a real-time AI interview co-pilot. The user is in a live job interview for a ' + $json.job_role + ' position at ' + $json.company + '.\\n\\nResume context from vector database:\\n' + $json.rag_context + '\\n\\nInstructions: 2-4 sentences max. Use STAR method for behavioral questions. No markdown — pure spoken words. Draw from the resume context above. Start with the strongest point.\\n\\nCONVERSATION:\\n' + $json.messages.map(m => (m.role === 'user' ? 'Human' : 'Assistant') + ': ' + m.content).join('\\n') }}"
+        },
+        "id": "sa000005",
+        "name": "Chain: Interview LLM",
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.4,
+        "position": [
+          1792,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "model": "claude-haiku-4-5-20251001",
+          "options": {
+            "temperature": 0.4
+          }
+        },
+        "id": "sa000021",
+        "name": "Claude Haiku Interview",
+        "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+        "typeVersion": 1.2,
+        "position": [
+          1872,
+          240
+        ],
+        "credentials": {
+          "anthropicApi": {
+            "id": "EXYmmZ3H48sezXqR",
+            "name": "DP: Anthropic API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ 'SYSTEM: You are a friendly, natural conversationalist helping someone in a live job interview handle small talk gracefully. Keep responses brief (1-2 sentences), warm, and professionally confident. Pure spoken text only — no markdown.\\n\\nCONVERSATION:\\n' + $json.messages.map(m => (m.role === 'user' ? 'Human' : 'Assistant') + ': ' + m.content).join('\\n') }}"
+        },
+        "id": "sa000006",
+        "name": "Chain: Small Talk LLM",
+        "type": "@n8n/n8n-nodes-langchain.chainLlm",
+        "typeVersion": 1.4,
+        "position": [
+          1792,
+          528
+        ]
+      },
+      {
+        "parameters": {
+          "model": "claude-haiku-4-5-20251001",
+          "options": {
+            "temperature": 0.6
+          }
+        },
+        "id": "sa000022",
+        "name": "Claude Haiku Small Talk",
+        "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+        "typeVersion": 1.2,
+        "position": [
+          1872,
+          752
+        ],
+        "credentials": {
+          "anthropicApi": {
+            "id": "EXYmmZ3H48sezXqR",
+            "name": "DP: Anthropic API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// chainLlm outputs $json.text (not $json.content[0].text like the HTTP Anthropic node)\nconst responseText = $json.text || '';\nconst context = $('Code: Inject RAG Context').first().json;\n\n// Strip markdown formatting — TTS speaks raw text\nlet cleaned = responseText\n  .replace(/\\*\\*(.*?)\\*\\*/g, '$1')\n  .replace(/\\*(.*?)\\*/g, '$1')\n  .replace(/#{1,6}\\s/g, '')\n  .replace(/[-*+]\\s{1,}/g, '')\n  .replace(/\\n{2,}/g, ' ')\n  .replace(/\\n/g, ' ')\n  .trim();\n\n// Truncate to ~500 chars (~35 seconds of speech at normal pace)\nif (cleaned.length > 500) {\n  const lastPeriod = cleaned.lastIndexOf('.', 500);\n  cleaned = lastPeriod > 300 ? cleaned.substring(0, lastPeriod + 1) : cleaned.substring(0, 500);\n}\n\nreturn [{\n  json: {\n    answer_text: cleaned,\n    session_id: context.session_id,\n    transcript: context.transcript\n  }\n}];"
+        },
+        "id": "sa000007",
+        "name": "Code: Clean for TTS",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2144,
+          320
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.deepgram.com/v1/speak?model=aura-asteria-en",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ text: $json.answer_text }) }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            },
+            "timeout": 15000
+          }
+        },
+        "id": "sa000008",
+        "name": "HTTP: Deepgram TTS",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2368,
+          320
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "XN0IETiAq9yP0bY3",
+            "name": "DP: Deepgram API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const item = $input.first();\nconst binaryData = item.binary?.data;\nconst cleanData = $('Code: Clean for TTS').first().json;\n\nlet audioBase64 = '';\nlet mimeType = 'audio/mpeg';\n\nif (binaryData) {\n  mimeType = binaryData.mimeType || 'audio/mpeg';\n  const rawData = String(binaryData.data || '');\n\n  if (rawData && !rawData.startsWith('filesystem')) {\n    // In-memory mode: .data is already a base64 string\n    audioBase64 = rawData;\n  } else {\n    // Filesystem mode (binaryMode=separate): use getBinaryDataBuffer with timeout\n    try {\n      const buf = await Promise.race([\n        this.helpers.getBinaryDataBuffer(0, 'data'),\n        new Promise((_, rej) => setTimeout(() => rej(new Error('binary read timeout')), 8000))\n      ]);\n      audioBase64 = buf.toString('base64');\n    } catch(e) {\n      audioBase64 = ''; // Audio processed but can't encode in this mode\n    }\n  }\n}\n\nreturn [{\n  json: {\n    success: true,\n    answer_text: cleanData.answer_text,\n    audio_base64: audioBase64,\n    audio_content_type: mimeType,\n    session_id: cleanData.session_id,\n    transcript: cleanData.transcript,\n    timestamp: new Date().toISOString()\n  }\n}];"
+        },
+        "id": "sa000009",
+        "name": "Code: Package Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2592,
+          320
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json) }}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "id": "sa000010",
+        "name": "Respond to Webhook: Success",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          2816,
+          320
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "sa000012",
+        "name": "Error Trigger",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          224,
+          848
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const errorData = $input.first().json;\nconst fallbacks = [\n  \"I'm processing that, give me just a moment.\",\n  \"Let me think about that briefly.\",\n  \"That's a great question, let me gather my thoughts.\",\n  \"I want to give you a thorough answer, one second.\"\n];\n\nconst randomFallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];\n\nreturn [{\n  json: {\n    success: false,\n    answer_text: randomFallback,\n    audio_base64: '',\n    error: errorData.error?.message || errorData.message || 'Processing error',\n    timestamp: new Date().toISOString()\n  }\n}];"
+        },
+        "id": "sa000013",
+        "name": "Code: Error Handler",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          848
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json) }}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "id": "sa000014",
+        "name": "Respond to Webhook: Error",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          672,
+          848
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook: Sidekick Listen": {
+        "main": [
+          [
+            {
+              "node": "IF: Is Final?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "IF: Is Final?": {
+        "main": [
+          [
+            {
+              "node": "Code: Build Context",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond to Webhook: Skip",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Build Context": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Embed Transcript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Embed Transcript": {
+        "main": [
+          [
+            {
+              "node": "HTTP: RAG Match Documents",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: RAG Match Documents": {
+        "main": [
+          [
+            {
+              "node": "Code: Inject RAG Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Inject RAG Context": {
+        "main": [
+          [
+            {
+              "node": "Switch: Is Question?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch: Is Question?": {
+        "main": [
+          [
+            {
+              "node": "Chain: Interview LLM",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Chain: Small Talk LLM",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claude Haiku Interview": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Chain: Interview LLM",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claude Haiku Small Talk": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Chain: Small Talk LLM",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Chain: Interview LLM": {
+        "main": [
+          [
+            {
+              "node": "Code: Clean for TTS",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Chain: Small Talk LLM": {
+        "main": [
+          [
+            {
+              "node": "Code: Clean for TTS",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Clean for TTS": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Deepgram TTS",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Deepgram TTS": {
+        "main": [
+          [
+            {
+              "node": "Code: Package Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Package Response": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook: Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Code: Error Handler",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Error Handler": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook: Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": "Version 5a3d87d9",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
