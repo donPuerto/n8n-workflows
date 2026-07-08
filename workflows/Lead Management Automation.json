@@ -1,0 +1,470 @@
+{
+  "updatedAt": "2026-03-10T09:44:57.663Z",
+  "createdAt": "2026-03-09T22:38:18.545Z",
+  "id": "sx2P6TaPzponNFxJ",
+  "name": "Lead Management Automation",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-form",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "3bbce5be-4e8d-454f-8f6d-fcfc486ce9e0",
+      "name": "Webhook - Lead Form",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        144
+      ],
+      "webhookId": "lead-form-webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": true, \"message\": \"Lead received successfully\" }",
+        "options": {}
+      },
+      "id": "c72b5cc9-650a-479a-93a4-c0c4512a2423",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.gohighlevel.com/v1/contacts/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "firstName",
+              "value": "={{ $json.body.name.split(' ')[0] }}"
+            },
+            {
+              "name": "lastName",
+              "value": "={{ $json.body.name.split(' ').slice(1).join(' ') }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.body.email }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.body.phone }}"
+            },
+            {
+              "name": "companyName",
+              "value": "={{ $json.body.company }}"
+            },
+            {
+              "name": "source",
+              "value": "={{ $json.body.source }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8bf035de-23a9-4c5c-8eaf-e57c06be1df5",
+      "name": "Step 1 - Add to GHL CRM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        144
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3ri6jVKMrdN1vNPy",
+          "name": "WR: Facebook Header Auth Account"
+        }
+      },
+      "notes": "Requires: GoHighLevel API Key credential (Authorization: Bearer YOUR_GHL_API_KEY)"
+    },
+    {
+      "parameters": {
+        "subject": "Welcome! We received your inquiry",
+        "message": "=<html>\n<body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n  <h2 style=\"color: #2c3e50;\">Hi {{ $('Webhook - Lead Form').item.json.body.name }},</h2>\n  <p>Thank you for reaching out! We've received your inquiry and a member of our team will follow up with you within 24 hours.</p>\n  <p><strong>Your submission details:</strong></p>\n  <ul>\n    <li>Name: {{ $('Webhook - Lead Form').item.json.body.name }}</li>\n    <li>Company: {{ $('Webhook - Lead Form').item.json.body.company }}</li>\n    <li>Source: {{ $('Webhook - Lead Form').item.json.body.source }}</li>\n  </ul>\n  <p>In the meantime, feel free to reply to this email if you have any questions.</p>\n  <p>Best regards,<br>The Sales Team</p>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "667a125d-b962-442c-ba24-3cd31a55502f",
+      "name": "Step 2 - Send Welcome Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        144
+      ],
+      "webhookId": "9c2e56f2-e8b1-40e7-a031-27c19f748837",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RhxDT8POCR7oU2yl",
+          "name": "DP: Gmail Account"
+        }
+      },
+      "notes": "Requires: Gmail OAuth2 credential. Change fromEmail to your email address."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-linkedin",
+              "leftValue": "={{ $('Webhook - Lead Form').item.json.body.source }}",
+              "rightValue": "LinkedIn",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d622a939-2366-4b96-bccb-989bb2327c63",
+      "name": "Check Source",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://rest.gohighlevel.com/v1/contacts/{{ $('Step 1 - Add to GHL CRM').item.json.contact.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tags",
+              "value": "[\"linkedin-followup\"]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a072623c-e26d-4ef2-bf11-2949ea112ec7",
+      "name": "Step 3 - Tag LinkedIn Follow-Up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3ri6jVKMrdN1vNPy",
+          "name": "WR: Facebook Header Auth Account"
+        }
+      },
+      "notes": "Tags the contact with 'linkedin-followup' in GHL"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-referral",
+              "leftValue": "={{ $('Webhook - Lead Form').item.json.body.source }}",
+              "rightValue": "Referral",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "59bb887b-0560-40de-9ed6-715117a45836",
+      "name": "Is Referral?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        720,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://rest.gohighlevel.com/v1/contacts/{{ $('Step 1 - Add to GHL CRM').item.json.contact.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tags",
+              "value": "[\"high-priority\"]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "535384d5-69ef-4b62-8e8a-0cc1fd6eb19e",
+      "name": "Step 4 - Tag High Priority",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        144
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3ri6jVKMrdN1vNPy",
+          "name": "WR: Facebook Header Auth Account"
+        }
+      },
+      "notes": "Tags the contact with 'high-priority' in GHL"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.gohighlevel.com/v1/tasks/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "=Follow up with {{ $('Webhook - Lead Form').item.json.body.name }} from {{ $('Webhook - Lead Form').item.json.body.company }}"
+            },
+            {
+              "name": "body",
+              "value": "=New lead received via {{ $('Webhook - Lead Form').item.json.body.source }}. Contact: {{ $('Webhook - Lead Form').item.json.body.email }} | {{ $('Webhook - Lead Form').item.json.body.phone }}. Follow up required within 24 hours."
+            },
+            {
+              "name": "dueDate",
+              "value": "={{ new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() }}"
+            },
+            {
+              "name": "contactId",
+              "value": "={{ $('Step 1 - Add to GHL CRM').item.json.contact.id }}"
+            },
+            {
+              "name": "assignedTo",
+              "value": "SALES_TEAM_USER_ID"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3d57da3e-c021-4563-b1d2-891b3af28596",
+      "name": "Step 5 - Create 24hr Follow-Up Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        144
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3ri6jVKMrdN1vNPy",
+          "name": "WR: Facebook Header Auth Account"
+        }
+      },
+      "notes": "Replace SALES_TEAM_USER_ID with the actual GHL user ID for your sales team member"
+    }
+  ],
+  "connections": {
+    "Webhook - Lead Form": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Step 1 - Add to GHL CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1 - Add to GHL CRM": {
+      "main": [
+        [
+          {
+            "node": "Step 2 - Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 2 - Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Check Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Source": {
+      "main": [
+        [
+          {
+            "node": "Step 3 - Tag LinkedIn Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Referral?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 3 - Tag LinkedIn Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "Step 5 - Create 24hr Follow-Up Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Referral?": {
+      "main": [
+        [
+          {
+            "node": "Step 4 - Tag High Priority",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Step 5 - Create 24hr Follow-Up Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 4 - Tag High Priority": {
+      "main": [
+        [
+          {
+            "node": "Step 5 - Create 24hr Follow-Up Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "9e7d78a1-30b8-4e1d-b655-c60bca737df0",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-03-09T22:38:18.552Z",
+      "createdAt": "2026-03-09T22:38:18.552Z",
+      "role": "workflow:owner",
+      "workflowId": "sx2P6TaPzponNFxJ",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [
+    {
+      "updatedAt": "2026-03-10T09:35:06.166Z",
+      "createdAt": "2026-03-10T09:35:06.166Z",
+      "id": "7orbCDnQuFQMR9w2",
+      "name": "CRM"
+    },
+    {
+      "updatedAt": "2026-03-10T09:35:06.163Z",
+      "createdAt": "2026-03-10T09:35:06.163Z",
+      "id": "uZVEh5eDbjskVT51",
+      "name": "Lead Management"
+    }
+  ]
+}
