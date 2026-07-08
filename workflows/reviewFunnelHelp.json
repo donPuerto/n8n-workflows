@@ -3,7 +3,6 @@
   "createdAt": "2026-02-13T04:49:00.251Z",
   "id": "XpULQf4VczPZw8YxPBT8L",
   "name": "reviewFunnelHelp",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -162,7 +161,6 @@
   },
   "versionId": "8aecd21b-6e2f-4ddf-b351-347d86b93f4d",
   "activeVersionId": "8aecd21b-6e2f-4ddf-b351-347d86b93f4d",
-  "versionCounter": 69,
   "triggerCount": 1,
   "shared": [
     {
@@ -170,20 +168,9 @@
       "createdAt": "2026-02-13T04:49:00.254Z",
       "role": "workflow:owner",
       "workflowId": "XpULQf4VczPZw8YxPBT8L",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
   "activeVersion": {
     "updatedAt": "2026-02-18T01:08:10.000Z",
     "createdAt": "2026-02-18T01:07:38.219Z",
@@ -295,16 +282,7 @@
     "authors": "Christine Kam",
     "name": "Version 1.2",
     "description": "sends updates in discord now",
-    "autosaved": true,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-02-18T01:08:10.576Z",
-        "id": 192,
-        "workflowId": "XpULQf4VczPZw8YxPBT8L",
-        "versionId": "8aecd21b-6e2f-4ddf-b351-347d86b93f4d",
-        "event": "activated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
-    ]
-  }
+    "autosaved": true
+  },
+  "tags": []
 }
