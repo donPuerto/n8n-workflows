@@ -3,7 +3,6 @@
   "createdAt": "2026-02-14T13:33:35.871Z",
   "id": "AeTsW4upsgvg2cRQc4Gt3",
   "name": "Shopify RRP Price Sync",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -1236,7 +1235,6 @@
   "pinData": {},
   "versionId": "09a36bab-211e-4638-a050-385793b50dde",
   "activeVersionId": null,
-  "versionCounter": 1,
   "triggerCount": 0,
   "shared": [
     {
@@ -1244,19 +1242,9 @@
       "createdAt": "2026-02-14T13:33:35.874Z",
       "role": "workflow:owner",
       "workflowId": "AeTsW4upsgvg2cRQc4Gt3",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
