@@ -1,11 +1,10 @@
 {
-  "updatedAt": "2026-04-05T04:30:03.187Z",
+  "updatedAt": "2026-04-26T22:14:37.000Z",
   "createdAt": "2026-04-05T04:30:03.187Z",
   "id": "KRbqtEdbCeEEhyNr",
   "name": "Test Params Check",
-  "description": null,
   "active": false,
-  "isArchived": false,
+  "isArchived": true,
   "nodes": [
     {
       "id": "b34c525d-4c08-437e-94d5-913d2d34ea16",
@@ -43,16 +42,15 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": true
+    "availableInMCP": false
   },
   "staticData": null,
   "meta": {
     "aiBuilderAssisted": true
   },
   "pinData": null,
-  "versionId": "df9f474a-f1ee-419b-a8d4-0b55f09d6053",
+  "versionId": "c1e7388d-df73-42b6-8472-b0cc82c56afb",
   "activeVersionId": null,
-  "versionCounter": 1,
   "triggerCount": 0,
   "shared": [
     {
@@ -60,19 +58,9 @@
       "createdAt": "2026-04-05T04:30:03.191Z",
       "role": "workflow:owner",
       "workflowId": "KRbqtEdbCeEEhyNr",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
