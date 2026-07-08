@@ -3,7 +3,6 @@
   "createdAt": "2025-11-19T11:16:07.747Z",
   "id": "IXspPE8nYhHtrqYA",
   "name": "03. Discord File Upload v1",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -767,7 +766,6 @@
   "pinData": {},
   "versionId": "4a204cb5-0599-4946-a728-716e3f33b644",
   "activeVersionId": "4a204cb5-0599-4946-a728-716e3f33b644",
-  "versionCounter": 81,
   "triggerCount": 1,
   "shared": [
     {
@@ -775,25 +773,7 @@
       "createdAt": "2025-11-19T11:16:07.750Z",
       "role": "workflow:owner",
       "workflowId": "IXspPE8nYhHtrqYA",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
-    }
-  ],
-  "tags": [
-    {
-      "updatedAt": "2025-11-25T13:05:18.454Z",
-      "createdAt": "2025-11-25T13:05:18.454Z",
-      "id": "xn6seEX74pkTOLqC",
-      "name": "@lead"
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
   "activeVersion": {
@@ -1555,16 +1535,14 @@
     "authors": "Christine Kam",
     "name": null,
     "description": null,
-    "autosaved": false,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2025-12-08T09:45:02.000Z",
-        "id": 3,
-        "workflowId": "IXspPE8nYhHtrqYA",
-        "versionId": "4a204cb5-0599-4946-a728-716e3f33b644",
-        "event": "activated",
-        "userId": null
-      }
-    ]
-  }
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-11-25T13:05:18.454Z",
+      "createdAt": "2025-11-25T13:05:18.454Z",
+      "id": "xn6seEX74pkTOLqC",
+      "name": "@lead"
+    }
+  ]
 }
