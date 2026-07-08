@@ -1,0 +1,1057 @@
+{
+  "updatedAt": "2026-02-25T23:09:03.019Z",
+  "createdAt": "2026-02-23T02:28:52.511Z",
+  "id": "t5QXJwjAAaI2RxFV",
+  "name": "Facebook Lead Ads",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -240
+      ],
+      "id": "2afee22d-ef93-4992-a088-5dfd3d8f75e0",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "graphApiVersion": "v23.0",
+        "node": "624246452531250",
+        "edge": "leads",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "fields",
+                "value": "id,created_time,field_data"
+              },
+              {
+                "name": "limit",
+                "value": "25"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -144
+      ],
+      "id": "c5fdfe95-48fb-4720-bf1b-0f2c9b630370",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "Z0goPgLaVU5HJqE4",
+          "name": "WR: Facebook Graph Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v25.0/624246452531250/leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        176,
+        48
+      ],
+      "id": "888e2ca5-4878-4f98-9678-99c92fd1b896",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3ri6jVKMrdN1vNPy",
+          "name": "WR: Facebook Header Auth Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const leads = items[0].json.data ?? [];\n\nfunction flatten(lead) {\n  const out = { lead_id: lead.id, created_time: lead.created_time };\n  for (const f of (lead.field_data ?? [])) {\n    out[f.name] = (f.values && f.values[0]) ? f.values[0] : null;\n  }\n  return out;\n}\n\nreturn leads.map(l => ({ json: flatten(l) }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        48
+      ],
+      "id": "0456ec9d-6795-48b9-9780-2fb2eee6bad3",
+      "name": "Flatten lead fields"
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.lead_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        624,
+        48
+      ],
+      "id": "f4c2457a-2baa-4851-9440-e83c755da76a",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "content": "✅ Note: Facebook Lead Ads Integration (Window Revival)\n\nPurpose\nThis workflow pulls Lead Ads form submissions from Facebook for the business Page Window Revival and processes them in n8n (flatten fields + prevent duplicates + send to destination such as Google Sheets/CRM).\n\nKey IDs\n\nPage Name: Window Revival\nPage ID: 135479543431\nLead Form Name: Window Revival Lead Generation 2022\nForm ID: 624246452531250\nGraph Endpoint: /{FORM_ID}/leads\n\nRequired Permissions (must be granted on the token)\nleads_retrieval ✅ required\npages_show_list\npages_read_engagement\npages_manage_ads (recommended)\nads_management (sometimes needed depending on setup)\n\nImportant: The /leads endpoint must be called using a Page Access Token (Window Revival page token), not a plain user token.\nAPI Call Used\nGET leads for the form\nURL:\nhttps://graph.facebook.com/v25.0/624246452531250/leads\n\nQuery:\nfields=id,created_time,field_data\nlimit=25 (adjustable)\n\nRecommended auth method:\nUse header:\nAuthorization: Bearer <PAGE_ACCESS_TOKEN>\n(avoid putting token in URL if possible)\nOutput Data Structure\n\nFacebook returns:\n\ndata[] list of leads\nEach lead has:\nid = lead id (unique submission id)\ncreated_time\nfield_data[] = array of objects with {name, values[]}\n\nExample keys in field_data:\nfirst_name, last_name, email, phone_number, etc.\nData Transform (Flatten)\nWe convert field_data[] into flat JSON so it’s easy to map into Sheets/CRM.\nFlatten result example:\n\nlead_id\ncreated_time\nfirst_name\nlast_name\nemail\nphone_number\nwhich_suburb?\nquantity\netc.\nDuplicate Prevention (Important)\n\nPolling will fetch older leads again.\nWe must deduplicate using lead_id.\n\nRecommended approach:\n\nStore each processed lead_id in n8n Data Store (or database)\n\nSkip leads whose lead_id already exists\n\nProduction Notes\nGraph API Explorer tokens can expire; use a stable Page token strategy for production.\nFor real-time leads (no polling), use Facebook Webhooks: subscribe the Page to leadgen.\n\nTroubleshooting\nError (#190) must be called with a Page Access Token\n→ You used a user token. Switch to Page token.\n\nError (#100) Tried accessing nonexistent field (leads)\n→ Wrong path like /me/leads. Use /FORM_ID/leads.\n\nEmpty data: []\n→ No new leads or token doesn’t have access to that Page/Form.\nWhich node should you use: Facebook Graph API node vs HTTP Request?\nBoth work — here’s what I recommend:\n\n✅ Best for reliability: HTTP Request\nYou control the exact endpoint and headers\nEasier debugging\nWorks consistently across n8n versions\n✅ Best for convenience: Facebook Graph API node\nNice UI, but can be confusing with Node/Edge setup\n\nMake sure Node = FORM_ID, Edge = leads\n\nIf your HTTP Request is working already, stick with it.",
+        "height": 1888,
+        "width": 1456
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1568,
+        -832
+      ],
+      "typeVersion": 1,
+      "id": "269cae68-a185-4e40-aed5-a9b1d8b3b1de",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        48
+      ],
+      "id": "38270634-b07a-4a2c-abc8-b6578f1fd8ee",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "clearDeduplicationHistory",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -336
+      ],
+      "id": "1381e3f3-0878-4a76-aebc-1e735cf3640e",
+      "name": "Clear cache",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  \n  const utcTime = item.json.created_time;\n\n  // Convert to Brisbane time and format 24hr HH:mm:ss\n  const brisbaneTime = new Date(utcTime).toLocaleTimeString('en-AU', {\n    timeZone: 'Australia/Brisbane',\n    hour12: false,\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit'\n  });\n\n  return {\n    json: {\n      ...item.json,\n      created_time_brisbane: brisbaneTime\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        48
+      ],
+      "id": "37d9ad4f-9151-46b2-9a47-92ebc49e1a19",
+      "name": "Format output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3f9765be-74b5-4da1-bd7c-daa7e0bf22ab",
+              "name": "Timestamp",
+              "value": "={{ $json.created_time }}",
+              "type": "string"
+            },
+            {
+              "id": "4753e31c-172c-4651-8999-8005af0be122",
+              "name": "Lead Id",
+              "value": "={{ $json.lead_id }}",
+              "type": "string"
+            },
+            {
+              "id": "aa7c635e-6653-4ada-bae0-2fa74347fa8b",
+              "name": "First Name",
+              "value": "={{ $json.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "3f685d6e-39c5-4521-8b6a-030fc405bf64",
+              "name": "Last Name",
+              "value": "={{ $json.last_name }}",
+              "type": "string"
+            },
+            {
+              "id": "9f51b4c8-b63e-4c58-bc50-5be61cb0d83d",
+              "name": "Email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "efb5c51c-689b-424e-b103-b3b5fc98ddb7",
+              "name": "Phone Number",
+              "value": "={{ $json.phone_number }}",
+              "type": "string"
+            },
+            {
+              "id": "b2c3ff6e-ca33-4ca5-a662-041dccfad0bb",
+              "name": "Suburb",
+              "value": "={{ $json[\"which_suburb?\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "14126523-a686-4d4e-ac69-e155a95599fb",
+              "name": "Description",
+              "value": "=Timestamp: {{ $json.created_time }}\nLead Id: {{ $json.lead_id }}\nFirst Name:{{ $json.first_name }}\nLast Name:{{ $json.last_name }}\nEmail:{{ $json.email }}\nPhone Number:{{ $json.phone_number }}\nSuburb: {{ $json[\"which_suburb?\"] }}\nQuantity: {{ $json.quantity }}\nPlease select What you want fixing: {{ $json[\"please_select_what_you_want_fixing:\"] }}\nTime frame for repairs: {{ $json[\"time_frame_for_repairs?\"] }}\nComments/Questions: {{ $json[\"comments/questions\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "6fe393d2-77e2-4158-915e-4ed0c3af488a",
+              "name": "Quantity",
+              "value": "={{ $json.quantity }}",
+              "type": "string"
+            },
+            {
+              "id": "75957107-d912-44eb-b29c-3aad6b748449",
+              "name": "please_select_what_you_want_fixing",
+              "value": "={{ $json[\"please_select_what_you_want_fixing:\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "3aba685a-487c-42ea-933c-40406c3df0fd",
+              "name": "time_frame_for_repairs",
+              "value": "={{ $json[\"time_frame_for_repairs?\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "6014b3f2-9f8b-4550-b054-388873107a69",
+              "name": "comments/questions",
+              "value": "={{ $json[\"comments/questions\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        48
+      ],
+      "id": "29b34b7b-0648-49f6-b85c-971cef2cb0a5",
+      "name": "Set Ouput"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "13r7uzHcPgXZhduG1B315aDCpNKsahVK1UoS3kU88Dn4",
+          "mode": "list",
+          "cachedResultName": "Facebook Lead Center",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13r7uzHcPgXZhduG1B315aDCpNKsahVK1UoS3kU88Dn4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13r7uzHcPgXZhduG1B315aDCpNKsahVK1UoS3kU88Dn4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $json.Timestamp }}",
+            "Lead Id": "={{ $json[\"Lead Id\"] }}",
+            "First Name": "={{ $json[\"First Name\"] }}",
+            "Last Name": "={{ $json[\"Last Name\"] }}",
+            "Email": "={{ $json.Email }}",
+            "Phone Number": "={{ $json[\"Phone Number\"] }}",
+            "Suburb": "={{ $json.Suburb }}",
+            "Description": "={{ $json.Description }}",
+            "Quantity": "={{ $json.Quantity }}",
+            "please_select_what_you_want_fixing": "={{ $json.please_select_what_you_want_fixing }}",
+            "time_frame_for_repairs": "={{ $json.time_frame_for_repairs }}",
+            "comments/questions": "={{ $json[\"comments/questions\"] }}"
+          },
+          "matchingColumns": [
+            "Lead Id"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Id",
+              "displayName": "Lead Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suburb",
+              "displayName": "Suburb",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "please_select_what_you_want_fixing",
+              "displayName": "please_select_what_you_want_fixing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time_frame_for_repairs",
+              "displayName": "time_frame_for_repairs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "comments/questions",
+              "displayName": "comments/questions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        48
+      ],
+      "id": "38e99405-d641-4dc3-b78f-13921a627de7",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IgTz53yznufnsBXa",
+          "name": "WR: Google Sheets Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Clear cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Graph API": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Flatten lead fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten lead fields": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Format output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format output": {
+      "main": [
+        [
+          {
+            "node": "Set Ouput",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Ouput": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "0fe78347-9d6b-4579-bcce-e1d5288a9adc",
+  "activeVersionId": "0fe78347-9d6b-4579-bcce-e1d5288a9adc",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-23T02:28:52.514Z",
+      "createdAt": "2026-02-23T02:28:52.514Z",
+      "role": "workflow:owner",
+      "workflowId": "t5QXJwjAAaI2RxFV",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-25T23:09:09.000Z",
+    "createdAt": "2026-02-25T23:09:03.019Z",
+    "versionId": "0fe78347-9d6b-4579-bcce-e1d5288a9adc",
+    "workflowId": "t5QXJwjAAaI2RxFV",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          -240
+        ],
+        "id": "2afee22d-ef93-4992-a088-5dfd3d8f75e0",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "graphApiVersion": "v23.0",
+          "node": "624246452531250",
+          "edge": "leads",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "fields",
+                  "value": "id,created_time,field_data"
+                },
+                {
+                  "name": "limit",
+                  "value": "25"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          224,
+          -144
+        ],
+        "id": "c5fdfe95-48fb-4720-bf1b-0f2c9b630370",
+        "name": "Facebook Graph API",
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "Z0goPgLaVU5HJqE4",
+            "name": "WR: Facebook Graph Account"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "url": "https://graph.facebook.com/v25.0/624246452531250/leads",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          176,
+          48
+        ],
+        "id": "888e2ca5-4878-4f98-9678-99c92fd1b896",
+        "name": "HTTP Request",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "3ri6jVKMrdN1vNPy",
+            "name": "WR: Facebook Header Auth Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const leads = items[0].json.data ?? [];\n\nfunction flatten(lead) {\n  const out = { lead_id: lead.id, created_time: lead.created_time };\n  for (const f of (lead.field_data ?? [])) {\n    out[f.name] = (f.values && f.values[0]) ? f.values[0] : null;\n  }\n  return out;\n}\n\nreturn leads.map(l => ({ json: flatten(l) }));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          400,
+          48
+        ],
+        "id": "0456ec9d-6795-48b9-9780-2fb2eee6bad3",
+        "name": "Flatten lead fields"
+      },
+      {
+        "parameters": {
+          "operation": "removeItemsSeenInPreviousExecutions",
+          "dedupeValue": "={{ $json.lead_id }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.removeDuplicates",
+        "typeVersion": 2,
+        "position": [
+          624,
+          48
+        ],
+        "id": "f4c2457a-2baa-4851-9440-e83c755da76a",
+        "name": "Remove Duplicates"
+      },
+      {
+        "parameters": {
+          "content": "✅ Note: Facebook Lead Ads Integration (Window Revival)\n\nPurpose\nThis workflow pulls Lead Ads form submissions from Facebook for the business Page Window Revival and processes them in n8n (flatten fields + prevent duplicates + send to destination such as Google Sheets/CRM).\n\nKey IDs\n\nPage Name: Window Revival\nPage ID: 135479543431\nLead Form Name: Window Revival Lead Generation 2022\nForm ID: 624246452531250\nGraph Endpoint: /{FORM_ID}/leads\n\nRequired Permissions (must be granted on the token)\nleads_retrieval ✅ required\npages_show_list\npages_read_engagement\npages_manage_ads (recommended)\nads_management (sometimes needed depending on setup)\n\nImportant: The /leads endpoint must be called using a Page Access Token (Window Revival page token), not a plain user token.\nAPI Call Used\nGET leads for the form\nURL:\nhttps://graph.facebook.com/v25.0/624246452531250/leads\n\nQuery:\nfields=id,created_time,field_data\nlimit=25 (adjustable)\n\nRecommended auth method:\nUse header:\nAuthorization: Bearer <PAGE_ACCESS_TOKEN>\n(avoid putting token in URL if possible)\nOutput Data Structure\n\nFacebook returns:\n\ndata[] list of leads\nEach lead has:\nid = lead id (unique submission id)\ncreated_time\nfield_data[] = array of objects with {name, values[]}\n\nExample keys in field_data:\nfirst_name, last_name, email, phone_number, etc.\nData Transform (Flatten)\nWe convert field_data[] into flat JSON so it’s easy to map into Sheets/CRM.\nFlatten result example:\n\nlead_id\ncreated_time\nfirst_name\nlast_name\nemail\nphone_number\nwhich_suburb?\nquantity\netc.\nDuplicate Prevention (Important)\n\nPolling will fetch older leads again.\nWe must deduplicate using lead_id.\n\nRecommended approach:\n\nStore each processed lead_id in n8n Data Store (or database)\n\nSkip leads whose lead_id already exists\n\nProduction Notes\nGraph API Explorer tokens can expire; use a stable Page token strategy for production.\nFor real-time leads (no polling), use Facebook Webhooks: subscribe the Page to leadgen.\n\nTroubleshooting\nError (#190) must be called with a Page Access Token\n→ You used a user token. Switch to Page token.\n\nError (#100) Tried accessing nonexistent field (leads)\n→ Wrong path like /me/leads. Use /FORM_ID/leads.\n\nEmpty data: []\n→ No new leads or token doesn’t have access to that Page/Form.\nWhich node should you use: Facebook Graph API node vs HTTP Request?\nBoth work — here’s what I recommend:\n\n✅ Best for reliability: HTTP Request\nYou control the exact endpoint and headers\nEasier debugging\nWorks consistently across n8n versions\n✅ Best for convenience: Facebook Graph API node\nNice UI, but can be confusing with Node/Edge setup\n\nMake sure Node = FORM_ID, Edge = leads\n\nIf your HTTP Request is working already, stick with it.",
+          "height": 1888,
+          "width": 1456
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -1568,
+          -832
+        ],
+        "typeVersion": 1,
+        "id": "269cae68-a185-4e40-aed5-a9b1d8b3b1de",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -48,
+          48
+        ],
+        "id": "38270634-b07a-4a2c-abc8-b6578f1fd8ee",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "operation": "clearDeduplicationHistory",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.removeDuplicates",
+        "typeVersion": 2,
+        "position": [
+          224,
+          -336
+        ],
+        "id": "1381e3f3-0878-4a76-aebc-1e735cf3640e",
+        "name": "Clear cache",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "return items.map(item => {\n  \n  const utcTime = item.json.created_time;\n\n  // Convert to Brisbane time and format 24hr HH:mm:ss\n  const brisbaneTime = new Date(utcTime).toLocaleTimeString('en-AU', {\n    timeZone: 'Australia/Brisbane',\n    hour12: false,\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit'\n  });\n\n  return {\n    json: {\n      ...item.json,\n      created_time_brisbane: brisbaneTime\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          848,
+          48
+        ],
+        "id": "37d9ad4f-9151-46b2-9a47-92ebc49e1a19",
+        "name": "Format output"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "3f9765be-74b5-4da1-bd7c-daa7e0bf22ab",
+                "name": "Timestamp",
+                "value": "={{ $json.created_time }}",
+                "type": "string"
+              },
+              {
+                "id": "4753e31c-172c-4651-8999-8005af0be122",
+                "name": "Lead Id",
+                "value": "={{ $json.lead_id }}",
+                "type": "string"
+              },
+              {
+                "id": "aa7c635e-6653-4ada-bae0-2fa74347fa8b",
+                "name": "First Name",
+                "value": "={{ $json.first_name }}",
+                "type": "string"
+              },
+              {
+                "id": "3f685d6e-39c5-4521-8b6a-030fc405bf64",
+                "name": "Last Name",
+                "value": "={{ $json.last_name }}",
+                "type": "string"
+              },
+              {
+                "id": "9f51b4c8-b63e-4c58-bc50-5be61cb0d83d",
+                "name": "Email",
+                "value": "={{ $json.email }}",
+                "type": "string"
+              },
+              {
+                "id": "efb5c51c-689b-424e-b103-b3b5fc98ddb7",
+                "name": "Phone Number",
+                "value": "={{ $json.phone_number }}",
+                "type": "string"
+              },
+              {
+                "id": "b2c3ff6e-ca33-4ca5-a662-041dccfad0bb",
+                "name": "Suburb",
+                "value": "={{ $json[\"which_suburb?\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "14126523-a686-4d4e-ac69-e155a95599fb",
+                "name": "Description",
+                "value": "=Timestamp: {{ $json.created_time }}\nLead Id: {{ $json.lead_id }}\nFirst Name:{{ $json.first_name }}\nLast Name:{{ $json.last_name }}\nEmail:{{ $json.email }}\nPhone Number:{{ $json.phone_number }}\nSuburb: {{ $json[\"which_suburb?\"] }}\nQuantity: {{ $json.quantity }}\nPlease select What you want fixing: {{ $json[\"please_select_what_you_want_fixing:\"] }}\nTime frame for repairs: {{ $json[\"time_frame_for_repairs?\"] }}\nComments/Questions: {{ $json[\"comments/questions\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "6fe393d2-77e2-4158-915e-4ed0c3af488a",
+                "name": "Quantity",
+                "value": "={{ $json.quantity }}",
+                "type": "string"
+              },
+              {
+                "id": "75957107-d912-44eb-b29c-3aad6b748449",
+                "name": "please_select_what_you_want_fixing",
+                "value": "={{ $json[\"please_select_what_you_want_fixing:\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "3aba685a-487c-42ea-933c-40406c3df0fd",
+                "name": "time_frame_for_repairs",
+                "value": "={{ $json[\"time_frame_for_repairs?\"] }}",
+                "type": "string"
+              },
+              {
+                "id": "6014b3f2-9f8b-4550-b054-388873107a69",
+                "name": "comments/questions",
+                "value": "={{ $json[\"comments/questions\"] }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1040,
+          48
+        ],
+        "id": "29b34b7b-0648-49f6-b85c-971cef2cb0a5",
+        "name": "Set Ouput"
+      },
+      {
+        "parameters": {
+          "operation": "appendOrUpdate",
+          "documentId": {
+            "__rl": true,
+            "value": "13r7uzHcPgXZhduG1B315aDCpNKsahVK1UoS3kU88Dn4",
+            "mode": "list",
+            "cachedResultName": "Facebook Lead Center",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13r7uzHcPgXZhduG1B315aDCpNKsahVK1UoS3kU88Dn4/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Leads",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13r7uzHcPgXZhduG1B315aDCpNKsahVK1UoS3kU88Dn4/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $json.Timestamp }}",
+              "Lead Id": "={{ $json[\"Lead Id\"] }}",
+              "First Name": "={{ $json[\"First Name\"] }}",
+              "Last Name": "={{ $json[\"Last Name\"] }}",
+              "Email": "={{ $json.Email }}",
+              "Phone Number": "={{ $json[\"Phone Number\"] }}",
+              "Suburb": "={{ $json.Suburb }}",
+              "Description": "={{ $json.Description }}",
+              "Quantity": "={{ $json.Quantity }}",
+              "please_select_what_you_want_fixing": "={{ $json.please_select_what_you_want_fixing }}",
+              "time_frame_for_repairs": "={{ $json.time_frame_for_repairs }}",
+              "comments/questions": "={{ $json[\"comments/questions\"] }}"
+            },
+            "matchingColumns": [
+              "Lead Id"
+            ],
+            "schema": [
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Lead Id",
+                "displayName": "Lead Id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "First Name",
+                "displayName": "First Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Last Name",
+                "displayName": "Last Name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Email",
+                "displayName": "Email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Phone Number",
+                "displayName": "Phone Number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Suburb",
+                "displayName": "Suburb",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Description",
+                "displayName": "Description",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Quantity",
+                "displayName": "Quantity",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "please_select_what_you_want_fixing",
+                "displayName": "please_select_what_you_want_fixing",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "time_frame_for_repairs",
+                "displayName": "time_frame_for_repairs",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "comments/questions",
+                "displayName": "comments/questions",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          1248,
+          48
+        ],
+        "id": "38e99405-d641-4dc3-b78f-13921a627de7",
+        "name": "Append or update row in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "IgTz53yznufnsBXa",
+            "name": "WR: Google Sheets Account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "Facebook Graph API",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Clear cache",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Facebook Graph API": {
+        "main": [
+          []
+        ]
+      },
+      "HTTP Request": {
+        "main": [
+          [
+            {
+              "node": "Flatten lead fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Flatten lead fields": {
+        "main": [
+          [
+            {
+              "node": "Remove Duplicates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Remove Duplicates": {
+        "main": [
+          [
+            {
+              "node": "Format output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format output": {
+        "main": [
+          [
+            {
+              "node": "Set Ouput",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Ouput": {
+        "main": [
+          [
+            {
+              "node": "Append or update row in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": "Version 0fe78347",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
