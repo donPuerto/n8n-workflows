@@ -3,7 +3,6 @@
   "createdAt": "2025-11-19T00:10:38.098Z",
   "id": "WFulPUNTXXpN0Fai",
   "name": "02. Discord setup",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -566,7 +565,6 @@
   "pinData": {},
   "versionId": "8139a621-d8e5-4442-9eed-ac408c79f63d",
   "activeVersionId": null,
-  "versionCounter": 26,
   "triggerCount": 0,
   "shared": [
     {
@@ -574,19 +572,9 @@
       "createdAt": "2025-11-19T00:10:38.101Z",
       "role": "workflow:owner",
       "workflowId": "WFulPUNTXXpN0Fai",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
