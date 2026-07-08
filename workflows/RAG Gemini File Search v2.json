@@ -1,0 +1,1470 @@
+{
+  "updatedAt": "2026-02-17T21:55:59.206Z",
+  "createdAt": "2026-02-16T15:56:29.018Z",
+  "id": "cumBZaZPkGNaDSta",
+  "name": "RAG Gemini File Search v2",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "10WRGJ4gMOAlWiImj0XiWnbHEL_zy1dCX",
+          "mode": "list",
+          "cachedResultName": "Gemini File Search",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/10WRGJ4gMOAlWiImj0XiWnbHEL_zy1dCX"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        624
+      ],
+      "id": "6dd05092-490a-4383-8a99-50801d324d50",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Google Drive Trigger').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        80,
+        624
+      ],
+      "id": "ece2494f-ef58-449e-832b-0c1da2f38ecc",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -256,
+        1488
+      ],
+      "id": "96d28b63-4db9-47eb-b2fa-0001b4b8b876",
+      "name": "When chat message received",
+      "webhookId": "dd472548-f751-4544-ae67-07e6a16e65f1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Input: {{ $json.chatInput }}\n ",
+        "options": {
+          "systemMessage": "You are a helpful assistant. Answer user questions using the knowledge base. To query the knowledge base, use the Query_KB tool.\n\nNever make up answers."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        96,
+        1488
+      ],
+      "id": "dea25076-023e-406a-9cec-65d260c2e84e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.headers['x-goog-upload-url'] }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "=Content-Length",
+              "value": "={{ $('Google Drive Trigger').item.json.size }}"
+            },
+            {
+              "name": "X-Goog-Upload-Offset",
+              "value": "0"
+            },
+            {
+              "name": "X-Goog-Upload-Command",
+              "value": "upload, finalize"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        624
+      ],
+      "id": "77947728-4370-4706-93dd-5ad456ac90e3",
+      "name": "Import Binary"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -304
+      ],
+      "id": "9b2cd7be-0672-4d45-b6fb-196b11891944",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -432,
+        1040
+      ],
+      "id": "644b9ba4-3af2-4fe1-ac48-63a137e79530",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "fileStorageName",
+              "field2": "name"
+            }
+          ]
+        },
+        "resolve": "preferInput1",
+        "options": {
+          "skipFields": "createdAt, updatedAt, name, mimeType, size"
+        }
+      },
+      "type": "n8n-nodes-base.compareDatasets",
+      "typeVersion": 2.3,
+      "position": [
+        720,
+        1120
+      ],
+      "id": "31c62ac2-7ae8-40bd-b22f-71c102225a85",
+      "name": "Compare Datasets"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "exOgPWHLy0zTt4jT",
+          "mode": "list",
+          "cachedResultName": "File Storage Monitoring",
+          "cachedResultUrl": "/projects/p3k6mrxCVXQTfj2s/datatables/exOgPWHLy0zTt4jT"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "fileStorageName"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        912,
+        944
+      ],
+      "id": "105dc22b-8303-4ccf-a939-27deae817e25",
+      "name": "Delete row(s)",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "# Create File Storage Folder\n### Initialize your Gemini File Search Store (RAG Knowledge Base)\n- This workflow creates a File Search Store that will act as the storage bucket for all documents used by your RAG agent.",
+        "height": 432,
+        "width": 816,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "5005fc56-6928-4f29-80ae-d841492de2bd",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Upload files from GDrive to storage folder\n### The automation will detect for any new files created in a watched folder and upload it into your storage folder",
+        "height": 464,
+        "width": 1776,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        432
+      ],
+      "typeVersion": 1,
+      "id": "4d6c68aa-202b-4bc8-b63f-294d66c63cab",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Remove deleted files from GDrive from the storage folder\n- Scope: https://www.googleapis.com/auth/drive",
+        "height": 464,
+        "width": 1776,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        912
+      ],
+      "typeVersion": 1,
+      "id": "649b5d9f-d3ad-49d1-91ab-edbdfc2a67c3",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "# RAG agent",
+        "height": 464,
+        "width": 1776,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        1392
+      ],
+      "typeVersion": 1,
+      "id": "c05f4227-dbe3-4a63-88a0-deb695f7f5c6",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/fileSearchStores",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"displayName\": \"n8n-knowledge-base-{{ $now.format('yyyy-MM-dd') }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -32,
+        -304
+      ],
+      "id": "7fdc917e-fe9f-4165-8609-46e1deb94fc3",
+      "name": "Create File Search Store",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "VmMwctZATkFWols1",
+          "name": "DP: Gemini API Key"
+        },
+        "googlePalmApi": {
+          "id": "XIm7JAuRV9KXny3Q",
+          "name": "DP: Google Gemini(PaLM) Api Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/upload/v1beta/fileSearchStores/n8nknowledgebase20260217-cehkinhn5hgf:uploadToFileSearchStore",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Goog-Upload-Protocol",
+              "value": "resumable"
+            },
+            {
+              "name": "X-Goog-Upload-Command",
+              "value": "start"
+            },
+            {
+              "name": "X-Goog-Upload-Header-Content-Length",
+              "value": "={{ $json.size }}"
+            },
+            {
+              "name": "X-Goog-Upload-Header-Content-Type",
+              "value": "={{ $json.mimeType }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"display_name\": \"{{ $json.originalFilename }}\",\n  \"custom_metadata\": [\n    {\"key\": \"upload_date\", \"string_value\": \"{{ $now.format('yyyy-MM-dd') }}\"},\n    {\"key\": \"source\", \"string_value\": \"n8n-automation\"}\n  ],\n  \"chunking_config\": {\n    \"white_space_config\": {\n      \"max_tokens_per_chunk\": 500,\n      \"max_overlap_tokens\": 50\n    }\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -128,
+        624
+      ],
+      "id": "85e02cb4-0cae-4566-a053-6b0ba6a7743d",
+      "name": "Initiate Upload",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "VmMwctZATkFWols1",
+          "name": "DP: Gemini API Key"
+        },
+        "googlePalmApi": {
+          "id": "XIm7JAuRV9KXny3Q",
+          "name": "DP: Google Gemini(PaLM) Api Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        16,
+        1680
+      ],
+      "id": "b952d2d0-5827-46ec-8da6-22360665c467",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "XIm7JAuRV9KXny3Q",
+          "name": "DP: Google Gemini(PaLM) Api Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        1696
+      ],
+      "id": "d3e166b5-565a-4d2c-b823-054e3e9e504c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"{{ $fromAI('query') }}. Never make up answers. Stick to the Retrieved/Queried text.\"\n        }\n      ]\n    }\n  ],\n  \"tools\": [\n    {\n      \"file_search\": {\n        \"file_search_store_names\": [\"fileSearchStores/n8nknowledgebase20260217-cehkinhn5hgf\"]\n      }\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        624,
+        1680
+      ],
+      "id": "71d329a0-fe6c-42a4-9045-837a543b86b4",
+      "name": "Query_KB",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "VmMwctZATkFWols1",
+          "name": "DP: Gemini API Key"
+        },
+        "googlePalmApi": {
+          "id": "XIm7JAuRV9KXny3Q",
+          "name": "DP: Google Gemini(PaLM) Api Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# List File Search Documents\n### This workflow retrieves and displays all documents currently stored inside your Google Gemini File Search Store (your RAG knowledge base).\n\nIt allows you to:\n\n✅ See what documents are actually indexed\n✅ Verify uploads were successful\n✅ Debug missing files\n✅ Compare against your Data Table\n✅ Detect orphaned documents\n✅ Audit what your RAG agent can access",
+        "height": 432,
+        "width": 1776,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "694d0411-75b1-4506-ac60-1fdbcaf99941",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Manage File Storage Folder (View, List Docs, Delete)\n### Use this workflow to inspect and manage your Gemini File Search Store (your “File Storage Folder” / knowledge base). It lets you:\n\n✅ View the store(s) under your API key\n✅ List the documents inside a specific store\n✅ Delete a document (safe cleanup)\n✅Delete the entire store (danger: wipes everything)",
+        "height": 432,
+        "width": 944,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "5a0d7d8b-d7c9-400f-a49c-6c0165414fd9",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a429ed79-22aa-40e4-9e8f-8896366f9cf0",
+              "name": "name",
+              "value": "fileSearchStores/n8nknowledgebase20260217-cehkinhn5hgf",
+              "type": "string"
+            },
+            {
+              "id": "f22ecfdd-2ef3-473d-a2ea-d634e87781d5",
+              "name": "displayName",
+              "value": "n8n-knowledge-base-2026-02-17",
+              "type": "string"
+            },
+            {
+              "id": "a606d6ec-2ed0-48ae-b579-6667ce4ac6ff",
+              "name": "gemini_apikey",
+              "value": "AIzaSyC7-UaAsJrGoAGY07RJyjneQZ3HCpwcPTI",
+              "type": "string"
+            },
+            {
+              "id": "8e7b8026-910c-4dcd-9c24-662c7bab0549",
+              "name": "delete_store_name",
+              "value": "fileSearchStores/whatsappcompanydata-5goegln6b829",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        -224
+      ],
+      "id": "5890a16a-2dcd-4b3f-ad9a-a97b6c761e54",
+      "name": "Gemini File Store Config"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/{{ $json.delete_store_name }}?key={{ $json.gemini_apikey }}\n\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        960,
+        -368
+      ],
+      "id": "ea53d07a-c8fd-4040-9baf-6d3c921a1e23",
+      "name": "Delete Store",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "VmMwctZATkFWols1",
+          "name": "DP: Gemini API Key"
+        },
+        "googlePalmApi": {
+          "id": "XIm7JAuRV9KXny3Q",
+          "name": "DP: Google Gemini(PaLM) Api Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://generativelanguage.googleapis.com/v1beta/fileSearchStores?key={{ $json.gemini_apikey }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        960,
+        -192
+      ],
+      "id": "3c5fac78-18aa-4675-880d-cd882fca0b95",
+      "name": "View Stores",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "VmMwctZATkFWols1",
+          "name": "DP: Gemini API Key"
+        },
+        "googlePalmApi": {
+          "id": "XIm7JAuRV9KXny3Q",
+          "name": "DP: Google Gemini(PaLM) Api Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://generativelanguage.googleapis.com/v1beta/{{ $json.name }}/documents?key={{ $json.gemini_apikey }}\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -64,
+        112
+      ],
+      "id": "6bdf5956-ecca-4e91-80f7-6bfec8efb7d8",
+      "name": "Lists of all Documents",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "VmMwctZATkFWols1",
+          "name": "DP: Gemini API Key"
+        },
+        "googlePalmApi": {
+          "id": "XIm7JAuRV9KXny3Q",
+          "name": "DP: Google Gemini(PaLM) Api Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const docs = $json.documents || [];\nreturn docs.map(d => ({ json: d }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        112
+      ],
+      "id": "e82a1bbd-b19f-4800-ad60-7cd397f1baf7",
+      "name": "Split Documents"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "efee4b44-4fa9-49fa-bee1-c2fc977332c8",
+              "name": "delete_doc?",
+              "value": "yes",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        112
+      ],
+      "id": "e5949715-e16b-422f-965c-c681297e79d2",
+      "name": "Do you want to delete all docs?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a00c8990-aaf1-4168-8bdd-c774ca871c20",
+              "leftValue": "={{ $json[\"delete_doc?\"] }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        112
+      ],
+      "id": "49189bca-1240-4236-a9c6-e30441918e17",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        672,
+        240
+      ],
+      "id": "aa5bc5f5-dbd1-4a51-a94a-80e903e9c058",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/{{$json.name}}?key={{$('Gemini File Store Config').item.json.gemini_apikey}}&force=true\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        96
+      ],
+      "id": "dd113f8b-35aa-4943-bb77-17759696bd25",
+      "name": "Delete All Docs",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "VmMwctZATkFWols1",
+          "name": "DP: Gemini API Key"
+        },
+        "googlePalmApi": {
+          "id": "XIm7JAuRV9KXny3Q",
+          "name": "DP: Google Gemini(PaLM) Api Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "exOgPWHLy0zTt4jT",
+          "mode": "list",
+          "cachedResultName": "Gemini File Storage ID",
+          "cachedResultUrl": "/projects/p3k6mrxCVXQTfj2s/datatables/exOgPWHLy0zTt4jT"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "fileStorageName": "={{ $json.response.documentName }}",
+            "GoogleDrivefileId": "={{ $('Google Drive Trigger').item.json.id }}",
+            "GoogleDriveFileName": "={{ $('Google Drive Trigger').item.json.name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "GoogleDrivefileId",
+              "displayName": "GoogleDrivefileId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "GoogleDriveFileName",
+              "displayName": "GoogleDriveFileName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "fileStorageName",
+              "displayName": "fileStorageName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        480,
+        624
+      ],
+      "id": "b4893421-16a4-45bd-851f-3ed9d7f28dbb",
+      "name": "Insert Record to Datatable (File Id and File Search Name)"
+    },
+    {
+      "parameters": {
+        "url": "=https://generativelanguage.googleapis.com/v1beta/{{ $json.storename }}/documents?key={{ $json.gemini_apikey }}\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -48,
+        1216
+      ],
+      "id": "03094e92-2782-430f-9754-0951624ee78f",
+      "name": "Get of all store Documents",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "VmMwctZATkFWols1",
+          "name": "DP: Gemini API Key"
+        },
+        "googlePalmApi": {
+          "id": "XIm7JAuRV9KXny3Q",
+          "name": "DP: Google Gemini(PaLM) Api Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a429ed79-22aa-40e4-9e8f-8896366f9cf0",
+              "name": "storename",
+              "value": "fileSearchStores/n8nknowledgebase20260217-cehkinhn5hgf",
+              "type": "string"
+            },
+            {
+              "id": "a606d6ec-2ed0-48ae-b579-6667ce4ac6ff",
+              "name": "gemini_apikey",
+              "value": "AIzaSyC7-UaAsJrGoAGY07RJyjneQZ3HCpwcPTI",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -224,
+        1216
+      ],
+      "id": "17e02494-f360-4741-9f5b-b1a42ae28f61",
+      "name": "Gemini File Store Remove Config"
+    },
+    {
+      "parameters": {
+        "jsCode": "const docs = $json.documents || [];\nreturn docs.map(d => ({ json: d }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        1216
+      ],
+      "id": "9563cf0c-615d-4fc5-9cd5-8022033244f4",
+      "name": "Split Remove Documents"
+    },
+    {
+      "parameters": {
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "exOgPWHLy0zTt4jT",
+          "mode": "list",
+          "cachedResultName": "File Storage Monitoring",
+          "cachedResultUrl": "/projects/p3k6mrxCVXQTfj2s/datatables/exOgPWHLy0zTt4jT"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "fileStorageName",
+              "keyValue": "={{ $json.name }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        992,
+        1248
+      ],
+      "id": "336aca85-9725-41fa-bd45-32a950ed33e3",
+      "name": "Get all rows(s) from Datatable",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "exOgPWHLy0zTt4jT",
+          "mode": "list",
+          "cachedResultName": "File Storage Monitoring",
+          "cachedResultUrl": "/projects/p3k6mrxCVXQTfj2s/datatables/exOgPWHLy0zTt4jT"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        1040
+      ],
+      "id": "8a684804-93b3-4949-9292-7a4d6b6be1ab",
+      "name": "Get all records from Datatable",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "GoogleDriveFileName",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        1040
+      ],
+      "id": "ab78e253-20f3-4326-b7cd-a748de987fd8",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json.GoogleDriveFileName }}",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "10WRGJ4gMOAlWiImj0XiWnbHEL_zy1dCX",
+            "mode": "list",
+            "cachedResultName": "Gemini File Search",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/10WRGJ4gMOAlWiImj0XiWnbHEL_zy1dCX"
+          }
+        },
+        "options": {
+          "fields": [
+            "name"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        144,
+        1040
+      ],
+      "id": "677f594a-de85-4c02-a557-79239bf27242",
+      "name": "Search files and folders",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YO4qnGhKlEgotzkB",
+          "name": "DP: Google Drive Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f911401c-95e3-4770-9eed-b2575954085c",
+              "leftValue": "={{ $items(\"Search files and folders\").length }}",
+              "rightValue": "=0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        1040
+      ],
+      "id": "f9b46e53-aea4-4bea-b75e-54dd2b2af370",
+      "name": "Checks Drive If record found or not"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        560,
+        928
+      ],
+      "id": "5816dc9d-0ba4-4a6f-9907-ac3b353f204d",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/{{ $json.name }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "force",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        560,
+        1120
+      ],
+      "id": "60201a66-a0e6-4412-a9fb-92a9342be7b2",
+      "name": "HTTP Request: Delete File Search Document",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "VmMwctZATkFWols1",
+          "name": "DP: Gemini API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "name",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        352,
+        1216
+      ],
+      "id": "e4470dd5-c799-452b-95b9-1beac3288221",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "content": "# ⚠️ Deletion Policy Notice\n❌ Google Drive files are NEVER deleted by this workflow\nThis automation does not delete or modify any files in Google Drive.\nGoogle Drive is treated as an external content source and remains completely untouched.\n\n🧠 Source of Truth\nThe central record in this system is:\n\n✅ Gemini File Search Documents\nAll deletion and synchronization logic is based solely on what exists inside the Gemini File Search Store.\n\n\n📌 Role of Data Table\nThe Data Table is used only to:\n✅ Store the Google Drive File ID\n✅ Track the Gemini File Search Document name\n✅ Assist in cleanup and reconciliation operations\n\nIt is not the source of truth.\n🗑 What This Workflow Can Delete\n\nThis workflow may delete:\n✅ Documents inside the Gemini File Search Store\n✅ Corresponding tracking records in the Data Table\n\nThis workflow will never delete:\n❌ Files from Google Drive\n❌ Folders from Google Drive\n❌ Any Google Drive content directly\n\n🔒 System Design Principle\nGoogle Drive = External content source\nGemini File Search = Indexed knowledge base (central record)\nData Table = Tracking reference layer\n\nAll cleanup operations affect only the indexed knowledge base, never the original Google Drive files.",
+        "height": 720,
+        "width": 816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "388a5e27-2856-4479-a603-1d17a6124f9f",
+      "name": "Sticky Note6"
+    }
+  ],
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Initiate Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Import Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Create File Search Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Import Binary": {
+      "main": [
+        [
+          {
+            "node": "Insert Record to Datatable (File Id and File Search Name)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get all records from Datatable",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gemini File Store Remove Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Datasets": {
+      "main": [
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    "Create File Search Store": {
+      "main": [
+        []
+      ]
+    },
+    "Initiate Upload": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query_KB": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini File Store Config": {
+      "main": [
+        [
+          {
+            "node": "View Stores",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete Store",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Lists of all Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "View Stores": {
+      "main": [
+        []
+      ]
+    },
+    "Lists of all Documents": {
+      "main": [
+        [
+          {
+            "node": "Split Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Do you want to delete all docs?": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Delete All Docs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete All Docs": {
+      "main": [
+        []
+      ]
+    },
+    "Split Documents": {
+      "main": [
+        [
+          {
+            "node": "Do you want to delete all docs?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini File Store Remove Config": {
+      "main": [
+        [
+          {
+            "node": "Get of all store Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get of all store Documents": {
+      "main": [
+        [
+          {
+            "node": "Split Remove Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Remove Documents": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all rows(s) from Datatable": {
+      "main": [
+        []
+      ]
+    },
+    "Get all records from Datatable": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Checks Drive If record found or not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Checks Drive If record found or not": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request: Delete File Search Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request: Delete File Search Document": {
+      "main": [
+        []
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Get all rows(s) from Datatable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "6d45f109-7044-424c-a740-6f3202778fba",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-16T15:56:29.024Z",
+      "createdAt": "2026-02-16T15:56:29.024Z",
+      "role": "workflow:owner",
+      "workflowId": "cumBZaZPkGNaDSta",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
