@@ -3,7 +3,6 @@
   "createdAt": "2026-03-06T00:10:09.295Z",
   "id": "E50Uk9Rk30lYiwby",
   "name": "Generate and publish Instagram Reels with Gemini and Veo",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -201,7 +200,6 @@
   "pinData": {},
   "versionId": "a57ced3c-27da-4b37-904a-a7f9326f9a98",
   "activeVersionId": null,
-  "versionCounter": 3,
   "triggerCount": 0,
   "shared": [
     {
@@ -209,19 +207,9 @@
       "createdAt": "2026-03-06T00:10:09.299Z",
       "role": "workflow:owner",
       "workflowId": "E50Uk9Rk30lYiwby",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
