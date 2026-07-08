@@ -3,7 +3,6 @@
   "createdAt": "2026-02-13T01:00:27.563Z",
   "id": "RYEk05bzAWo9zg1X",
   "name": "EbayProcessIncomingOrder",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -1413,7 +1412,7 @@
       "recurrenceRules": []
     },
     "global": {
-      "lastRun": "2026-04-01T15:01:00.913Z",
+      "lastRun": "2026-06-29T02:00:23.489Z",
       "processedIds": []
     }
   },
@@ -1741,7 +1740,6 @@
   },
   "versionId": "342fb725-ae70-4fb7-b43b-63928a12edbf",
   "activeVersionId": "342fb725-ae70-4fb7-b43b-63928a12edbf",
-  "versionCounter": 408,
   "triggerCount": 1,
   "shared": [
     {
@@ -1749,20 +1747,9 @@
       "createdAt": "2026-02-13T01:00:27.567Z",
       "role": "workflow:owner",
       "workflowId": "RYEk05bzAWo9zg1X",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
   "activeVersion": {
     "updatedAt": "2026-02-27T02:32:11.000Z",
     "createdAt": "2026-02-27T02:30:57.957Z",
@@ -3165,16 +3152,7 @@
     "authors": "Christine Kam",
     "name": "Version 1.3",
     "description": "* fixed: packing slip can display 2 skus per item now (for sets)",
-    "autosaved": true,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-02-27T02:32:11.670Z",
-        "id": 254,
-        "workflowId": "RYEk05bzAWo9zg1X",
-        "versionId": "342fb725-ae70-4fb7-b43b-63928a12edbf",
-        "event": "activated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
-    ]
-  }
+    "autosaved": true
+  },
+  "tags": []
 }
