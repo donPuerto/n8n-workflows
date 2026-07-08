@@ -3,7 +3,6 @@
   "createdAt": "2025-11-17T11:22:02.266Z",
   "id": "KBKFiFIVbSc323b5",
   "name": "03. Monitor Website Downtime",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -421,7 +420,6 @@
   "pinData": {},
   "versionId": "360f823d-c714-4a4a-8c43-a88a6db6f6b6",
   "activeVersionId": "360f823d-c714-4a4a-8c43-a88a6db6f6b6",
-  "versionCounter": 95,
   "triggerCount": 1,
   "shared": [
     {
@@ -429,20 +427,9 @@
       "createdAt": "2025-11-17T11:22:02.269Z",
       "role": "workflow:owner",
       "workflowId": "KBKFiFIVbSc323b5",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
   "activeVersion": {
     "updatedAt": "2025-12-01T05:28:08.545Z",
     "createdAt": "2025-12-01T05:28:08.545Z",
@@ -849,16 +836,7 @@
     "authors": "Christine Kam",
     "name": null,
     "description": null,
-    "autosaved": false,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2025-12-01T05:28:08.000Z",
-        "id": 1,
-        "workflowId": "KBKFiFIVbSc323b5",
-        "versionId": "360f823d-c714-4a4a-8c43-a88a6db6f6b6",
-        "event": "activated",
-        "userId": null
-      }
-    ]
-  }
+    "autosaved": false
+  },
+  "tags": []
 }
