@@ -3,7 +3,6 @@
   "createdAt": "2026-03-06T00:20:54.028Z",
   "id": "V4jaxlkOmWTUFX6W",
   "name": "Auto-save Instagram leads to Google Sheets",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -112,7 +111,6 @@
   "pinData": {},
   "versionId": "cbf8b38d-d4db-45bb-9076-85103615291d",
   "activeVersionId": null,
-  "versionCounter": 6,
   "triggerCount": 0,
   "shared": [
     {
@@ -120,19 +118,9 @@
       "createdAt": "2026-03-06T00:20:54.031Z",
       "role": "workflow:owner",
       "workflowId": "V4jaxlkOmWTUFX6W",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
