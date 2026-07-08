@@ -3,7 +3,6 @@
   "createdAt": "2025-11-16T21:48:46.123Z",
   "id": "QxHJR6QuGk1QPXMT",
   "name": "02. Email Lead Managment v1",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -1063,7 +1062,6 @@
   "pinData": {},
   "versionId": "8345da8c-075e-4eb5-8d28-feb64aab47e6",
   "activeVersionId": null,
-  "versionCounter": 880,
   "triggerCount": 1,
   "shared": [
     {
@@ -1071,19 +1069,9 @@
       "createdAt": "2025-11-16T21:48:46.126Z",
       "role": "workflow:owner",
       "workflowId": "QxHJR6QuGk1QPXMT",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
