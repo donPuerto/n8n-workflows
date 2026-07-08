@@ -3,7 +3,6 @@
   "createdAt": "2026-02-18T01:59:50.847Z",
   "id": "FnSV3GH35wNUEjZm",
   "name": "01 Pinecone RAG Upload Workflow",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -645,7 +644,7 @@
   },
   "staticData": {
     "node:Google Drive Trigger": {
-      "lastTimeChecked": "2026-02-18T22:57:02Z"
+      "lastTimeChecked": "2026-07-07T10:57:15Z"
     }
   },
   "meta": {
@@ -669,7 +668,6 @@
   },
   "versionId": "1d4fafbf-afb6-4bea-bd61-6cd688127da6",
   "activeVersionId": "758e0d42-2016-431e-ac40-713d5a629916",
-  "versionCounter": 73,
   "triggerCount": 1,
   "shared": [
     {
@@ -677,20 +675,9 @@
       "createdAt": "2026-02-18T01:59:50.853Z",
       "role": "workflow:owner",
       "workflowId": "FnSV3GH35wNUEjZm",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
   "activeVersion": {
     "updatedAt": "2026-02-18T03:31:44.000Z",
     "createdAt": "2026-02-18T03:27:19.722Z",
@@ -1074,16 +1061,7 @@
     "authors": "Don Puerto",
     "name": "Version 758e0d42",
     "description": "",
-    "autosaved": true,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-02-18T03:31:44.784Z",
-        "id": 193,
-        "workflowId": "FnSV3GH35wNUEjZm",
-        "versionId": "758e0d42-2016-431e-ac40-713d5a629916",
-        "event": "activated",
-        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
-    ]
-  }
+    "autosaved": true
+  },
+  "tags": []
 }
