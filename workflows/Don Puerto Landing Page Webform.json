@@ -3,7 +3,6 @@
   "createdAt": "2026-03-06T06:48:40.942Z",
   "id": "MHHgEwvxeDd2Sqyj",
   "name": "Don Puerto Landing Page Webform",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -468,7 +467,6 @@
   "pinData": {},
   "versionId": "2cd10e79-3604-44c4-a47a-ec1f6716db8c",
   "activeVersionId": "2cd10e79-3604-44c4-a47a-ec1f6716db8c",
-  "versionCounter": 24,
   "triggerCount": 1,
   "shared": [
     {
@@ -476,20 +474,9 @@
       "createdAt": "2026-03-06T06:48:40.945Z",
       "role": "workflow:owner",
       "workflowId": "MHHgEwvxeDd2Sqyj",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
   "activeVersion": {
     "updatedAt": "2026-03-06T07:56:24.000Z",
     "createdAt": "2026-03-06T07:52:07.105Z",
@@ -948,16 +935,7 @@
     "authors": "Don Puerto",
     "name": "Version 2cd10e79",
     "description": "",
-    "autosaved": true,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-03-06T07:56:24.262Z",
-        "id": 290,
-        "workflowId": "MHHgEwvxeDd2Sqyj",
-        "versionId": "2cd10e79-3604-44c4-a47a-ec1f6716db8c",
-        "event": "activated",
-        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
-    ]
-  }
+    "autosaved": true
+  },
+  "tags": []
 }
