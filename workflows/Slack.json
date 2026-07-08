@@ -3,7 +3,6 @@
   "createdAt": "2025-11-16T09:29:34.344Z",
   "id": "CEREUymv8Tli6LYh",
   "name": "Slack",
-  "description": null,
   "active": false,
   "isArchived": true,
   "nodes": [
@@ -314,7 +313,6 @@
   "pinData": {},
   "versionId": "a9346146-249e-4216-9226-f4d3d0842488",
   "activeVersionId": null,
-  "versionCounter": 3,
   "triggerCount": 0,
   "shared": [
     {
@@ -322,19 +320,9 @@
       "createdAt": "2025-11-16T09:29:34.346Z",
       "role": "workflow:owner",
       "workflowId": "CEREUymv8Tli6LYh",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
