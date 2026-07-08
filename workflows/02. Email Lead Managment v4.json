@@ -1,9 +1,8 @@
 {
-  "updatedAt": "2026-03-05T00:14:35.304Z",
+  "updatedAt": "2026-07-02T01:51:14.189Z",
   "createdAt": "2026-02-03T01:37:20.611Z",
   "id": "NXvUDPpKfGxWETqO",
   "name": "02. Email Lead Managment v4",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -245,8 +244,8 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        4176,
-        -320
+        4256,
+        -416
       ],
       "id": "72138bd5-c98c-49d0-bb1b-7e8c1923eea2",
       "name": "Add label to message",
@@ -307,7 +306,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// items: array of input items from Gmail Get Many\n// each item.json has at least: { id, text }\n\n// =================== Utilities ===================\n\nfunction normalizeDigits(str) {\n  if (!str) return '';\n  return String(str).replace(/\\D+/g, '');\n}\n\nfunction formatAuPhone(raw, type) {\n  if (!raw) return '';\n  let digits = normalizeDigits(raw);\n  if (!digits) return '';\n\n  if (digits.startsWith('61')) {\n    digits = '0' + digits.slice(2);\n  } else if (!digits.startsWith('0') && digits.length >= 9) {\n    digits = '0' + digits;\n  }\n\n  if (type === 'mobile' && digits.length === 10) {\n    return digits.replace(/(\\d{4})(\\d{3})(\\d{3})/, '$1 $2 $3');\n  }\n\n  if (type === 'landline' && digits.length === 10) {\n    return digits.replace(/(\\d{2})(\\d{4})(\\d{4})/, '$1 $2 $3');\n  }\n\n  return digits;\n}\n\nfunction getBrisbaneDate(json) {\n  const date = json.internalDate ? new Date(Number(json.internalDate)) : new Date();\n  return date.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', hour12: false });\n}\n\n// =================== CLEAN PROJECT TIMING ===================\n\nfunction cleanProjectTiming(value) {\n  if (!value) return '';\n\n  const STOP_WORDS = [\n    'How did yopu here about us',\n    'How did you hear about us',\n    'How they heard about us',\n    'Services',\n    'Brands'\n  ];\n\n  let cleaned = value;\n\n  // Cut at known boundaries\n  for (const stop of STOP_WORDS) {\n    const idx = cleaned.indexOf(stop);\n    if (idx !== -1) {\n      cleaned = cleaned.slice(0, idx);\n    }\n  }\n\n  // Remove Gmail / HTML junk like \"...\"\n  cleaned = cleaned\n    .replace(/^\\s*\\.{2,}/, '')   // remove \"..\" / \"...\"\n    .replace(/^[\\s:–—-]+/, '')   // leading punctuation\n    .trim();\n\n  // If only dots existed, return empty\n  if (/^\\.*$/.test(cleaned)) return '';\n\n  return cleaned;\n}\n\n// =================== Parser ===================\n\nfunction parseFormText(rawText) {\n  if (!rawText) return {};\n\n  const text = rawText.replace(/\\r?\\n/g, ' ');\n\n  const markerDefs = [\n    { key: 'firstName',      marker: 'First Name' },\n    { key: 'lastName',       marker: 'Last Name' },\n    { key: 'email',          marker: 'Email' },\n    { key: 'mobileRaw',      marker: 'Mobile Number' },\n    { key: 'phoneNumberRaw', marker: 'Phone Number' },\n    { key: 'address',        marker: 'Address' },\n    { key: 'suburb',         marker: 'Suburb' },\n    { key: 'state',          marker: 'State' },\n    { key: 'postalCode',     marker: 'Postal Code' },\n    { key: 'enquiry',        marker: 'Enquiry' },\n    { key: 'projectTiming',  marker: \"I'd Like To Get My Project Underway\" },\n    { key: 'quantity',       marker: 'Quantity' },\n\n    // Boundaries\n    { key: null, marker: 'How did yopu here about us' },\n    { key: null, marker: 'How did you hear about us' },\n    { key: null, marker: 'How they heard about us' },\n    { key: null, marker: 'Brands' },\n    { key: null, marker: 'Services' }\n  ];\n\n  const positions = [];\n  for (const m of markerDefs) {\n    const idx = text.indexOf(m.marker);\n    if (idx === -1) continue;\n    positions.push({ key: m.key, markerIndex: idx, valueStart: idx + m.marker.length });\n  }\n\n  if (!positions.length) return {};\n\n  positions.sort((a, b) => a.markerIndex - b.markerIndex);\n\n  const result = {};\n  for (let i = 0; i < positions.length; i++) {\n    const curr = positions[i];\n    const next = positions[i + 1];\n    const end = next ? next.markerIndex : text.length;\n    const value = text.slice(curr.valueStart, end).trim();\n    if (curr.key && value && !result[curr.key]) result[curr.key] = value;\n  }\n\n  if (!result.email) {\n    const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n    if (emailMatch) result.email = emailMatch[0];\n  }\n\n  return result;\n}\n\n// =================== Spam Rules ===================\n\nconst BAD_NAME_WORDS = new Set([\n  'test','asdf','qwer','zxcv','xxxx','abc','123','sdr','null','none','na','n/a','demo'\n]);\n\nconst DISPOSABLE_DOMAINS = new Set([\n  'mailinator.com','tempmail.com','10minutemail.com','guerrillamail.com',\n  'yopmail.com','trashmail.com','sharklasers.com','getnada.com'\n]);\n\nfunction isLikelyGibberishName(name) {\n  const s = String(name || '').trim().toLowerCase();\n  if (!s) return true;\n\n  const cleaned = s.replace(/[^a-z\\s'\\-]/g, '');\n  const lettersOnly = cleaned.replace(/[^a-z]/g, '');\n\n  if (lettersOnly.length < 2) return true;\n  if (cleaned.length < s.length * 0.7) return true;\n\n  const vowels = (lettersOnly.match(/[aeiou]/g) || []).length;\n  const vowelRatio = vowels / lettersOnly.length;\n  const hasLongRepeat = /(.)\\1{3,}/.test(lettersOnly);\n  const hasConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(lettersOnly);\n\n  if (lettersOnly.length <= 5) {\n    if (hasLongRepeat) return true;\n    if (hasConsonantRun && lettersOnly.length >= 5) return true;\n    return false;\n  }\n\n  if (vowelRatio < 0.22 || hasConsonantRun || hasLongRepeat) return true;\n  return false;\n}\n\nfunction hasBadNameWord(first, last) {\n  const f = String(first || '').toLowerCase();\n  const l = String(last || '').toLowerCase();\n  return BAD_NAME_WORDS.has(f) || BAD_NAME_WORDS.has(l) || (f + ' ' + l).includes('test');\n}\n\nfunction isDisposableEmail(email) {\n  const m = String(email || '').toLowerCase().match(/@([a-z0-9.-]+\\.[a-z]{2,})$/);\n  return m ? DISPOSABLE_DOMAINS.has(m[1]) : false;\n}\n\nfunction isFakePhoneDigits(digits) {\n  const d = normalizeDigits(digits);\n  if (!d || d.length < 9) return true;\n  if (/^(\\d)\\1+$/.test(d)) return true;\n  if (d.includes('123456') || d.includes('00000')) return true;\n  return false;\n}\n\nfunction isSpamLead(parsed, mobileFormatted, phoneFormatted) {\n  const first = (parsed.firstName || '').trim();\n  const last  = (parsed.lastName  || '').trim();\n  const email = (parsed.email || '').trim();\n\n  const mobileDigits = normalizeDigits(mobileFormatted || '');\n  const phoneDigits  = normalizeDigits(phoneFormatted || '');\n  const hasAnyPhone = mobileDigits.length > 0 || phoneDigits.length > 0;\n\n  if (first.length < 2 || last.length < 2) return true;\n  if (!hasAnyPhone) return true;\n  if (hasBadNameWord(first, last)) return true;\n  if (isLikelyGibberishName(first) || isLikelyGibberishName(last)) return true;\n  if (email && isDisposableEmail(email)) return true;\n  if (isFakePhoneDigits(mobileDigits || phoneDigits)) return true;\n\n  return false;\n}\n\n// =================== MAIN ===================\n\nreturn items.map(item => {\n  const json = item.json || {};\n  const rawText = json.text || json.textPlain || json.snippet || '';\n  const parsed = parseFormText(rawText);\n\n  let mobileFormatted = '';\n  let phoneFormatted  = '';\n\n  if (parsed.mobileRaw) {\n    mobileFormatted = formatAuPhone(parsed.mobileRaw, 'mobile');\n  }\n\n  if (parsed.phoneNumberRaw) {\n    const digits = normalizeDigits(parsed.phoneNumberRaw);\n    if (digits.startsWith('04')) {\n      mobileFormatted ||= formatAuPhone(parsed.phoneNumberRaw, 'mobile');\n    } else {\n      phoneFormatted = formatAuPhone(parsed.phoneNumberRaw, 'landline');\n    }\n  }\n\n  const leadQualifier = isSpamLead(parsed, mobileFormatted, phoneFormatted) ? 'Spam' : 'Good';\n\n  return {\n    json: {\n      Timestamp: getBrisbaneDate(json),\n      Id: json.id || '',\n\n      'Lead Type': 'Windowrevival.NET Lead',\n\n      'First Name': parsed.firstName || '',\n      'Last Name':  parsed.lastName  || '',\n      'Mobile Number': mobileFormatted,\n      'Phone Number':  phoneFormatted,\n      'Email Address': parsed.email || '',\n      'Address': parsed.address || '',\n      State: parsed.state || '',\n      Suburb: parsed.suburb || '',\n      'Postal Code': parsed.postalCode || '',\n      Enquiry: parsed.enquiry || '',\n      Quantity: parsed.quantity || '',\n\n      // ✅ FIXED FIELD\n      \"I'd Like To Get My Project Underway\": cleanProjectTiming(parsed.projectTiming),\n\n      'How they heard about us': 'WRnet Website',\n      'Lead Qualifier': leadQualifier,\n      referredBy: '',\n    },\n  };\n});\n"
+        "jsCode": "// items: array of input items from Gmail Get Many\n// each item.json has at least: { id, text }\n\n// =================== Utilities ===================\n\nfunction normalizeDigits(str) {\n  if (!str) return '';\n  return String(str).replace(/\\D+/g, '');\n}\n\nfunction formatAuPhone(raw, type) {\n  if (!raw) return '';\n  let digits = normalizeDigits(raw);\n  if (!digits) return '';\n\n  if (digits.startsWith('61')) {\n    digits = '0' + digits.slice(2);\n  } else if (!digits.startsWith('0') && digits.length >= 9) {\n    digits = '0' + digits;\n  }\n\n  if (type === 'mobile' && digits.length === 10) {\n    return digits.replace(/(\\d{4})(\\d{3})(\\d{3})/, '$1 $2 $3');\n  }\n\n  if (type === 'landline' && digits.length === 10) {\n    return digits.replace(/(\\d{2})(\\d{4})(\\d{4})/, '$1 $2 $3');\n  }\n\n  return digits;\n}\n\nfunction getBrisbaneDate(json) {\n  const date = json.internalDate ? new Date(Number(json.internalDate)) : new Date();\n  return date.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', hour12: false });\n}\n\n// =================== CLEAN PROJECT TIMING ===================\n\nfunction cleanProjectTiming(value) {\n  if (!value) return '';\n\n  const STOP_WORDS = [\n    'How did yopu here about us',\n    'How did you hear about us',\n    'How they heard about us',\n    'Heard From',\n    'Enquiry',\n    'Brands'\n  ];\n\n  let cleaned = value;\n\n  // Cut at known boundaries\n  for (const stop of STOP_WORDS) {\n    const idx = cleaned.indexOf(stop);\n    if (idx !== -1) {\n      cleaned = cleaned.slice(0, idx);\n    }\n  }\n\n  // Remove Gmail / HTML junk like \"...\"\n  cleaned = cleaned\n    .replace(/^\\s*\\.{2,}/, '')   // remove \"..\" / \"...\"\n    .replace(/^[\\s:–—-]+/, '')   // leading punctuation\n    .trim();\n\n  // If only dots existed, return empty\n  if (/^\\.*$/.test(cleaned)) return '';\n\n  return cleaned;\n}\n\n// =================== Parser ===================\n\nfunction parseFormText(rawText) {\n  if (!rawText) return {};\n\n  const text = rawText.replace(/\\r?\\n/g, ' ');\n\n  const markerDefs = [\n    { key: 'firstName',      marker: 'First Name' },\n    { key: 'lastName',       marker: 'Last Name' },\n    { key: 'email',          marker: 'Email' },\n    { key: 'mobileRaw',      marker: 'Mobile Number' },\n    { key: 'phoneNumberRaw', marker: 'Phone Number' },\n    { key: 'address',        marker: 'Address' },\n    { key: 'suburb',         marker: 'Suburb' },\n    { key: 'state',          marker: 'State' },\n    { key: 'postalCode',     marker: 'Postal Code' },\n    { key: 'enquiry',        marker: 'Comments/Questions:' },\n    { key: 'projectTiming',  marker: \"Timeframe\" },\n    { key: 'quantity',       marker: 'Service:' },\n\n    // Boundaries\n    { key: null, marker: 'Brands' },\n    { key: null, marker: 'Heard From' }\n  ];\n\n  const positions = [];\n  for (const m of markerDefs) {\n    const idx = text.indexOf(m.marker);\n    if (idx === -1) continue;\n    positions.push({ key: m.key, markerIndex: idx, valueStart: idx + m.marker.length });\n  }\n\n  if (!positions.length) return {};\n\n  positions.sort((a, b) => a.markerIndex - b.markerIndex);\n\n  const result = {};\n  for (let i = 0; i < positions.length; i++) {\n    const curr = positions[i];\n    const next = positions[i + 1];\n    const end = next ? next.markerIndex : text.length;\n    const value = text.slice(curr.valueStart, end).trim();\n    if (curr.key && value && !result[curr.key]) result[curr.key] = value;\n  }\n\n  if (!result.email) {\n    const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n    if (emailMatch) result.email = emailMatch[0];\n  }\n\n  return result;\n}\n\n// =================== Spam Rules ===================\n\nconst BAD_NAME_WORDS = new Set([\n  'test','asdf','qwer','zxcv','xxxx','abc','123','sdr','null','none','na','n/a','demo'\n]);\n\nconst DISPOSABLE_DOMAINS = new Set([\n  'mailinator.com','tempmail.com','10minutemail.com','guerrillamail.com',\n  'yopmail.com','trashmail.com','sharklasers.com','getnada.com'\n]);\n\nfunction isLikelyGibberishName(name) {\n  const s = String(name || '').trim().toLowerCase();\n  if (!s) return true;\n\n  const cleaned = s.replace(/[^a-z\\s'\\-]/g, '');\n  const lettersOnly = cleaned.replace(/[^a-z]/g, '');\n\n  if (lettersOnly.length < 2) return true;\n  if (cleaned.length < s.length * 0.7) return true;\n\n  const vowels = (lettersOnly.match(/[aeiou]/g) || []).length;\n  const vowelRatio = vowels / lettersOnly.length;\n  const hasLongRepeat = /(.)\\1{3,}/.test(lettersOnly);\n  const hasConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(lettersOnly);\n\n  if (lettersOnly.length <= 5) {\n    if (hasLongRepeat) return true;\n    if (hasConsonantRun && lettersOnly.length >= 5) return true;\n    return false;\n  }\n\n  if (vowelRatio < 0.22 || hasConsonantRun || hasLongRepeat) return true;\n  return false;\n}\n\nfunction hasBadNameWord(first, last) {\n  const f = String(first || '').toLowerCase();\n  const l = String(last || '').toLowerCase();\n  return BAD_NAME_WORDS.has(f) || BAD_NAME_WORDS.has(l) || (f + ' ' + l).includes('test');\n}\n\nfunction isDisposableEmail(email) {\n  const m = String(email || '').toLowerCase().match(/@([a-z0-9.-]+\\.[a-z]{2,})$/);\n  return m ? DISPOSABLE_DOMAINS.has(m[1]) : false;\n}\n\nfunction isFakePhoneDigits(digits) {\n  const d = normalizeDigits(digits);\n  if (!d || d.length < 9) return true;\n  if (/^(\\d)\\1+$/.test(d)) return true;\n  if (d.includes('123456') || d.includes('00000')) return true;\n  return false;\n}\n\nfunction isSpamLead(parsed, mobileFormatted, phoneFormatted) {\n  const first = (parsed.firstName || '').trim();\n  const last  = (parsed.lastName  || '').trim();\n  const email = (parsed.email || '').trim();\n\n  const mobileDigits = normalizeDigits(mobileFormatted || '');\n  const phoneDigits  = normalizeDigits(phoneFormatted || '');\n  const hasAnyPhone = mobileDigits.length > 0 || phoneDigits.length > 0;\n\n  if (first.length < 2 || last.length < 2) return true;\n  if (!hasAnyPhone) return true;\n  if (hasBadNameWord(first, last)) return true;\n  if (isLikelyGibberishName(first) || isLikelyGibberishName(last)) return true;\n  if (email && isDisposableEmail(email)) return true;\n  if (isFakePhoneDigits(mobileDigits || phoneDigits)) return true;\n\n  return false;\n}\n\n// =================== MAIN ===================\n\nreturn items.map(item => {\n  const json = item.json || {};\n  const rawText = json.text || json.textPlain || json.snippet || '';\n  const parsed = parseFormText(rawText);\n\n  let mobileFormatted = '';\n  let phoneFormatted  = '';\n\n  if (parsed.mobileRaw) {\n    mobileFormatted = formatAuPhone(parsed.mobileRaw, 'mobile');\n  }\n\n  if (parsed.phoneNumberRaw) {\n    const digits = normalizeDigits(parsed.phoneNumberRaw);\n    if (digits.startsWith('04')) {\n      mobileFormatted ||= formatAuPhone(parsed.phoneNumberRaw, 'mobile');\n    } else {\n      phoneFormatted = formatAuPhone(parsed.phoneNumberRaw, 'landline');\n    }\n  }\n\n  const leadQualifier = isSpamLead(parsed, mobileFormatted, phoneFormatted) ? 'Spam' : 'Good';\n\n  return {\n    json: {\n      Timestamp: getBrisbaneDate(json),\n      Id: json.id || '',\n\n      'Lead Type': 'Windowrevival.NET Lead',\n\n      'First Name': parsed.firstName || '',\n      'Last Name':  parsed.lastName  || '',\n      'Mobile Number': mobileFormatted,\n      'Phone Number':  phoneFormatted,\n      'Email Address': parsed.email || '',\n      'Address': parsed.address || '',\n      State: parsed.state || '',\n      Suburb: parsed.suburb || '',\n      'Postal Code': parsed.postalCode || '',\n      Enquiry: parsed.enquiry || '',\n      Quantity: parsed.quantity || '',\n\n      // ✅ FIXED FIELD\n      \"I'd Like To Get My Project Underway\": cleanProjectTiming(parsed.projectTiming),\n\n      'How they heard about us': 'WRnet Website',\n      'Lead Qualifier': leadQualifier,\n      referredBy: '',\n    },\n  };\n});\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -320,7 +319,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// =================== Utilities ===================\n\nfunction normalizeDigits(str) {\n  if (!str) return '';\n  return String(str).replace(/\\D+/g, '');\n}\n\nfunction formatAuPhone(raw, type) {\n  if (!raw) return '';\n  let digits = normalizeDigits(raw);\n  if (!digits) return '';\n\n  if (digits.startsWith('61')) {\n    digits = '0' + digits.slice(2);\n  } else if (!digits.startsWith('0') && digits.length >= 9) {\n    digits = '0' + digits;\n  }\n\n  if (type === 'mobile' && digits.length === 10) {\n    return digits.replace(/(\\d{4})(\\d{3})(\\d{3})/, '$1 $2 $3');\n  }\n\n  if (type === 'landline' && digits.length === 10) {\n    return digits.replace(/(\\d{2})(\\d{4})(\\d{4})/, '$1 $2 $3');\n  }\n\n  return digits;\n}\n\nfunction getBrisbaneDate(json) {\n  const date = json.internalDate ? new Date(Number(json.internalDate)) : new Date();\n  return date.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', hour12: false });\n}\n\n// =================== CLEAN PROJECT TIMING FIX ===================\n\nfunction cleanProjectTiming(value) {\n  if (!value) return '';\n\n  const STOP_WORDS = [\n    'How did yopu here about us',\n    'How did you hear about us',\n    'How they heard about us',\n    'Services',\n    'Brands'\n  ];\n\n  let cleaned = value;\n\n  for (const stop of STOP_WORDS) {\n    const idx = cleaned.indexOf(stop);\n    if (idx !== -1) cleaned = cleaned.slice(0, idx);\n  }\n\n  cleaned = cleaned\n    .replace(/^\\s*\\.{2,}/, '')\n    .replace(/^[\\s:–—-]+/, '')\n    .trim();\n\n  return cleaned;\n}\n\n// =================== Parser ===================\n\nfunction parseFormText(rawText) {\n  if (!rawText) return {};\n  const text = rawText.replace(/\\r?\\n/g, ' ');\n  const lower = text.toLowerCase();\n\n  const markerDefs = [\n    { key: 'firstName', marker: 'First Name' },\n    { key: 'lastName', marker: 'Last Name' },\n    { key: 'email', marker: 'Email' },\n    { key: 'mobileRaw', marker: 'Mobile Number' },\n    { key: 'phoneNumberRaw', marker: 'Phone Number' },\n    { key: 'suburb', marker: 'Suburb' },\n    { key: 'state', marker: 'State' },\n    { key: 'enquiry', marker: 'Enquiry' },\n    { key: 'projectTiming', marker: \"I'd Like To Get My Project Underway\" },\n    { key: 'quantity', marker: 'Quantity' }\n  ];\n\n  const positions = [];\n  for (const m of markerDefs) {\n    const idx = lower.indexOf(m.marker.toLowerCase());\n    if (idx !== -1) {\n      positions.push({ key: m.key, markerIndex: idx, valueStart: idx + m.marker.length });\n    }\n  }\n\n  if (!positions.length) return {};\n  positions.sort((a, b) => a.markerIndex - b.markerIndex);\n\n  const result = {};\n  for (let i = 0; i < positions.length; i++) {\n    const curr = positions[i];\n    const next = positions[i + 1];\n    const end = next ? next.markerIndex : text.length;\n    const value = text.slice(curr.valueStart, end).trim();\n    if (curr.key && value && !result[curr.key]) result[curr.key] = value;\n  }\n\n  if (!result.email) {\n    const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n    if (emailMatch) result.email = emailMatch[0];\n  }\n\n  return result;\n}\n\n// =================== Name handling (multi-word) ===================\n\nfunction splitFullName(firstRaw, lastRaw) {\n  const f = String(firstRaw || '').trim();\n  const l = String(lastRaw || '').trim();\n\n  if (f && l) return { firstName: f, lastName: l };\n\n  const full = (f || l).trim();\n  if (!full) return { firstName: '', lastName: '' };\n\n  const parts = full.split(/\\s+/).filter(Boolean);\n  if (parts.length === 1) return { firstName: parts[0], lastName: '' };\n  return { firstName: parts[0], lastName: parts.slice(1).join(' ') };\n}\n\n// =================== Spam Rules ===================\n\nconst BAD_NAME_WORDS = new Set([\n  'test','asdf','qwer','zxcv','xxxx','abc','123','sdr','null','none','na','n/a','demo'\n]);\n\nconst DISPOSABLE_DOMAINS = new Set([\n  'mailinator.com','tempmail.com','10minutemail.com','guerrillamail.com',\n  'yopmail.com','trashmail.com','sharklasers.com','getnada.com'\n]);\n\nfunction isLikelyGibberishName(name) {\n  const s = String(name || '').trim().toLowerCase();\n  if (!s) return true;\n\n  const cleaned = s.replace(/[^a-z\\s'\\-]/g, '');\n  const lettersOnly = cleaned.replace(/[^a-z]/g, '');\n\n  if (lettersOnly.length < 2) return true;\n  if (cleaned.length < s.length * 0.7) return true;\n\n  const vowels = (lettersOnly.match(/[aeiou]/g) || []).length;\n  const vowelRatio = vowels / lettersOnly.length;\n  const hasLongRepeat = /(.)\\1{3,}/.test(lettersOnly);\n  const hasConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(lettersOnly);\n\n  // For very short tokens, avoid false positives\n  if (lettersOnly.length <= 5) {\n    if (hasLongRepeat) return true;\n    if (hasConsonantRun && lettersOnly.length >= 5) return true;\n    return false;\n  }\n\n  if (vowelRatio < 0.22 || hasConsonantRun || hasLongRepeat) return true;\n  return false;\n}\n\nfunction hasBadNameWord(first, last) {\n  const f = String(first || '').toLowerCase();\n  const l = String(last || '').toLowerCase();\n  return BAD_NAME_WORDS.has(f) || BAD_NAME_WORDS.has(l) || (f + ' ' + l).includes('test');\n}\n\nfunction isDisposableEmail(email) {\n  const m = String(email || '').toLowerCase().match(/@([a-z0-9.-]+\\.[a-z]{2,})$/);\n  return m ? DISPOSABLE_DOMAINS.has(m[1]) : false;\n}\n\nfunction isFakePhoneDigits(digits) {\n  const d = normalizeDigits(digits);\n  if (!d || d.length < 9) return true;\n  if (/^(\\d)\\1+$/.test(d)) return true;\n  if (d.includes('123456') || d.includes('00000')) return true;\n  return false;\n}\n\n// =================== Loosened Spam Decision (score-based) ===================\n\nfunction isSpamLead(parsed, mobileFormatted, phoneFormatted) {\n  const first = (parsed.firstName || '').trim();\n  const last = (parsed.lastName || '').trim();\n  const email = (parsed.email || '').trim();\n  const enquiry = (parsed.enquiry || '').trim();\n\n  const mobileDigits = normalizeDigits(mobileFormatted);\n  const phoneDigits = normalizeDigits(phoneFormatted);\n  const hasAnyPhone = mobileDigits.length > 0 || phoneDigits.length > 0;\n\n  let score = 0;\n\n  // Strong signals\n  if (hasBadNameWord(first, last)) score += 3;\n  if (email && isDisposableEmail(email)) score += 3;\n  if (isFakePhoneDigits(mobileDigits || phoneDigits)) score += 3;\n\n  // Medium signals\n  if (!hasAnyPhone) score += 2;\n  if (!email) score += 1;\n  if (!enquiry || enquiry.length < 8) score += 1;\n\n  // Name length (allow short real names)\n  if (first.length < 2) score += 2;\n  if (last.length < 2) score += 1;\n\n  // Only run gibberish detector on longer tokens\n  if (first.length >= 5 && isLikelyGibberishName(first)) score += 2;\n  if (last.length >= 5 && isLikelyGibberishName(last)) score += 2;\n\n  return score >= 4;\n}\n\n// =================== MAIN ===================\n\nreturn items.map(item => {\n  const json = item.json || {};\n  const rawText = json.text || json.textPlain || json.snippet || '';\n  const parsed = parseFormText(rawText);\n\n  // Normalize names (supports multi-word + full-name-in-one-field cases)\n  const name = splitFullName(parsed.firstName, parsed.lastName);\n  parsed.firstName = name.firstName;\n  parsed.lastName = name.lastName;\n\n  let mobileFormatted = '';\n  let phoneFormatted = '';\n\n  if (parsed.mobileRaw) {\n    mobileFormatted = formatAuPhone(parsed.mobileRaw, 'mobile');\n  }\n\n  if (parsed.phoneNumberRaw) {\n    const digits = normalizeDigits(parsed.phoneNumberRaw);\n    if (digits.startsWith('04')) {\n      mobileFormatted ||= formatAuPhone(parsed.phoneNumberRaw, 'mobile');\n    } else {\n      phoneFormatted = formatAuPhone(parsed.phoneNumberRaw, 'landline');\n    }\n  }\n\n  const leadQualifier = isSpamLead(parsed, mobileFormatted, phoneFormatted) ? 'Spam' : 'Good';\n\n  return {\n    json: {\n      Timestamp: getBrisbaneDate(json),\n      Id: json.id || '',\n      'Lead Type': 'Sliding Door Lead',\n      'First Name': parsed.firstName || '',\n      'Last Name': parsed.lastName || '',\n      'Mobile Number': mobileFormatted,\n      'Phone Number': phoneFormatted,\n      'Email Address': parsed.email || '',\n      Address: '',\n      State: parsed.state || '',\n      Suburb: parsed.suburb || '',\n      'Postal Code': '',\n      Enquiry: parsed.enquiry || '',\n      Quantity: parsed.quantity || '',\n\n      // IMPORTANT: use the exact key your schema expects (curly apostrophe)\n      \"I’d Like To Get My Project Underway\": cleanProjectTiming(parsed.projectTiming),\n\n      'How they heard about us': 'SDR Website',\n      'Lead Qualifier': leadQualifier,\n\n      // IMPORTANT: exact key casing for schema\n      referredBy: ''\n    }\n  };\n});\n"
+        "jsCode": "// =================== Utilities ===================\n\nfunction normalizeDigits(str) {\n  if (!str) return '';\n  return String(str).replace(/\\D+/g, '');\n}\n\nfunction formatAuPhone(raw, type) {\n  if (!raw) return '';\n  let digits = normalizeDigits(raw);\n  if (!digits) return '';\n\n  if (digits.startsWith('61')) {\n    digits = '0' + digits.slice(2);\n  } else if (!digits.startsWith('0') && digits.length >= 9) {\n    digits = '0' + digits;\n  }\n\n  if (type === 'mobile' && digits.length === 10) {\n    return digits.replace(/(\\d{4})(\\d{3})(\\d{3})/, '$1 $2 $3');\n  }\n\n  if (type === 'landline' && digits.length === 10) {\n    return digits.replace(/(\\d{2})(\\d{4})(\\d{4})/, '$1 $2 $3');\n  }\n\n  return digits;\n}\n\nfunction getBrisbaneDate(json) {\n  const date = json.internalDate ? new Date(Number(json.internalDate)) : new Date();\n  return date.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', hour12: false });\n}\n\n\n// =================== CLEAN PROJECT TIMING FIX ===================\n\nfunction cleanProjectTiming(value) {\n  if (!value) return '';\n\n  const STOP_WORDS = [\n    'Heard From',\n    'Brands'\n  ];\n\n  let cleaned = value;\n\n  // Cut at known boundaries\n  for (const stop of STOP_WORDS) {\n    const idx = cleaned.indexOf(stop);\n    if (idx !== -1) {\n      cleaned = cleaned.slice(0, idx);\n    }\n  }\n\n  // Remove Gmail / HTML junk like \"...\"\n  cleaned = cleaned\n    .replace(/^\\s*\\.{2,}/, '')   // remove \"..\" / \"...\"\n    .replace(/^[\\s:–—-]+/, '')   // leading punctuation\n    .trim();\n\n  // If only dots existed, return empty\n  if (/^\\.*$/.test(cleaned)) return '';\n\n  return cleaned;\n}\n\n\n\n\n// =================== Parser ===================\n\nfunction parseFormText(rawText) {\n  if (!rawText) return {};\n  const text = rawText.replace(/\\r?\\n/g, ' ');\n  const lower = text.toLowerCase();\n\n  const markerDefs = [\n    { key: 'firstName', marker: 'First Name' },\n    { key: 'lastName', marker: 'Last Name' },\n    { key: 'email', marker: 'Email' },\n    { key: 'mobileRaw', marker: 'Mobile Number' },\n    { key: 'phoneNumberRaw', marker: 'Phone Number' },\n    { key: 'suburb', marker: 'Suburb' },\n    { key: 'state', marker: 'State' },\n    { key: 'enquiry', marker: 'Comments/Questions:' },\n    { key: 'projectTiming', marker: \"Timeframe\" },\n    { key: 'quantity', marker: 'Service:' },\n    \n    // Boundaries\n    { key: null, marker: 'Brands' },\n    { key: null, marker: 'Heard From' }\n  ];\n\n  const positions = [];\n  for (const m of markerDefs) {\n    const idx = lower.indexOf(m.marker.toLowerCase());\n    if (idx !== -1) {\n      positions.push({ key: m.key, markerIndex: idx, valueStart: idx + m.marker.length });\n    }\n  }\n\n  if (!positions.length) return {};\n  positions.sort((a, b) => a.markerIndex - b.markerIndex);\n\n  const result = {};\n  for (let i = 0; i < positions.length; i++) {\n    const curr = positions[i];\n    const next = positions[i + 1];\n    const end = next ? next.markerIndex : text.length;\n    const value = text.slice(curr.valueStart, end).trim();\n    if (curr.key && value && !result[curr.key]) result[curr.key] = value;\n  }\n\n  if (!result.email) {\n    const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n    if (emailMatch) result.email = emailMatch[0];\n  }\n\n  return result;\n}\n\n// =================== Name handling (multi-word) ===================\n\nfunction splitFullName(firstRaw, lastRaw) {\n  const f = String(firstRaw || '').trim();\n  const l = String(lastRaw || '').trim();\n\n  if (f && l) return { firstName: f, lastName: l };\n\n  const full = (f || l).trim();\n  if (!full) return { firstName: '', lastName: '' };\n\n  const parts = full.split(/\\s+/).filter(Boolean);\n  if (parts.length === 1) return { firstName: parts[0], lastName: '' };\n  return { firstName: parts[0], lastName: parts.slice(1).join(' ') };\n}\n\n// =================== Spam Rules ===================\n\nconst BAD_NAME_WORDS = new Set([\n  'test','asdf','qwer','zxcv','xxxx','abc','123','sdr','null','none','na','n/a','demo'\n]);\n\nconst DISPOSABLE_DOMAINS = new Set([\n  'mailinator.com','tempmail.com','10minutemail.com','guerrillamail.com',\n  'yopmail.com','trashmail.com','sharklasers.com','getnada.com'\n]);\n\nfunction isLikelyGibberishName(name) {\n  const s = String(name || '').trim().toLowerCase();\n  if (!s) return true;\n\n  const cleaned = s.replace(/[^a-z\\s'\\-]/g, '');\n  const lettersOnly = cleaned.replace(/[^a-z]/g, '');\n\n  if (lettersOnly.length < 2) return true;\n  if (cleaned.length < s.length * 0.7) return true;\n\n  const vowels = (lettersOnly.match(/[aeiou]/g) || []).length;\n  const vowelRatio = vowels / lettersOnly.length;\n  const hasLongRepeat = /(.)\\1{3,}/.test(lettersOnly);\n  const hasConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(lettersOnly);\n\n  // For very short tokens, avoid false positives\n  if (lettersOnly.length <= 5) {\n    if (hasLongRepeat) return true;\n    if (hasConsonantRun && lettersOnly.length >= 5) return true;\n    return false;\n  }\n\n  if (vowelRatio < 0.22 || hasConsonantRun || hasLongRepeat) return true;\n  return false;\n}\n\nfunction hasBadNameWord(first, last) {\n  const f = String(first || '').toLowerCase();\n  const l = String(last || '').toLowerCase();\n  return BAD_NAME_WORDS.has(f) || BAD_NAME_WORDS.has(l) || (f + ' ' + l).includes('test');\n}\n\nfunction isDisposableEmail(email) {\n  const m = String(email || '').toLowerCase().match(/@([a-z0-9.-]+\\.[a-z]{2,})$/);\n  return m ? DISPOSABLE_DOMAINS.has(m[1]) : false;\n}\n\nfunction isFakePhoneDigits(digits) {\n  const d = normalizeDigits(digits);\n  if (!d || d.length < 9) return true;\n  if (/^(\\d)\\1+$/.test(d)) return true;\n  if (d.includes('123456') || d.includes('00000')) return true;\n  return false;\n}\n\n// =================== Loosened Spam Decision (score-based) ===================\n\nfunction isSpamLead(parsed, mobileFormatted, phoneFormatted) {\n  const first = (parsed.firstName || '').trim();\n  const last = (parsed.lastName || '').trim();\n  const email = (parsed.email || '').trim();\n  const enquiry = (parsed.enquiry || '').trim();\n\n  const mobileDigits = normalizeDigits(mobileFormatted);\n  const phoneDigits = normalizeDigits(phoneFormatted);\n  const hasAnyPhone = mobileDigits.length > 0 || phoneDigits.length > 0;\n\n  let score = 0;\n\n  // Strong signals\n  if (hasBadNameWord(first, last)) score += 3;\n  if (email && isDisposableEmail(email)) score += 3;\n  if (isFakePhoneDigits(mobileDigits || phoneDigits)) score += 3;\n\n  // Medium signals\n  if (!hasAnyPhone) score += 2;\n  if (!email) score += 1;\n  if (!enquiry || enquiry.length < 8) score += 1;\n\n  // Name length (allow short real names)\n  if (first.length < 2) score += 2;\n  if (last.length < 2) score += 1;\n\n  // Only run gibberish detector on longer tokens\n  if (first.length >= 5 && isLikelyGibberishName(first)) score += 2;\n  if (last.length >= 5 && isLikelyGibberishName(last)) score += 2;\n\n  return score >= 4;\n}\n\n// =================== MAIN ===================\n\nreturn items.map(item => {\n  const json = item.json || {};\n  const rawText = json.text || json.textPlain || json.snippet || '';\n  const parsed = parseFormText(rawText);\n\n  // Normalize names (supports multi-word + full-name-in-one-field cases)\n  const name = splitFullName(parsed.firstName, parsed.lastName);\n  parsed.firstName = name.firstName;\n  parsed.lastName = name.lastName;\n\n  let mobileFormatted = '';\n  let phoneFormatted = '';\n\n  if (parsed.mobileRaw) {\n    mobileFormatted = formatAuPhone(parsed.mobileRaw, 'mobile');\n  }\n\n  if (parsed.phoneNumberRaw) {\n    const digits = normalizeDigits(parsed.phoneNumberRaw);\n    if (digits.startsWith('04')) {\n      mobileFormatted ||= formatAuPhone(parsed.phoneNumberRaw, 'mobile');\n    } else {\n      phoneFormatted = formatAuPhone(parsed.phoneNumberRaw, 'landline');\n    }\n  }\n\n  const leadQualifier = isSpamLead(parsed, mobileFormatted, phoneFormatted) ? 'Spam' : 'Good';\n\n  return {\n    json: {\n      Timestamp: getBrisbaneDate(json),\n      Id: json.id || '',\n      'Lead Type': 'Sliding Door Lead',\n      'First Name': parsed.firstName || '',\n      'Last Name': parsed.lastName || '',\n      'Mobile Number': mobileFormatted,\n      'Phone Number': phoneFormatted,\n      'Email Address': parsed.email || '',\n      Address: '',\n      State: parsed.state || '',\n      Suburb: parsed.suburb || '',\n      'Postal Code': '',\n      Enquiry: parsed.enquiry || '',\n      Quantity: parsed.quantity || '',\n\n      // IMPORTANT: use the exact key your schema expects (curly apostrophe)\n      \"I’d Like To Get My Project Underway\": cleanProjectTiming(parsed.projectTiming),\n\n      'How they heard about us': 'SDR Website',\n      'Lead Qualifier': leadQualifier,\n\n      // IMPORTANT: exact key casing for schema\n      referredBy: ''\n    }\n  };\n});\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -343,10 +342,10 @@
         },
         "channelId": {
           "__rl": true,
-          "value": "912496260823519232",
+          "value": "1510773975423385875",
           "mode": "list",
-          "cachedResultName": "leads・new",
-          "cachedResultUrl": "https://discord.com/channels/753455160209965106/912496260823519232"
+          "cachedResultName": "new-leads",
+          "cachedResultUrl": "https://discord.com/channels/753455160209965106/1510773975423385875"
         },
         "content": "===========\nLead Type: {{ $json['Lead Type'] }}\nTimestamp: {{ $json.Timestamp }}\nId: {{ $json.Id }}\nFirst Name: {{ $json['First Name'] }}\nLast Name: {{ $json['Last Name'] }}\nMobile Number: {{ $json['Mobile Number'] }}\nPhone Number: {{ $json['Phone Number'] }}\nEmail Address: {{ $json['Email Address'] }}\nAddress: {{ $json.Address }}\nState: {{ $json.State }}\nSuburb: {{ $json.Suburb }}\nPostal Code: {{ $json['Postal Code'] }}\nEnquiry: {{ $json.Enquiry }}\nQuantity: {{ $json.Quantity }}\nI'd Like To Get my Project Underway: {{ $json['I’d Like To Get My Project Underway'] }}\nHow they heard about us?: {{ $json['How they heard about us'] }}",
         "options": {}
@@ -354,8 +353,8 @@
       "type": "n8n-nodes-base.discord",
       "typeVersion": 2,
       "position": [
-        4176,
-        -128
+        4256,
+        -224
       ],
       "id": "be7045d4-c862-419b-9d28-8f124713018d",
       "name": "Send a message",
@@ -376,7 +375,7 @@
       "typeVersion": 2.1,
       "position": [
         4400,
-        256
+        368
       ],
       "id": "0e874fe4-2c21-40ec-9712-63dc4230fced",
       "name": "Delete spam email",
@@ -386,7 +385,8 @@
           "id": "Iacb6DlpUsfDqQMK",
           "name": "WR: Gmail Account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -397,7 +397,7 @@
       "typeVersion": 2.1,
       "position": [
         3952,
-        256
+        368
       ],
       "id": "412596bc-f04e-4215-89fc-974f18375037",
       "name": "Check id if exist before deleting",
@@ -408,6 +408,7 @@
           "name": "WR: Gmail Account"
         }
       },
+      "disabled": true,
       "onError": "continueRegularOutput"
     },
     {
@@ -419,7 +420,7 @@
       "typeVersion": 4.3,
       "position": [
         3952,
-        -416
+        -480
       ],
       "id": "9ac2169e-f789-43b8-88ca-ad6fdc087d24",
       "name": "Send to Wrapp",
@@ -433,10 +434,11 @@
       "typeVersion": 2,
       "position": [
         4176,
-        256
+        368
       ],
       "id": "97d142a3-74b4-45ec-8d43-eea863a3e07a",
-      "name": "Get Ids"
+      "name": "Get Ids",
+      "disabled": true
     },
     {
       "parameters": {
@@ -1631,8 +1633,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        4176,
-        64
+        4256,
+        -32
       ],
       "id": "ba76aa92-5d1d-4c5f-bdb2-b33f8d2c6610",
       "name": "Insert row for ThreadId"
@@ -2009,6 +2011,46 @@
       ],
       "id": "3059c0d1-ed8d-47f3-8d35-b2b0ea640864",
       "name": "Email only1"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.Id }}",
+        "labelIds": [
+          "Label_169",
+          "Label_467349780880217490"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3952,
+        0
+      ],
+      "id": "9ce8f934-75da-4c94-bd01-e6e7e53a1b2e",
+      "name": "Add label to emails marked as spam",
+      "webhookId": "d223a823-9177-4c4e-b398-48b487c46935",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Iacb6DlpUsfDqQMK",
+          "name": "WR: Gmail Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Spam Email Handling\nDeletes emails marked as spam\n\nCurrent Status:\n_Disconnected & Deactivated_",
+        "height": 192,
+        "width": 166
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3696,
+        352
+      ],
+      "id": "f74f2956-527b-4a91-97eb-cb60e78e0b3b",
+      "name": "Sticky Note"
     }
   ],
   "connections": {
@@ -2039,7 +2081,7 @@
         ],
         [
           {
-            "node": "Check id if exist before deleting",
+            "node": "Add label to emails marked as spam",
             "type": "main",
             "index": 0
           }
@@ -2746,7 +2788,12 @@
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
-    "errorWorkflow": "b4cFEFv1eFePOnMh"
+    "errorWorkflow": "b4cFEFv1eFePOnMh",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true
   },
   "staticData": {
     "node:Gmail Trigger": {
@@ -2799,9 +2846,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "a37aa264-e0d1-4438-bd1b-fd691710c65f",
-  "activeVersionId": "a37aa264-e0d1-4438-bd1b-fd691710c65f",
-  "versionCounter": 739,
+  "versionId": "80df3092-02b0-4f8e-8339-73de06d16137",
+  "activeVersionId": "80df3092-02b0-4f8e-8339-73de06d16137",
   "triggerCount": 1,
   "shared": [
     {
@@ -2809,31 +2855,13 @@
       "createdAt": "2026-02-03T01:37:20.616Z",
       "role": "workflow:owner",
       "workflowId": "NXvUDPpKfGxWETqO",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
-    }
-  ],
-  "tags": [
-    {
-      "updatedAt": "2025-11-25T13:05:18.454Z",
-      "createdAt": "2025-11-25T13:05:18.454Z",
-      "id": "xn6seEX74pkTOLqC",
-      "name": "@lead"
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
   "activeVersion": {
-    "updatedAt": "2026-03-05T00:20:47.000Z",
-    "createdAt": "2026-03-05T00:14:35.306Z",
-    "versionId": "a37aa264-e0d1-4438-bd1b-fd691710c65f",
+    "updatedAt": "2026-07-02T01:59:50.000Z",
+    "createdAt": "2026-07-02T01:51:14.192Z",
+    "versionId": "80df3092-02b0-4f8e-8339-73de06d16137",
     "workflowId": "NXvUDPpKfGxWETqO",
     "nodes": [
       {
@@ -3074,8 +3102,8 @@
         "type": "n8n-nodes-base.gmail",
         "typeVersion": 2.1,
         "position": [
-          4176,
-          -320
+          4256,
+          -416
         ],
         "id": "72138bd5-c98c-49d0-bb1b-7e8c1923eea2",
         "name": "Add label to message",
@@ -3136,7 +3164,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// items: array of input items from Gmail Get Many\n// each item.json has at least: { id, text }\n\n// =================== Utilities ===================\n\nfunction normalizeDigits(str) {\n  if (!str) return '';\n  return String(str).replace(/\\D+/g, '');\n}\n\nfunction formatAuPhone(raw, type) {\n  if (!raw) return '';\n  let digits = normalizeDigits(raw);\n  if (!digits) return '';\n\n  if (digits.startsWith('61')) {\n    digits = '0' + digits.slice(2);\n  } else if (!digits.startsWith('0') && digits.length >= 9) {\n    digits = '0' + digits;\n  }\n\n  if (type === 'mobile' && digits.length === 10) {\n    return digits.replace(/(\\d{4})(\\d{3})(\\d{3})/, '$1 $2 $3');\n  }\n\n  if (type === 'landline' && digits.length === 10) {\n    return digits.replace(/(\\d{2})(\\d{4})(\\d{4})/, '$1 $2 $3');\n  }\n\n  return digits;\n}\n\nfunction getBrisbaneDate(json) {\n  const date = json.internalDate ? new Date(Number(json.internalDate)) : new Date();\n  return date.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', hour12: false });\n}\n\n// =================== CLEAN PROJECT TIMING ===================\n\nfunction cleanProjectTiming(value) {\n  if (!value) return '';\n\n  const STOP_WORDS = [\n    'How did yopu here about us',\n    'How did you hear about us',\n    'How they heard about us',\n    'Services',\n    'Brands'\n  ];\n\n  let cleaned = value;\n\n  // Cut at known boundaries\n  for (const stop of STOP_WORDS) {\n    const idx = cleaned.indexOf(stop);\n    if (idx !== -1) {\n      cleaned = cleaned.slice(0, idx);\n    }\n  }\n\n  // Remove Gmail / HTML junk like \"...\"\n  cleaned = cleaned\n    .replace(/^\\s*\\.{2,}/, '')   // remove \"..\" / \"...\"\n    .replace(/^[\\s:–—-]+/, '')   // leading punctuation\n    .trim();\n\n  // If only dots existed, return empty\n  if (/^\\.*$/.test(cleaned)) return '';\n\n  return cleaned;\n}\n\n// =================== Parser ===================\n\nfunction parseFormText(rawText) {\n  if (!rawText) return {};\n\n  const text = rawText.replace(/\\r?\\n/g, ' ');\n\n  const markerDefs = [\n    { key: 'firstName',      marker: 'First Name' },\n    { key: 'lastName',       marker: 'Last Name' },\n    { key: 'email',          marker: 'Email' },\n    { key: 'mobileRaw',      marker: 'Mobile Number' },\n    { key: 'phoneNumberRaw', marker: 'Phone Number' },\n    { key: 'address',        marker: 'Address' },\n    { key: 'suburb',         marker: 'Suburb' },\n    { key: 'state',          marker: 'State' },\n    { key: 'postalCode',     marker: 'Postal Code' },\n    { key: 'enquiry',        marker: 'Enquiry' },\n    { key: 'projectTiming',  marker: \"I'd Like To Get My Project Underway\" },\n    { key: 'quantity',       marker: 'Quantity' },\n\n    // Boundaries\n    { key: null, marker: 'How did yopu here about us' },\n    { key: null, marker: 'How did you hear about us' },\n    { key: null, marker: 'How they heard about us' },\n    { key: null, marker: 'Brands' },\n    { key: null, marker: 'Services' }\n  ];\n\n  const positions = [];\n  for (const m of markerDefs) {\n    const idx = text.indexOf(m.marker);\n    if (idx === -1) continue;\n    positions.push({ key: m.key, markerIndex: idx, valueStart: idx + m.marker.length });\n  }\n\n  if (!positions.length) return {};\n\n  positions.sort((a, b) => a.markerIndex - b.markerIndex);\n\n  const result = {};\n  for (let i = 0; i < positions.length; i++) {\n    const curr = positions[i];\n    const next = positions[i + 1];\n    const end = next ? next.markerIndex : text.length;\n    const value = text.slice(curr.valueStart, end).trim();\n    if (curr.key && value && !result[curr.key]) result[curr.key] = value;\n  }\n\n  if (!result.email) {\n    const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n    if (emailMatch) result.email = emailMatch[0];\n  }\n\n  return result;\n}\n\n// =================== Spam Rules ===================\n\nconst BAD_NAME_WORDS = new Set([\n  'test','asdf','qwer','zxcv','xxxx','abc','123','sdr','null','none','na','n/a','demo'\n]);\n\nconst DISPOSABLE_DOMAINS = new Set([\n  'mailinator.com','tempmail.com','10minutemail.com','guerrillamail.com',\n  'yopmail.com','trashmail.com','sharklasers.com','getnada.com'\n]);\n\nfunction isLikelyGibberishName(name) {\n  const s = String(name || '').trim().toLowerCase();\n  if (!s) return true;\n\n  const cleaned = s.replace(/[^a-z\\s'\\-]/g, '');\n  const lettersOnly = cleaned.replace(/[^a-z]/g, '');\n\n  if (lettersOnly.length < 2) return true;\n  if (cleaned.length < s.length * 0.7) return true;\n\n  const vowels = (lettersOnly.match(/[aeiou]/g) || []).length;\n  const vowelRatio = vowels / lettersOnly.length;\n  const hasLongRepeat = /(.)\\1{3,}/.test(lettersOnly);\n  const hasConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(lettersOnly);\n\n  if (lettersOnly.length <= 5) {\n    if (hasLongRepeat) return true;\n    if (hasConsonantRun && lettersOnly.length >= 5) return true;\n    return false;\n  }\n\n  if (vowelRatio < 0.22 || hasConsonantRun || hasLongRepeat) return true;\n  return false;\n}\n\nfunction hasBadNameWord(first, last) {\n  const f = String(first || '').toLowerCase();\n  const l = String(last || '').toLowerCase();\n  return BAD_NAME_WORDS.has(f) || BAD_NAME_WORDS.has(l) || (f + ' ' + l).includes('test');\n}\n\nfunction isDisposableEmail(email) {\n  const m = String(email || '').toLowerCase().match(/@([a-z0-9.-]+\\.[a-z]{2,})$/);\n  return m ? DISPOSABLE_DOMAINS.has(m[1]) : false;\n}\n\nfunction isFakePhoneDigits(digits) {\n  const d = normalizeDigits(digits);\n  if (!d || d.length < 9) return true;\n  if (/^(\\d)\\1+$/.test(d)) return true;\n  if (d.includes('123456') || d.includes('00000')) return true;\n  return false;\n}\n\nfunction isSpamLead(parsed, mobileFormatted, phoneFormatted) {\n  const first = (parsed.firstName || '').trim();\n  const last  = (parsed.lastName  || '').trim();\n  const email = (parsed.email || '').trim();\n\n  const mobileDigits = normalizeDigits(mobileFormatted || '');\n  const phoneDigits  = normalizeDigits(phoneFormatted || '');\n  const hasAnyPhone = mobileDigits.length > 0 || phoneDigits.length > 0;\n\n  if (first.length < 2 || last.length < 2) return true;\n  if (!hasAnyPhone) return true;\n  if (hasBadNameWord(first, last)) return true;\n  if (isLikelyGibberishName(first) || isLikelyGibberishName(last)) return true;\n  if (email && isDisposableEmail(email)) return true;\n  if (isFakePhoneDigits(mobileDigits || phoneDigits)) return true;\n\n  return false;\n}\n\n// =================== MAIN ===================\n\nreturn items.map(item => {\n  const json = item.json || {};\n  const rawText = json.text || json.textPlain || json.snippet || '';\n  const parsed = parseFormText(rawText);\n\n  let mobileFormatted = '';\n  let phoneFormatted  = '';\n\n  if (parsed.mobileRaw) {\n    mobileFormatted = formatAuPhone(parsed.mobileRaw, 'mobile');\n  }\n\n  if (parsed.phoneNumberRaw) {\n    const digits = normalizeDigits(parsed.phoneNumberRaw);\n    if (digits.startsWith('04')) {\n      mobileFormatted ||= formatAuPhone(parsed.phoneNumberRaw, 'mobile');\n    } else {\n      phoneFormatted = formatAuPhone(parsed.phoneNumberRaw, 'landline');\n    }\n  }\n\n  const leadQualifier = isSpamLead(parsed, mobileFormatted, phoneFormatted) ? 'Spam' : 'Good';\n\n  return {\n    json: {\n      Timestamp: getBrisbaneDate(json),\n      Id: json.id || '',\n\n      'Lead Type': 'Windowrevival.NET Lead',\n\n      'First Name': parsed.firstName || '',\n      'Last Name':  parsed.lastName  || '',\n      'Mobile Number': mobileFormatted,\n      'Phone Number':  phoneFormatted,\n      'Email Address': parsed.email || '',\n      'Address': parsed.address || '',\n      State: parsed.state || '',\n      Suburb: parsed.suburb || '',\n      'Postal Code': parsed.postalCode || '',\n      Enquiry: parsed.enquiry || '',\n      Quantity: parsed.quantity || '',\n\n      // ✅ FIXED FIELD\n      \"I'd Like To Get My Project Underway\": cleanProjectTiming(parsed.projectTiming),\n\n      'How they heard about us': 'WRnet Website',\n      'Lead Qualifier': leadQualifier,\n      referredBy: '',\n    },\n  };\n});\n"
+          "jsCode": "// items: array of input items from Gmail Get Many\n// each item.json has at least: { id, text }\n\n// =================== Utilities ===================\n\nfunction normalizeDigits(str) {\n  if (!str) return '';\n  return String(str).replace(/\\D+/g, '');\n}\n\nfunction formatAuPhone(raw, type) {\n  if (!raw) return '';\n  let digits = normalizeDigits(raw);\n  if (!digits) return '';\n\n  if (digits.startsWith('61')) {\n    digits = '0' + digits.slice(2);\n  } else if (!digits.startsWith('0') && digits.length >= 9) {\n    digits = '0' + digits;\n  }\n\n  if (type === 'mobile' && digits.length === 10) {\n    return digits.replace(/(\\d{4})(\\d{3})(\\d{3})/, '$1 $2 $3');\n  }\n\n  if (type === 'landline' && digits.length === 10) {\n    return digits.replace(/(\\d{2})(\\d{4})(\\d{4})/, '$1 $2 $3');\n  }\n\n  return digits;\n}\n\nfunction getBrisbaneDate(json) {\n  const date = json.internalDate ? new Date(Number(json.internalDate)) : new Date();\n  return date.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', hour12: false });\n}\n\n// =================== CLEAN PROJECT TIMING ===================\n\nfunction cleanProjectTiming(value) {\n  if (!value) return '';\n\n  const STOP_WORDS = [\n    'How did yopu here about us',\n    'How did you hear about us',\n    'How they heard about us',\n    'Heard From',\n    'Enquiry',\n    'Brands'\n  ];\n\n  let cleaned = value;\n\n  // Cut at known boundaries\n  for (const stop of STOP_WORDS) {\n    const idx = cleaned.indexOf(stop);\n    if (idx !== -1) {\n      cleaned = cleaned.slice(0, idx);\n    }\n  }\n\n  // Remove Gmail / HTML junk like \"...\"\n  cleaned = cleaned\n    .replace(/^\\s*\\.{2,}/, '')   // remove \"..\" / \"...\"\n    .replace(/^[\\s:–—-]+/, '')   // leading punctuation\n    .trim();\n\n  // If only dots existed, return empty\n  if (/^\\.*$/.test(cleaned)) return '';\n\n  return cleaned;\n}\n\n// =================== Parser ===================\n\nfunction parseFormText(rawText) {\n  if (!rawText) return {};\n\n  const text = rawText.replace(/\\r?\\n/g, ' ');\n\n  const markerDefs = [\n    { key: 'firstName',      marker: 'First Name' },\n    { key: 'lastName',       marker: 'Last Name' },\n    { key: 'email',          marker: 'Email' },\n    { key: 'mobileRaw',      marker: 'Mobile Number' },\n    { key: 'phoneNumberRaw', marker: 'Phone Number' },\n    { key: 'address',        marker: 'Address' },\n    { key: 'suburb',         marker: 'Suburb' },\n    { key: 'state',          marker: 'State' },\n    { key: 'postalCode',     marker: 'Postal Code' },\n    { key: 'enquiry',        marker: 'Comments/Questions:' },\n    { key: 'projectTiming',  marker: \"Timeframe\" },\n    { key: 'quantity',       marker: 'Service:' },\n\n    // Boundaries\n    { key: null, marker: 'Brands' },\n    { key: null, marker: 'Heard From' }\n  ];\n\n  const positions = [];\n  for (const m of markerDefs) {\n    const idx = text.indexOf(m.marker);\n    if (idx === -1) continue;\n    positions.push({ key: m.key, markerIndex: idx, valueStart: idx + m.marker.length });\n  }\n\n  if (!positions.length) return {};\n\n  positions.sort((a, b) => a.markerIndex - b.markerIndex);\n\n  const result = {};\n  for (let i = 0; i < positions.length; i++) {\n    const curr = positions[i];\n    const next = positions[i + 1];\n    const end = next ? next.markerIndex : text.length;\n    const value = text.slice(curr.valueStart, end).trim();\n    if (curr.key && value && !result[curr.key]) result[curr.key] = value;\n  }\n\n  if (!result.email) {\n    const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n    if (emailMatch) result.email = emailMatch[0];\n  }\n\n  return result;\n}\n\n// =================== Spam Rules ===================\n\nconst BAD_NAME_WORDS = new Set([\n  'test','asdf','qwer','zxcv','xxxx','abc','123','sdr','null','none','na','n/a','demo'\n]);\n\nconst DISPOSABLE_DOMAINS = new Set([\n  'mailinator.com','tempmail.com','10minutemail.com','guerrillamail.com',\n  'yopmail.com','trashmail.com','sharklasers.com','getnada.com'\n]);\n\nfunction isLikelyGibberishName(name) {\n  const s = String(name || '').trim().toLowerCase();\n  if (!s) return true;\n\n  const cleaned = s.replace(/[^a-z\\s'\\-]/g, '');\n  const lettersOnly = cleaned.replace(/[^a-z]/g, '');\n\n  if (lettersOnly.length < 2) return true;\n  if (cleaned.length < s.length * 0.7) return true;\n\n  const vowels = (lettersOnly.match(/[aeiou]/g) || []).length;\n  const vowelRatio = vowels / lettersOnly.length;\n  const hasLongRepeat = /(.)\\1{3,}/.test(lettersOnly);\n  const hasConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(lettersOnly);\n\n  if (lettersOnly.length <= 5) {\n    if (hasLongRepeat) return true;\n    if (hasConsonantRun && lettersOnly.length >= 5) return true;\n    return false;\n  }\n\n  if (vowelRatio < 0.22 || hasConsonantRun || hasLongRepeat) return true;\n  return false;\n}\n\nfunction hasBadNameWord(first, last) {\n  const f = String(first || '').toLowerCase();\n  const l = String(last || '').toLowerCase();\n  return BAD_NAME_WORDS.has(f) || BAD_NAME_WORDS.has(l) || (f + ' ' + l).includes('test');\n}\n\nfunction isDisposableEmail(email) {\n  const m = String(email || '').toLowerCase().match(/@([a-z0-9.-]+\\.[a-z]{2,})$/);\n  return m ? DISPOSABLE_DOMAINS.has(m[1]) : false;\n}\n\nfunction isFakePhoneDigits(digits) {\n  const d = normalizeDigits(digits);\n  if (!d || d.length < 9) return true;\n  if (/^(\\d)\\1+$/.test(d)) return true;\n  if (d.includes('123456') || d.includes('00000')) return true;\n  return false;\n}\n\nfunction isSpamLead(parsed, mobileFormatted, phoneFormatted) {\n  const first = (parsed.firstName || '').trim();\n  const last  = (parsed.lastName  || '').trim();\n  const email = (parsed.email || '').trim();\n\n  const mobileDigits = normalizeDigits(mobileFormatted || '');\n  const phoneDigits  = normalizeDigits(phoneFormatted || '');\n  const hasAnyPhone = mobileDigits.length > 0 || phoneDigits.length > 0;\n\n  if (first.length < 2 || last.length < 2) return true;\n  if (!hasAnyPhone) return true;\n  if (hasBadNameWord(first, last)) return true;\n  if (isLikelyGibberishName(first) || isLikelyGibberishName(last)) return true;\n  if (email && isDisposableEmail(email)) return true;\n  if (isFakePhoneDigits(mobileDigits || phoneDigits)) return true;\n\n  return false;\n}\n\n// =================== MAIN ===================\n\nreturn items.map(item => {\n  const json = item.json || {};\n  const rawText = json.text || json.textPlain || json.snippet || '';\n  const parsed = parseFormText(rawText);\n\n  let mobileFormatted = '';\n  let phoneFormatted  = '';\n\n  if (parsed.mobileRaw) {\n    mobileFormatted = formatAuPhone(parsed.mobileRaw, 'mobile');\n  }\n\n  if (parsed.phoneNumberRaw) {\n    const digits = normalizeDigits(parsed.phoneNumberRaw);\n    if (digits.startsWith('04')) {\n      mobileFormatted ||= formatAuPhone(parsed.phoneNumberRaw, 'mobile');\n    } else {\n      phoneFormatted = formatAuPhone(parsed.phoneNumberRaw, 'landline');\n    }\n  }\n\n  const leadQualifier = isSpamLead(parsed, mobileFormatted, phoneFormatted) ? 'Spam' : 'Good';\n\n  return {\n    json: {\n      Timestamp: getBrisbaneDate(json),\n      Id: json.id || '',\n\n      'Lead Type': 'Windowrevival.NET Lead',\n\n      'First Name': parsed.firstName || '',\n      'Last Name':  parsed.lastName  || '',\n      'Mobile Number': mobileFormatted,\n      'Phone Number':  phoneFormatted,\n      'Email Address': parsed.email || '',\n      'Address': parsed.address || '',\n      State: parsed.state || '',\n      Suburb: parsed.suburb || '',\n      'Postal Code': parsed.postalCode || '',\n      Enquiry: parsed.enquiry || '',\n      Quantity: parsed.quantity || '',\n\n      // ✅ FIXED FIELD\n      \"I'd Like To Get My Project Underway\": cleanProjectTiming(parsed.projectTiming),\n\n      'How they heard about us': 'WRnet Website',\n      'Lead Qualifier': leadQualifier,\n      referredBy: '',\n    },\n  };\n});\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -3149,7 +3177,7 @@
       },
       {
         "parameters": {
-          "jsCode": "// =================== Utilities ===================\n\nfunction normalizeDigits(str) {\n  if (!str) return '';\n  return String(str).replace(/\\D+/g, '');\n}\n\nfunction formatAuPhone(raw, type) {\n  if (!raw) return '';\n  let digits = normalizeDigits(raw);\n  if (!digits) return '';\n\n  if (digits.startsWith('61')) {\n    digits = '0' + digits.slice(2);\n  } else if (!digits.startsWith('0') && digits.length >= 9) {\n    digits = '0' + digits;\n  }\n\n  if (type === 'mobile' && digits.length === 10) {\n    return digits.replace(/(\\d{4})(\\d{3})(\\d{3})/, '$1 $2 $3');\n  }\n\n  if (type === 'landline' && digits.length === 10) {\n    return digits.replace(/(\\d{2})(\\d{4})(\\d{4})/, '$1 $2 $3');\n  }\n\n  return digits;\n}\n\nfunction getBrisbaneDate(json) {\n  const date = json.internalDate ? new Date(Number(json.internalDate)) : new Date();\n  return date.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', hour12: false });\n}\n\n// =================== CLEAN PROJECT TIMING FIX ===================\n\nfunction cleanProjectTiming(value) {\n  if (!value) return '';\n\n  const STOP_WORDS = [\n    'How did yopu here about us',\n    'How did you hear about us',\n    'How they heard about us',\n    'Services',\n    'Brands'\n  ];\n\n  let cleaned = value;\n\n  for (const stop of STOP_WORDS) {\n    const idx = cleaned.indexOf(stop);\n    if (idx !== -1) cleaned = cleaned.slice(0, idx);\n  }\n\n  cleaned = cleaned\n    .replace(/^\\s*\\.{2,}/, '')\n    .replace(/^[\\s:–—-]+/, '')\n    .trim();\n\n  return cleaned;\n}\n\n// =================== Parser ===================\n\nfunction parseFormText(rawText) {\n  if (!rawText) return {};\n  const text = rawText.replace(/\\r?\\n/g, ' ');\n  const lower = text.toLowerCase();\n\n  const markerDefs = [\n    { key: 'firstName', marker: 'First Name' },\n    { key: 'lastName', marker: 'Last Name' },\n    { key: 'email', marker: 'Email' },\n    { key: 'mobileRaw', marker: 'Mobile Number' },\n    { key: 'phoneNumberRaw', marker: 'Phone Number' },\n    { key: 'suburb', marker: 'Suburb' },\n    { key: 'state', marker: 'State' },\n    { key: 'enquiry', marker: 'Enquiry' },\n    { key: 'projectTiming', marker: \"I'd Like To Get My Project Underway\" },\n    { key: 'quantity', marker: 'Quantity' }\n  ];\n\n  const positions = [];\n  for (const m of markerDefs) {\n    const idx = lower.indexOf(m.marker.toLowerCase());\n    if (idx !== -1) {\n      positions.push({ key: m.key, markerIndex: idx, valueStart: idx + m.marker.length });\n    }\n  }\n\n  if (!positions.length) return {};\n  positions.sort((a, b) => a.markerIndex - b.markerIndex);\n\n  const result = {};\n  for (let i = 0; i < positions.length; i++) {\n    const curr = positions[i];\n    const next = positions[i + 1];\n    const end = next ? next.markerIndex : text.length;\n    const value = text.slice(curr.valueStart, end).trim();\n    if (curr.key && value && !result[curr.key]) result[curr.key] = value;\n  }\n\n  if (!result.email) {\n    const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n    if (emailMatch) result.email = emailMatch[0];\n  }\n\n  return result;\n}\n\n// =================== Name handling (multi-word) ===================\n\nfunction splitFullName(firstRaw, lastRaw) {\n  const f = String(firstRaw || '').trim();\n  const l = String(lastRaw || '').trim();\n\n  if (f && l) return { firstName: f, lastName: l };\n\n  const full = (f || l).trim();\n  if (!full) return { firstName: '', lastName: '' };\n\n  const parts = full.split(/\\s+/).filter(Boolean);\n  if (parts.length === 1) return { firstName: parts[0], lastName: '' };\n  return { firstName: parts[0], lastName: parts.slice(1).join(' ') };\n}\n\n// =================== Spam Rules ===================\n\nconst BAD_NAME_WORDS = new Set([\n  'test','asdf','qwer','zxcv','xxxx','abc','123','sdr','null','none','na','n/a','demo'\n]);\n\nconst DISPOSABLE_DOMAINS = new Set([\n  'mailinator.com','tempmail.com','10minutemail.com','guerrillamail.com',\n  'yopmail.com','trashmail.com','sharklasers.com','getnada.com'\n]);\n\nfunction isLikelyGibberishName(name) {\n  const s = String(name || '').trim().toLowerCase();\n  if (!s) return true;\n\n  const cleaned = s.replace(/[^a-z\\s'\\-]/g, '');\n  const lettersOnly = cleaned.replace(/[^a-z]/g, '');\n\n  if (lettersOnly.length < 2) return true;\n  if (cleaned.length < s.length * 0.7) return true;\n\n  const vowels = (lettersOnly.match(/[aeiou]/g) || []).length;\n  const vowelRatio = vowels / lettersOnly.length;\n  const hasLongRepeat = /(.)\\1{3,}/.test(lettersOnly);\n  const hasConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(lettersOnly);\n\n  // For very short tokens, avoid false positives\n  if (lettersOnly.length <= 5) {\n    if (hasLongRepeat) return true;\n    if (hasConsonantRun && lettersOnly.length >= 5) return true;\n    return false;\n  }\n\n  if (vowelRatio < 0.22 || hasConsonantRun || hasLongRepeat) return true;\n  return false;\n}\n\nfunction hasBadNameWord(first, last) {\n  const f = String(first || '').toLowerCase();\n  const l = String(last || '').toLowerCase();\n  return BAD_NAME_WORDS.has(f) || BAD_NAME_WORDS.has(l) || (f + ' ' + l).includes('test');\n}\n\nfunction isDisposableEmail(email) {\n  const m = String(email || '').toLowerCase().match(/@([a-z0-9.-]+\\.[a-z]{2,})$/);\n  return m ? DISPOSABLE_DOMAINS.has(m[1]) : false;\n}\n\nfunction isFakePhoneDigits(digits) {\n  const d = normalizeDigits(digits);\n  if (!d || d.length < 9) return true;\n  if (/^(\\d)\\1+$/.test(d)) return true;\n  if (d.includes('123456') || d.includes('00000')) return true;\n  return false;\n}\n\n// =================== Loosened Spam Decision (score-based) ===================\n\nfunction isSpamLead(parsed, mobileFormatted, phoneFormatted) {\n  const first = (parsed.firstName || '').trim();\n  const last = (parsed.lastName || '').trim();\n  const email = (parsed.email || '').trim();\n  const enquiry = (parsed.enquiry || '').trim();\n\n  const mobileDigits = normalizeDigits(mobileFormatted);\n  const phoneDigits = normalizeDigits(phoneFormatted);\n  const hasAnyPhone = mobileDigits.length > 0 || phoneDigits.length > 0;\n\n  let score = 0;\n\n  // Strong signals\n  if (hasBadNameWord(first, last)) score += 3;\n  if (email && isDisposableEmail(email)) score += 3;\n  if (isFakePhoneDigits(mobileDigits || phoneDigits)) score += 3;\n\n  // Medium signals\n  if (!hasAnyPhone) score += 2;\n  if (!email) score += 1;\n  if (!enquiry || enquiry.length < 8) score += 1;\n\n  // Name length (allow short real names)\n  if (first.length < 2) score += 2;\n  if (last.length < 2) score += 1;\n\n  // Only run gibberish detector on longer tokens\n  if (first.length >= 5 && isLikelyGibberishName(first)) score += 2;\n  if (last.length >= 5 && isLikelyGibberishName(last)) score += 2;\n\n  return score >= 4;\n}\n\n// =================== MAIN ===================\n\nreturn items.map(item => {\n  const json = item.json || {};\n  const rawText = json.text || json.textPlain || json.snippet || '';\n  const parsed = parseFormText(rawText);\n\n  // Normalize names (supports multi-word + full-name-in-one-field cases)\n  const name = splitFullName(parsed.firstName, parsed.lastName);\n  parsed.firstName = name.firstName;\n  parsed.lastName = name.lastName;\n\n  let mobileFormatted = '';\n  let phoneFormatted = '';\n\n  if (parsed.mobileRaw) {\n    mobileFormatted = formatAuPhone(parsed.mobileRaw, 'mobile');\n  }\n\n  if (parsed.phoneNumberRaw) {\n    const digits = normalizeDigits(parsed.phoneNumberRaw);\n    if (digits.startsWith('04')) {\n      mobileFormatted ||= formatAuPhone(parsed.phoneNumberRaw, 'mobile');\n    } else {\n      phoneFormatted = formatAuPhone(parsed.phoneNumberRaw, 'landline');\n    }\n  }\n\n  const leadQualifier = isSpamLead(parsed, mobileFormatted, phoneFormatted) ? 'Spam' : 'Good';\n\n  return {\n    json: {\n      Timestamp: getBrisbaneDate(json),\n      Id: json.id || '',\n      'Lead Type': 'Sliding Door Lead',\n      'First Name': parsed.firstName || '',\n      'Last Name': parsed.lastName || '',\n      'Mobile Number': mobileFormatted,\n      'Phone Number': phoneFormatted,\n      'Email Address': parsed.email || '',\n      Address: '',\n      State: parsed.state || '',\n      Suburb: parsed.suburb || '',\n      'Postal Code': '',\n      Enquiry: parsed.enquiry || '',\n      Quantity: parsed.quantity || '',\n\n      // IMPORTANT: use the exact key your schema expects (curly apostrophe)\n      \"I’d Like To Get My Project Underway\": cleanProjectTiming(parsed.projectTiming),\n\n      'How they heard about us': 'SDR Website',\n      'Lead Qualifier': leadQualifier,\n\n      // IMPORTANT: exact key casing for schema\n      referredBy: ''\n    }\n  };\n});\n"
+          "jsCode": "// =================== Utilities ===================\n\nfunction normalizeDigits(str) {\n  if (!str) return '';\n  return String(str).replace(/\\D+/g, '');\n}\n\nfunction formatAuPhone(raw, type) {\n  if (!raw) return '';\n  let digits = normalizeDigits(raw);\n  if (!digits) return '';\n\n  if (digits.startsWith('61')) {\n    digits = '0' + digits.slice(2);\n  } else if (!digits.startsWith('0') && digits.length >= 9) {\n    digits = '0' + digits;\n  }\n\n  if (type === 'mobile' && digits.length === 10) {\n    return digits.replace(/(\\d{4})(\\d{3})(\\d{3})/, '$1 $2 $3');\n  }\n\n  if (type === 'landline' && digits.length === 10) {\n    return digits.replace(/(\\d{2})(\\d{4})(\\d{4})/, '$1 $2 $3');\n  }\n\n  return digits;\n}\n\nfunction getBrisbaneDate(json) {\n  const date = json.internalDate ? new Date(Number(json.internalDate)) : new Date();\n  return date.toLocaleString('en-AU', { timeZone: 'Australia/Brisbane', hour12: false });\n}\n\n\n// =================== CLEAN PROJECT TIMING FIX ===================\n\nfunction cleanProjectTiming(value) {\n  if (!value) return '';\n\n  const STOP_WORDS = [\n    'Heard From',\n    'Brands'\n  ];\n\n  let cleaned = value;\n\n  // Cut at known boundaries\n  for (const stop of STOP_WORDS) {\n    const idx = cleaned.indexOf(stop);\n    if (idx !== -1) {\n      cleaned = cleaned.slice(0, idx);\n    }\n  }\n\n  // Remove Gmail / HTML junk like \"...\"\n  cleaned = cleaned\n    .replace(/^\\s*\\.{2,}/, '')   // remove \"..\" / \"...\"\n    .replace(/^[\\s:–—-]+/, '')   // leading punctuation\n    .trim();\n\n  // If only dots existed, return empty\n  if (/^\\.*$/.test(cleaned)) return '';\n\n  return cleaned;\n}\n\n\n\n\n// =================== Parser ===================\n\nfunction parseFormText(rawText) {\n  if (!rawText) return {};\n  const text = rawText.replace(/\\r?\\n/g, ' ');\n  const lower = text.toLowerCase();\n\n  const markerDefs = [\n    { key: 'firstName', marker: 'First Name' },\n    { key: 'lastName', marker: 'Last Name' },\n    { key: 'email', marker: 'Email' },\n    { key: 'mobileRaw', marker: 'Mobile Number' },\n    { key: 'phoneNumberRaw', marker: 'Phone Number' },\n    { key: 'suburb', marker: 'Suburb' },\n    { key: 'state', marker: 'State' },\n    { key: 'enquiry', marker: 'Comments/Questions:' },\n    { key: 'projectTiming', marker: \"Timeframe\" },\n    { key: 'quantity', marker: 'Service:' },\n    \n    // Boundaries\n    { key: null, marker: 'Brands' },\n    { key: null, marker: 'Heard From' }\n  ];\n\n  const positions = [];\n  for (const m of markerDefs) {\n    const idx = lower.indexOf(m.marker.toLowerCase());\n    if (idx !== -1) {\n      positions.push({ key: m.key, markerIndex: idx, valueStart: idx + m.marker.length });\n    }\n  }\n\n  if (!positions.length) return {};\n  positions.sort((a, b) => a.markerIndex - b.markerIndex);\n\n  const result = {};\n  for (let i = 0; i < positions.length; i++) {\n    const curr = positions[i];\n    const next = positions[i + 1];\n    const end = next ? next.markerIndex : text.length;\n    const value = text.slice(curr.valueStart, end).trim();\n    if (curr.key && value && !result[curr.key]) result[curr.key] = value;\n  }\n\n  if (!result.email) {\n    const emailMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n    if (emailMatch) result.email = emailMatch[0];\n  }\n\n  return result;\n}\n\n// =================== Name handling (multi-word) ===================\n\nfunction splitFullName(firstRaw, lastRaw) {\n  const f = String(firstRaw || '').trim();\n  const l = String(lastRaw || '').trim();\n\n  if (f && l) return { firstName: f, lastName: l };\n\n  const full = (f || l).trim();\n  if (!full) return { firstName: '', lastName: '' };\n\n  const parts = full.split(/\\s+/).filter(Boolean);\n  if (parts.length === 1) return { firstName: parts[0], lastName: '' };\n  return { firstName: parts[0], lastName: parts.slice(1).join(' ') };\n}\n\n// =================== Spam Rules ===================\n\nconst BAD_NAME_WORDS = new Set([\n  'test','asdf','qwer','zxcv','xxxx','abc','123','sdr','null','none','na','n/a','demo'\n]);\n\nconst DISPOSABLE_DOMAINS = new Set([\n  'mailinator.com','tempmail.com','10minutemail.com','guerrillamail.com',\n  'yopmail.com','trashmail.com','sharklasers.com','getnada.com'\n]);\n\nfunction isLikelyGibberishName(name) {\n  const s = String(name || '').trim().toLowerCase();\n  if (!s) return true;\n\n  const cleaned = s.replace(/[^a-z\\s'\\-]/g, '');\n  const lettersOnly = cleaned.replace(/[^a-z]/g, '');\n\n  if (lettersOnly.length < 2) return true;\n  if (cleaned.length < s.length * 0.7) return true;\n\n  const vowels = (lettersOnly.match(/[aeiou]/g) || []).length;\n  const vowelRatio = vowels / lettersOnly.length;\n  const hasLongRepeat = /(.)\\1{3,}/.test(lettersOnly);\n  const hasConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(lettersOnly);\n\n  // For very short tokens, avoid false positives\n  if (lettersOnly.length <= 5) {\n    if (hasLongRepeat) return true;\n    if (hasConsonantRun && lettersOnly.length >= 5) return true;\n    return false;\n  }\n\n  if (vowelRatio < 0.22 || hasConsonantRun || hasLongRepeat) return true;\n  return false;\n}\n\nfunction hasBadNameWord(first, last) {\n  const f = String(first || '').toLowerCase();\n  const l = String(last || '').toLowerCase();\n  return BAD_NAME_WORDS.has(f) || BAD_NAME_WORDS.has(l) || (f + ' ' + l).includes('test');\n}\n\nfunction isDisposableEmail(email) {\n  const m = String(email || '').toLowerCase().match(/@([a-z0-9.-]+\\.[a-z]{2,})$/);\n  return m ? DISPOSABLE_DOMAINS.has(m[1]) : false;\n}\n\nfunction isFakePhoneDigits(digits) {\n  const d = normalizeDigits(digits);\n  if (!d || d.length < 9) return true;\n  if (/^(\\d)\\1+$/.test(d)) return true;\n  if (d.includes('123456') || d.includes('00000')) return true;\n  return false;\n}\n\n// =================== Loosened Spam Decision (score-based) ===================\n\nfunction isSpamLead(parsed, mobileFormatted, phoneFormatted) {\n  const first = (parsed.firstName || '').trim();\n  const last = (parsed.lastName || '').trim();\n  const email = (parsed.email || '').trim();\n  const enquiry = (parsed.enquiry || '').trim();\n\n  const mobileDigits = normalizeDigits(mobileFormatted);\n  const phoneDigits = normalizeDigits(phoneFormatted);\n  const hasAnyPhone = mobileDigits.length > 0 || phoneDigits.length > 0;\n\n  let score = 0;\n\n  // Strong signals\n  if (hasBadNameWord(first, last)) score += 3;\n  if (email && isDisposableEmail(email)) score += 3;\n  if (isFakePhoneDigits(mobileDigits || phoneDigits)) score += 3;\n\n  // Medium signals\n  if (!hasAnyPhone) score += 2;\n  if (!email) score += 1;\n  if (!enquiry || enquiry.length < 8) score += 1;\n\n  // Name length (allow short real names)\n  if (first.length < 2) score += 2;\n  if (last.length < 2) score += 1;\n\n  // Only run gibberish detector on longer tokens\n  if (first.length >= 5 && isLikelyGibberishName(first)) score += 2;\n  if (last.length >= 5 && isLikelyGibberishName(last)) score += 2;\n\n  return score >= 4;\n}\n\n// =================== MAIN ===================\n\nreturn items.map(item => {\n  const json = item.json || {};\n  const rawText = json.text || json.textPlain || json.snippet || '';\n  const parsed = parseFormText(rawText);\n\n  // Normalize names (supports multi-word + full-name-in-one-field cases)\n  const name = splitFullName(parsed.firstName, parsed.lastName);\n  parsed.firstName = name.firstName;\n  parsed.lastName = name.lastName;\n\n  let mobileFormatted = '';\n  let phoneFormatted = '';\n\n  if (parsed.mobileRaw) {\n    mobileFormatted = formatAuPhone(parsed.mobileRaw, 'mobile');\n  }\n\n  if (parsed.phoneNumberRaw) {\n    const digits = normalizeDigits(parsed.phoneNumberRaw);\n    if (digits.startsWith('04')) {\n      mobileFormatted ||= formatAuPhone(parsed.phoneNumberRaw, 'mobile');\n    } else {\n      phoneFormatted = formatAuPhone(parsed.phoneNumberRaw, 'landline');\n    }\n  }\n\n  const leadQualifier = isSpamLead(parsed, mobileFormatted, phoneFormatted) ? 'Spam' : 'Good';\n\n  return {\n    json: {\n      Timestamp: getBrisbaneDate(json),\n      Id: json.id || '',\n      'Lead Type': 'Sliding Door Lead',\n      'First Name': parsed.firstName || '',\n      'Last Name': parsed.lastName || '',\n      'Mobile Number': mobileFormatted,\n      'Phone Number': phoneFormatted,\n      'Email Address': parsed.email || '',\n      Address: '',\n      State: parsed.state || '',\n      Suburb: parsed.suburb || '',\n      'Postal Code': '',\n      Enquiry: parsed.enquiry || '',\n      Quantity: parsed.quantity || '',\n\n      // IMPORTANT: use the exact key your schema expects (curly apostrophe)\n      \"I’d Like To Get My Project Underway\": cleanProjectTiming(parsed.projectTiming),\n\n      'How they heard about us': 'SDR Website',\n      'Lead Qualifier': leadQualifier,\n\n      // IMPORTANT: exact key casing for schema\n      referredBy: ''\n    }\n  };\n});\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -3172,10 +3200,10 @@
           },
           "channelId": {
             "__rl": true,
-            "value": "912496260823519232",
+            "value": "1510773975423385875",
             "mode": "list",
-            "cachedResultName": "leads・new",
-            "cachedResultUrl": "https://discord.com/channels/753455160209965106/912496260823519232"
+            "cachedResultName": "new-leads",
+            "cachedResultUrl": "https://discord.com/channels/753455160209965106/1510773975423385875"
           },
           "content": "===========\nLead Type: {{ $json['Lead Type'] }}\nTimestamp: {{ $json.Timestamp }}\nId: {{ $json.Id }}\nFirst Name: {{ $json['First Name'] }}\nLast Name: {{ $json['Last Name'] }}\nMobile Number: {{ $json['Mobile Number'] }}\nPhone Number: {{ $json['Phone Number'] }}\nEmail Address: {{ $json['Email Address'] }}\nAddress: {{ $json.Address }}\nState: {{ $json.State }}\nSuburb: {{ $json.Suburb }}\nPostal Code: {{ $json['Postal Code'] }}\nEnquiry: {{ $json.Enquiry }}\nQuantity: {{ $json.Quantity }}\nI'd Like To Get my Project Underway: {{ $json['I’d Like To Get My Project Underway'] }}\nHow they heard about us?: {{ $json['How they heard about us'] }}",
           "options": {}
@@ -3183,8 +3211,8 @@
         "type": "n8n-nodes-base.discord",
         "typeVersion": 2,
         "position": [
-          4176,
-          -128
+          4256,
+          -224
         ],
         "id": "be7045d4-c862-419b-9d28-8f124713018d",
         "name": "Send a message",
@@ -3205,7 +3233,7 @@
         "typeVersion": 2.1,
         "position": [
           4400,
-          256
+          368
         ],
         "id": "0e874fe4-2c21-40ec-9712-63dc4230fced",
         "name": "Delete spam email",
@@ -3215,7 +3243,8 @@
             "id": "Iacb6DlpUsfDqQMK",
             "name": "WR: Gmail Account"
           }
-        }
+        },
+        "disabled": true
       },
       {
         "parameters": {
@@ -3226,7 +3255,7 @@
         "typeVersion": 2.1,
         "position": [
           3952,
-          256
+          368
         ],
         "id": "412596bc-f04e-4215-89fc-974f18375037",
         "name": "Check id if exist before deleting",
@@ -3237,6 +3266,7 @@
             "name": "WR: Gmail Account"
           }
         },
+        "disabled": true,
         "onError": "continueRegularOutput"
       },
       {
@@ -3248,7 +3278,7 @@
         "typeVersion": 4.3,
         "position": [
           3952,
-          -416
+          -480
         ],
         "id": "9ac2169e-f789-43b8-88ca-ad6fdc087d24",
         "name": "Send to Wrapp",
@@ -3262,10 +3292,11 @@
         "typeVersion": 2,
         "position": [
           4176,
-          256
+          368
         ],
         "id": "97d142a3-74b4-45ec-8d43-eea863a3e07a",
-        "name": "Get Ids"
+        "name": "Get Ids",
+        "disabled": true
       },
       {
         "parameters": {
@@ -4460,8 +4491,8 @@
         "type": "n8n-nodes-base.dataTable",
         "typeVersion": 1.1,
         "position": [
-          4176,
-          64
+          4256,
+          -32
         ],
         "id": "ba76aa92-5d1d-4c5f-bdb2-b33f8d2c6610",
         "name": "Insert row for ThreadId"
@@ -4838,6 +4869,46 @@
         ],
         "id": "3059c0d1-ed8d-47f3-8d35-b2b0ea640864",
         "name": "Email only1"
+      },
+      {
+        "parameters": {
+          "operation": "addLabels",
+          "messageId": "={{ $json.Id }}",
+          "labelIds": [
+            "Label_169",
+            "Label_467349780880217490"
+          ]
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          3952,
+          0
+        ],
+        "id": "9ce8f934-75da-4c94-bd01-e6e7e53a1b2e",
+        "name": "Add label to emails marked as spam",
+        "webhookId": "d223a823-9177-4c4e-b398-48b487c46935",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "Iacb6DlpUsfDqQMK",
+            "name": "WR: Gmail Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Spam Email Handling\nDeletes emails marked as spam\n\nCurrent Status:\n_Disconnected & Deactivated_",
+          "height": 192,
+          "width": 166
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3696,
+          352
+        ],
+        "id": "f74f2956-527b-4a91-97eb-cb60e78e0b3b",
+        "name": "Sticky Note"
       }
     ],
     "connections": {
@@ -4868,7 +4939,7 @@
           ],
           [
             {
-              "node": "Check id if exist before deleting",
+              "node": "Add label to emails marked as spam",
               "type": "main",
               "index": 0
             }
@@ -5572,18 +5643,16 @@
       }
     },
     "authors": "Christine Kam",
-    "name": "Version a37aa264",
-    "description": "",
-    "autosaved": true,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-03-05T00:20:47.412Z",
-        "id": 279,
-        "workflowId": "NXvUDPpKfGxWETqO",
-        "versionId": "a37aa264-e0d1-4438-bd1b-fd691710c65f",
-        "event": "activated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
-    ]
-  }
+    "name": "Version 80df3092",
+    "description": "SDR parser adjusted - cleanProjectTiming function updated",
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-11-25T13:05:18.454Z",
+      "createdAt": "2025-11-25T13:05:18.454Z",
+      "id": "xn6seEX74pkTOLqC",
+      "name": "@lead"
+    }
+  ]
 }
