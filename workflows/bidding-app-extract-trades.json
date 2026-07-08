@@ -1,0 +1,256 @@
+{
+  "updatedAt": "2026-05-24T16:02:09.000Z",
+  "createdAt": "2026-05-22T08:46:58.827Z",
+  "id": "EeoBT5eSHCmyIqgl",
+  "name": "bidding-app-extract-trades",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🔵 PURPOSE\n\nReceives drawing PNG URLs from **connachtgroup-app** (Nuxt). Sends them to **OpenAI gpt-4o vision**. Returns deduplicated JSON list of construction trades.\n\nPowers **Step 2** of Pat's bidding workflow (AI-extracted trade list from drawings).",
+        "height": 192,
+        "width": 468,
+        "color": 4
+      },
+      "id": "sticky-blue",
+      "name": "PURPOSE",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🟡 FLOW\n\n1. **Webhook** receives `{ project_id, drawings: [{ png_url, title }] }`\n2. **Prepare** node builds comma-separated image URLs + context\n3. **OpenAI** analyzes all drawing PNGs in one call (gpt-4o vision)\n4. **Parse** strips fence + parses JSON array of trade names\n5. **Respond** returns `{ trades, drawings_analyzed, model }`",
+        "height": 192,
+        "width": 600,
+        "color": 5
+      },
+      "id": "sticky-yellow",
+      "name": "FLOW",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        432,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🟠 ERROR HANDLING (mandatory)\n\nError Trigger fires on any node failure → Gmail alerts `don.puerto.1003@gmail.com` with workflow name, error message, failed node, timestamp, and execution link.\n\nUses `DP: Gmail Account` credential.",
+        "width": 600,
+        "color": 2
+      },
+      "id": "sticky-orange",
+      "name": "ERROR HANDLING",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "extract-trades",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        320
+      ],
+      "webhookId": "a8e9595f-71f6-4a09-b847-2925b7e404bf",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst body = data.body || data;\nconst drawings = body.drawings || [];\n\n// Prefer large_thumbnail_url (smaller payload than full png_url) but fall back\nconst imageUrls = drawings\n  .map(d => d.large_thumbnail_url || d.png_url || d.pdf_url)\n  .filter(Boolean);\n\nconst context = drawings\n  .map((d, i) => `Drawing ${i + 1}: ${d.drawing_number || '?'} — ${d.title || ''}`)\n  .join('\\n');\n\nreturn {\n  json: {\n    project_id: body.project_id,\n    project_name: body.project_name,\n    drawings_count: drawings.length,\n    imageUrlsCSV: imageUrls.join(','),\n    context,\n  }\n};"
+      },
+      "id": "prepare",
+      "name": "Prepare",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o"
+        },
+        "text": "=You are analyzing construction drawings for a bidding workflow. Look at every drawing image and produce a JSON array of trade names that subcontractors would bid on. Use industry-standard MasterFormat-style names (e.g. \"Demolition\", \"Structural Steel\", \"Plumbing\", \"HVAC\", \"Fire Protection\", \"Electrical\", \"Concrete\", \"Roofing\", \"Drywall\", \"Painting\", \"Flooring\", \"Glazing\", \"Site Work\").\n\nDrawings provided:\n{{ $json.context }}\n\nRules:\n- Return ONLY a JSON array of strings. No prose, no markdown, no code fence.\n- Each trade appears at most once.\n- Sort alphabetically.\n- Be specific where drawings clearly call out a sub-trade (e.g. \"Fire Sprinklers\" vs \"Fire Protection\") but don't invent trades that aren't visible.\n- 5-15 trades is a reasonable target.\n\nOutput format example:\n[\"Drywall\", \"Electrical\", \"Fire Protection\", \"HVAC\", \"Plumbing\", \"Structural Steel\"]",
+        "imageUrls": "={{ $json.imageUrlsCSV }}",
+        "options": {
+          "detail": "high"
+        }
+      },
+      "id": "openai-vision",
+      "name": "OpenAI Vision",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        320
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "oQQrCQWqdo1CuRzx",
+          "name": "WRai: OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $input.first().json;\nconst text = msg.content || (msg.message && msg.message.content) || msg.text || String(msg);\n\nlet trades;\ntry {\n  const trimmed = String(text).trim();\n  const cleaned = trimmed\n    .replace(/^```(?:json)?\\s*/, '')\n    .replace(/\\s*```$/, '');\n  trades = JSON.parse(cleaned);\n  if (!Array.isArray(trades)) throw new Error('Response was not a JSON array');\n  trades = [...new Set(trades.map(t => String(t).trim()))].filter(Boolean).sort();\n} catch (e) {\n  throw new Error(`Could not parse OpenAI response as JSON array. Error: ${e.message}. Raw response: ${text}`);\n}\n\nconst prep = $('Prepare').first().json;\n\nreturn {\n  json: {\n    trades,\n    drawings_analyzed: prep.drawings_count,\n    model: 'gpt-4o',\n    project_id: prep.project_id,\n  }\n};"
+      },
+      "id": "parse",
+      "name": "Parse",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1168,
+        320
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "error-trigger",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "don.puerto.1003@gmail.com",
+        "subject": "=⚠️ n8n Error: {{ $json.workflow.name }}",
+        "message": "=<h2>⚠️ Workflow Failed</h2><table><tr><td><strong>Workflow</strong></td><td>{{ $json.workflow.name }}</td></tr><tr><td><strong>Error</strong></td><td>{{ $json.execution.error.message }}</td></tr><tr><td><strong>Failed Node</strong></td><td>{{ $json.execution.error.node ? $json.execution.error.node.name : 'Unknown' }}</td></tr><tr><td><strong>Time</strong></td><td>{{ $json.execution.startedAt }}</td></tr><tr><td><strong>Link</strong></td><td><a href=\"{{ $json.execution.url }}\">View execution</a></td></tr></table>",
+        "options": {}
+      },
+      "id": "gmail-alert",
+      "name": "Gmail Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        720
+      ],
+      "webhookId": "747192ba-c4a4-41b4-9182-7bb493c21a98"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Vision": {
+      "main": [
+        [
+          {
+            "node": "Parse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "8d254f37-5cb2-4623-9994-9dfc607a1087",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-05-22T08:46:58.831Z",
+      "createdAt": "2026-05-22T08:46:58.831Z",
+      "role": "workflow:owner",
+      "workflowId": "EeoBT5eSHCmyIqgl",
+      "projectId": "6TsYTzg0HY92xH2K"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
