@@ -1,0 +1,2234 @@
+{
+  "updatedAt": "2026-06-25T08:25:01.340Z",
+  "createdAt": "2026-05-14T13:54:05.357Z",
+  "id": "COdtqWpp47SV9doi",
+  "name": "Jesus Saves - Daily Bible Verse - v1",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * 1,3,5"
+            }
+          ]
+        }
+      },
+      "id": "node-sched-001",
+      "name": "Schedule: Mon/Wed/Fri 6AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "trigger-bible-verse",
+        "options": {}
+      },
+      "id": "node-webhook-test",
+      "name": "Webhook: Manual Test Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        272,
+        480
+      ],
+      "webhookId": "2b2bc913-9a42-4d1b-bbd3-e82f093fc2c4",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst dayOfWeek = now.toLocaleDateString('en-US', {weekday: 'long'});\nconst isSabbath = now.getDay() === 6;\nconst themes = ['salvation', 'sanctuary', 'prophecy', 'Sabbath', 'health', 'second coming', 'resurrection', 'creation', 'baptism', 'stewardship', 'the church', 'grace'];\nconst dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);\nconst dailyTheme = isSabbath ? 'Sabbath' : themes[dayOfYear % themes.length];\nconst intro_music_url = null;\nreturn [{ json: { today_date: now.toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}), day_of_week: dayOfWeek, is_sabbath: isSabbath, daily_theme: dailyTheme, date_iso: now.toISOString().split('T')[0], intro_music_url } }];"
+      },
+      "id": "node-code-002",
+      "name": "Code: Set Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=SYSTEM: You are a Christian content curator for a page called \"Jesus Saves\". Pick ONE Bible verse for today's daily devotional post.\n\nInternal selection guide (do NOT mention these in the output):\n- Use the 28 Fundamental Beliefs as your internal theological guide for verse selection\n- Today's suggested theme: {{ $('Code: Set Context').first().json.daily_theme }}\n\nGuidelines:\n- Today is {{ $('Code: Set Context').first().json.day_of_week }}{{ $('Code: Set Context').first().json.is_sabbath ? ' (SABBATH)' : '' }}\n- Use KJV translation ONLY\n- verse_text must be the COMPLETE full verse, never truncated\n- tts_script must be 175-200 words for ~60 seconds of narration\n- NEVER mention \"Seventh-day Adventist\", \"SDA\", \"fundamental belief\", or any denominational label anywhere in the output\n- Respond ONLY with valid JSON — no commentary, no code blocks, raw JSON only\n\nRespond in this exact JSON format:\n{\"verse_text\":\"...\",\"verse_ref\":\"...\",\"book\":\"...\",\"theme\":\"...\",\"context\":\"2-3 sentence biblical context.\",\"tts_script\":\"Welcome to Jesus Saves Daily Bible Verse. Today from the book of [Book], chapter [chapter], verse [verse]: [verse text, read slowly and reverently]. [verse_ref], King James Version. [7-8 sentences of rich devotional content: the biblical historical background of this passage, the deep spiritual meaning of these words, a profound theological reflection on what this verse means for believers today, a practical way to apply this truth in your daily life, and an encouraging reflection or prayer thought]. May this word from God strengthen your faith and guide your steps today. God bless you. Amen.\",\"is_sabbath_verse\":false}\n\nHuman: Select today's Bible verse.",
+        "options": {
+          "systemMessage": "You are a Christian content curator for Jesus Saves. Always respond with valid JSON only. Never mention denominational labels.",
+          "maxIterations": 1,
+          "returnIntermediateSteps": false
+        }
+      },
+      "id": "node-agent-003",
+      "name": "AI Agent: SDA Verse Picker",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        752,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-5.4-mini"
+        },
+        "options": {
+          "maxTokens": 1200,
+          "temperature": 0.7
+        }
+      },
+      "id": "node-openai-004",
+      "name": "OpenAI: GPT-5.4 Mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        528
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "JQ6ARVQIEbbwoWxD",
+          "name": "DP: OpenAi Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json.output || $input.first().json.text || '';\nlet verseData;\ntry { verseData = JSON.parse(aiOutput.trim()); } catch (e) {\n  const jsonMatch = aiOutput.match(/\\{[\\s\\S]*\\}/);\n  if (!jsonMatch) throw new Error('Could not parse AI JSON: ' + aiOutput.slice(0, 300));\n  verseData = JSON.parse(jsonMatch[0]);\n}\n\n// Strip smart quotes, dashes, non-ASCII — English alphabet only\nfunction sanitize(text) {\n  if (!text) return '';\n  return text\n    .replace(/['']/g, \"'\")\n    .replace(/[\"\"]/g, '\"')\n    .replace(/[–—]/g, '-')\n    .replace(/…/g, '...')\n    .replace(/[^\\x20-\\x7E\\n]/g, '')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// Normalize to \"BookName Chapter:Verse (KJV)\" — e.g. \"1 Thessalonians 4:16 (KJV)\"\nfunction normalizeRef(ref) {\n  if (!ref) return '';\n  let r = ref.replace(/[^\\x20-\\x7E]/g, '').trim();\n  r = r.replace(/(\\d)\\s+(\\d)/g, '$1:$2');\n  r = r.replace(/\\s*\\(?KJV\\)?\\s*$/i, '').trim();\n  return r + ' (KJV)';\n}\n\nverseData.verse_text = sanitize(verseData.verse_text || '');\nverseData.verse_ref = normalizeRef(verseData.verse_ref || '');\nverseData.tts_script = sanitize(verseData.tts_script || '');\n\nif (!verseData.tts_script) {\n  verseData.tts_script = 'Welcome to Jesus Saves Daily Bible Verse. Today we read from the book of ' + verseData.book + ': ' + verseData.verse_text + '. ' + verseData.verse_ref + ', King James Version. ' + (verseData.context || '') + ' This precious word from Scripture reminds us of God\\'s unchanging love and faithfulness. May it encourage your heart, strengthen your faith, and guide your steps today. God bless you. Amen.';\n}\n\nfunction getContext(book) {\n  const b = (book || '').toLowerCase();\n  if (b.includes('exodus')) return 'Moses at Mount Sinai with divine fire and clouds, stone tablets, Israelites in wilderness';\n  if (b.includes('genesis')) return 'Garden of Eden paradise with divine light, lush ancient trees and flowing rivers';\n  if (b.includes('psalm')) return 'David playing harp on rocky hillside overlooking green valleys, ancient Israel landscape';\n  if (b.includes('john')) return 'Sea of Galilee at sunrise with fishing boats, Jesus teaching by the water, warm glow';\n  if (b.includes('revelation')) return 'Heavenly city New Jerusalem, celestial golden light, angelic figures, divine glory';\n  if (b.includes('isaiah')) return 'Hebrew prophet on hilltop in ancient Judea, divine light rays streaming from heaven';\n  if (b.includes('matthew')) return 'Sermon on the Mount, large crowd on green hillside, Jesus teaching, blue sky';\n  if (b.includes('daniel')) return 'Ancient Babylon palace, Daniel in prayer, dramatic moonlight, prophetic vision';\n  if (b.includes('proverb')) return 'Ancient sage with scrolls under olive tree, peaceful Hebrew countryside at dusk';\n  if (b.includes('hebrews')) return 'Ancient Jerusalem temple interior, golden menorah, sacred altar with divine light';\n  if (b.includes('act')) return 'Pentecost scene, disciples gathered in prayer, tongues of fire, Jerusalem temple';\n  if (b.includes('roman')) return 'Ancient Roman road through holy land, pilgrim walking toward golden sunrise horizon';\n  if (b.includes('luke')) return 'Birth of Jesus in Bethlehem stable, bright star overhead, shepherds and angels';\n  if (b.includes('mark')) return 'Jesus healing the sick by lakeside, crowd gathered, compassion and divine power';\n  if (b.includes('peter')) return 'Stormy sea with figure walking on water, faith over fear, divine radiance above';\n  if (b.includes('job')) return 'Lone man on rocky hilltop under dramatic storm sky, divine voice from whirlwind';\n  if (b.includes('jeremiah')) return 'Prophet kneeling over Jerusalem ruins, dramatic sky, dawn light breaking through';\n  if (b.includes('ezek')) return 'Vision of divine chariot with wheels within wheels, angelic beings, celestial light';\n  if (b.includes('number')) return 'Israelites marching through wilderness, pillar of cloud and fire leading the way';\n  if (b.includes('deuteron')) return 'Moses on mountain overlooking promised land, golden light, vast valley below';\n  if (b.includes('ruth')) return 'Golden wheat fields at harvest, woman gleaning grain, peaceful ancient countryside';\n  if (b.includes('zech')) return 'Jerusalem with surrounding mountains, olive trees, menorah, divine vision';\n  if (b.includes('thessalon')) return 'Heavenly trumpets sounding, souls rising toward brilliant light, angels in golden clouds';\n  if (b.includes('corinth')) return 'Ancient Greek city with temple columns, early church gathering, divine light descending';\n  if (b.includes('galat')) return 'Ancient Galatia landscape, rolling hills, Paul writing letters by lantern light';\n  if (b.includes('ephes')) return 'Ephesus harbor at dawn, early believers gathered, divine light breaking through clouds';\n  if (b.includes('philip')) return 'Philippi marketplace, Paul and Silas in prayer, divine light streaming through bars';\n  if (b.includes('coloss')) return 'Ancient Colossae, hillside gathering of early Christians, golden sunrise over valley';\n  if (b.includes('timothy')) return 'Young disciple reading scripture by candlelight, ancient church setting, warm glow';\n  return 'Ancient holy land landscape with divine golden light rays streaming through dramatic clouds above';\n}\n\nconst ctx = $('Code: Set Context').first().json;\nconst scene = getContext(verseData.book);\n\n// Build ideogram prompt — NO aspect ratio text in prompt (set as API param)\nconst verseBlock = '\"' + verseData.verse_text + '\"';\nconst refBlock = verseData.verse_ref;\n\nconst cardBase = 'Devotional Bible verse image card. Background scene: ' + scene + '. Dark semi-transparent overlay in center of image. On the overlay, display ONLY this text in Playfair Display serif font: first line in italic white — ' + verseBlock + ' — then directly below in bold white smaller text: ' + refBlock + '. Text wraps to fit fully. No other words, numbers, symbols, or decorative elements anywhere on the card.';\n\n// 6 unique lighting atmospheres — one per card\nconst ideogram_prompts = [\n  cardBase + ' Lighting: warm golden dawn rays, serene morning glow.',\n  cardBase + ' Lighting: dramatic sunset, rich orange and purple sky, divine radiance.',\n  cardBase + ' Lighting: bright midday light streaming through clouds from above.',\n  cardBase + ' Lighting: twilight blue hour, gentle mystical peaceful atmosphere.',\n  cardBase + ' Lighting: night sky filled with stars, moonlight glowing softly on the scene.',\n  cardBase + ' Lighting: early morning mist with soft diffused golden light, peaceful and still.'\n];\n\nreturn [{ json: { ...verseData, date_iso: ctx.date_iso, audio_filename: 'verse-' + ctx.date_iso + '.mp3', intro_music_url: ctx.intro_music_url, ideogram_prompts } }];\n"
+      },
+      "id": "node-code-005",
+      "name": "Code: Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fal.run/fal-ai/ideogram/v2",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[0], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+        "options": {}
+      },
+      "id": "node-http-verse-card-1",
+      "name": "HTTP: Verse Card 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1184,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fal.run/fal-ai/ideogram/v2",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[1], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+        "options": {}
+      },
+      "id": "node-http-verse-card-2",
+      "name": "HTTP: Verse Card 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1424,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fal.run/fal-ai/ideogram/v2",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[2], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+        "options": {}
+      },
+      "id": "node-http-verse-card-3",
+      "name": "HTTP: Verse Card 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1664,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fal.run/fal-ai/ideogram/v2",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[3], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+        "options": {}
+      },
+      "id": "node-http-verse-card-4",
+      "name": "HTTP: Verse Card 4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1904,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const urls = [];\nfor (let i = 1; i <= 6; i++) {\n  const result = $('HTTP: Verse Card ' + i).first().json;\n  const imgUrls = (result.images || []).map(img => img.url).filter(Boolean);\n  urls.push(...imgUrls);\n}\nif (urls.length === 0) throw new Error('No images from any verse card node');\nconst verse = $('Code: Parse AI Response').first().json;\nreturn [{ json: { ...verse, slide_urls: urls } }];"
+      },
+      "id": "node-code-extract-slides",
+      "name": "Code: Extract Slide URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "voice": {
+          "__rl": true,
+          "value": "N2lVS1w4EtoT3dr4eOWO",
+          "mode": "id"
+        },
+        "text": "={{ $('Code: Parse AI Response').first().json.tts_script }}",
+        "additionalOptions": {
+          "model": {
+            "__rl": true,
+            "value": "eleven_multilingual_v2",
+            "mode": "id"
+          },
+          "outputFormat": "mp3_44100_128"
+        },
+        "requestOptions": {}
+      },
+      "id": "node-eleven-006",
+      "name": "ElevenLabs: Text to Speech",
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        544
+      ],
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "e7RcB3YZf7dgKLPg",
+          "name": "DP: ElevenLabs API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryField = $input.first().binary?.data;\nif (!binaryField) throw new Error('No binary data from ElevenLabs TTS');\nlet audioBase64;\nconst rawData = String(binaryField.data || '');\nif (rawData && !rawData.startsWith('filesystem')) {\n  audioBase64 = rawData;\n} else {\n  const buf = await Promise.race([\n    this.helpers.getBinaryDataBuffer(0, 'data'),\n    new Promise((_, rej) => setTimeout(() => rej(new Error('audio binary read timeout')), 10000))\n  ]);\n  audioBase64 = buf.toString('base64');\n}\nconst verse = $('Code: Parse AI Response').first().json;\nreturn [{ json: { ...verse, audio_base64: audioBase64 } }];"
+      },
+      "id": "node-code-007d",
+      "name": "Code: Read Audio Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ content_type: 'audio/mpeg', file_name: $('Code: Parse AI Response').first().json.audio_filename }) }}",
+        "options": {}
+      },
+      "id": "node-http-007a",
+      "name": "HTTP: Initiate Audio Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2672,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const initiateResult = $input.first().json;\nif (!initiateResult.upload_url) throw new Error('No upload_url: ' + JSON.stringify(initiateResult));\nconst audioBase64 = $('Code: Read Audio Binary').first().json.audio_base64;\nif (!audioBase64) throw new Error('No audio_base64 from Code: Read Audio Binary');\nreturn [{ json: { upload_url: initiateResult.upload_url, file_url: initiateResult.file_url }, binary: { data: { data: audioBase64, mimeType: 'audio/mpeg', fileName: 'audio.mp3' } } }];"
+      },
+      "id": "node-code-007b",
+      "name": "Code: Attach Audio Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2912,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.upload_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "audio/mpeg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "node-http-007c",
+      "name": "HTTP: PUT Audio to fal.ai",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3152,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const verse = $('Code: Parse AI Response').first().json;\nconst audioUrl = $('HTTP: Initiate Audio Upload').first().json.file_url;\nconst slideUrls = $('Code: Extract Slide URLs').first().json.slide_urls;\nif (!audioUrl) throw new Error('Missing audio file_url from fal.ai CDN');\nif (!slideUrls || slideUrls.length === 0) throw new Error('Missing slide_urls from Code: Extract Slide URLs');\nconst wordCount = (verse.tts_script || '').split(/\\s+/).length;\nconst durationSec = Math.max(65, Math.ceil(wordCount / 2.3) + 10);\nconst fps = 10;\nconst framesPerSlide = Math.max(30, Math.floor(Math.min(durationSec * fps / slideUrls.length, 150)));\nreturn [{ json: { ...verse, audio_url: audioUrl, slide_urls: slideUrls, duration_sec: durationSec, i2v_fps: fps, frames_per_slide: framesPerSlide } }];"
+      },
+      "id": "node-code-010b",
+      "name": "Code: Get Video Inputs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3392,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/ffmpeg-api/images-to-video",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ images: $json.slide_urls.map(url => ({ url, frames: $json.frames_per_slide })), fps: $json.i2v_fps }) }}",
+        "options": {}
+      },
+      "id": "node-http-011a",
+      "name": "HTTP: Submit Images to Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3632,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "await new Promise(r => setTimeout(r, 25000));\nreturn $input.all();"
+      },
+      "id": "node-code-011b",
+      "name": "Code: Wait 25s Img2Vid",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3872,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('HTTP: Submit Images to Video').first().json.status_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "node-http-011c",
+      "name": "HTTP: Get Img2Vid Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4112,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "COMPLETED",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "combinator": "or",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "IN_PROGRESS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  },
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "IN_QUEUE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "node-switch-011d",
+      "name": "Switch: Img2Vid Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        4352,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('HTTP: Submit Images to Video').first().json.response_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "node-http-011f",
+      "name": "HTTP: Get Img2Vid Result",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4592,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "await new Promise(r => setTimeout(r, 10000));\nreturn $input.all();"
+      },
+      "id": "node-code-011e",
+      "name": "Code: Wait 10s Retry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4592,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fal.run/fal-ai/ffmpeg-api/merge-audio-video",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ video_url: ($json.video && $json.video.url) || $json.video_url || $json.url, audio_url: $('Code: Get Video Inputs').first().json.audio_url }) }}",
+        "options": {}
+      },
+      "id": "node-http-012a",
+      "name": "HTTP: Merge Audio Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4832,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const verse = $('Code: Parse AI Response').first().json;\nconst falResult = $input.first().json;\nconst videoUrl = falResult.video_url || (falResult.video && falResult.video.url) || falResult.url || '';\nif (!videoUrl) throw new Error('No video_url from merge-audio-video result: ' + JSON.stringify(falResult).slice(0,200));\nconst baseHashtags = '#JesusSaves #BibleVerse #DailyVerse #Scripture #Faith #ChristianLife #DailyDevotion';\nconst themeMap = { 'salvation': '#Salvation #Grace #Redemption', 'Sabbath': '#Sabbath #SabbathRest #HappySabbath', 'second coming': '#SecondComing #Maranatha', 'prophecy': '#BibleProphecy #Prophecy', 'sanctuary': '#Sanctuary #Atonement', 'health': '#HealthMessage #SDAHealth', 'resurrection': '#Resurrection #EternalLife #Hope' };\nconst extraTags = themeMap[verse.theme] || '#DailyDevotion #GodIsGood';\nconst allHashtags = baseHashtags + ' ' + extraTags;\nconst fbDescription = ['\\u271d\\ufe0f Daily Bible Verse', '', '\\ud83d\\udcd6 \"' + verse.verse_text + '\"', '\\u2014 ' + verse.verse_ref + ' (KJV)', '', verse.context, '', allHashtags].join('\\n').trim();\nreturn [{ json: { video_url: videoUrl, fb_description: fbDescription, verse_ref: verse.verse_ref, theme: verse.theme } }];"
+      },
+      "id": "node-code-012",
+      "name": "Code: Build Platform Captions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5072,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v19.0/1180778398669428/videos",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ file_url: $json.video_url, description: $json.fb_description }) }}",
+        "options": {}
+      },
+      "id": "node-http-013",
+      "name": "HTTP: Post Video to Facebook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5312,
+        64
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "k3uWplyUFWBu2sB5",
+          "name": "DP: Facebook Page Token (Jesus Saves)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "node-noop-014",
+      "name": "No Op: Instagram Route",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        5312,
+        224
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "node-noop-015",
+      "name": "No Op: YouTube Route",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        5312,
+        384
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "node-noop-016",
+      "name": "No Op: TikTok Route",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        5312,
+        544
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "node-error-001",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        272,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "don.puerto.1003@gmail.com",
+        "subject": "=⚠️ n8n Error: {{ $json.workflow.name }}",
+        "message": "=<h2>⚠️ Workflow Failed</h2><table cellpadding=\"6\"><tr><td><strong>Workflow</strong></td><td>{{ $json.workflow.name }}</td></tr><tr><td><strong>Error</strong></td><td>{{ $json.execution.error.message }}</td></tr><tr><td><strong>Failed Node</strong></td><td>{{ $json.execution.error.node?.name || 'Unknown' }}</td></tr><tr><td><strong>Time</strong></td><td>{{ $json.execution.startedAt }}</td></tr><tr><td><strong>Link</strong></td><td><a href=\"{{ $json.execution.url }}\">View execution in n8n</a></td></tr></table>",
+        "options": {}
+      },
+      "id": "node-error-002",
+      "name": "Gmail: Send Error Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        512,
+        768
+      ],
+      "webhookId": "20e0ad37-0cd8-47ae-a3a3-9939647b01b0",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## 📖 Jesus Saves — Daily Bible Verse v1\n**Posts Mon/Wed/Fri at 6 AM**\n\n**Flow:**\n1. Set context (theme, date)\n2. GPT-4o Mini → verse + tts_script (~70s narration)\n3. Code: Parse AI Response → parses JSON, builds bg_prompt from book context\n4. HTTP: Generate Verse Cards → ideogram/v2 (num_images:4) → 4 verse card images WITH text baked in\n5. Code: Extract Slide URLs → reads 4 CDN URLs from ideogram/v2 output\n6. ElevenLabs TTS → MP3 narration (native node, Callum voice, elevenLabsApi credential)\n7. Upload audio → fal.ai CDN (two-step initiate + PUT)\n8. images-to-video (queue, 10fps) — 4 slides × framesPerSlide each\n9. Poll queue → COMPLETED → silent video URL\n10. merge-audio-video → final MP4 with narration (sync)\n11. Build captions → Facebook + stubs\n12. Error Trigger → Gmail alert (disabled — needs DP: Gmail Account gmailOAuth2)\n\n**Credentials:**\n- DP: OpenAi Account ✅\n- DP: fal.ai API ✅ (HTTP Request nodes — generation + CDN upload)\n- DP: ElevenLabs API ✅ (elevenLabsApi, ID: e7RcB3YZf7dgKLPg — NATIVE NODE)\n- DP: Facebook Page Token ⚠️ (needs pages_manage_videos scope)\n- DP: Gmail Account ⏳ (gmailOAuth2 — create to re-enable error alerts)",
+        "height": 440,
+        "width": 700,
+        "color": 3
+      },
+      "id": "node-sticky-blue",
+      "name": "Sticky: Workflow Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        272,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🎨 Slide Generation\n\n**HTTP: Generate Verse Cards**\n- ideogram/v2 with num_images:4 → 4 verse card images WITH verse text baked in\n- Uses DP: fal.ai API (httpHeaderAuth)\n- Prompt includes verse_text + verse_ref displayed as white serif text on background\n- Output: { images: [{url, seed}×4] } — PNG format\n\n**Code: Extract Slide URLs**\n- Reads image URLs from HTTP: Generate Verse Cards\n- Pads to exactly 4 slides (repeats if ideogram returns < 4)\n- Returns { ...verse, slide_urls: [...4 fal.ai CDN URLs] }\n- No HTTP calls — n8n Code node has no fetch/http access\n- URLs are public fal.ai CDN, usable by images-to-video directly\n\n## 🎬 Video Pipeline\n- images-to-video (queue): 4 slides × framesPerSlide @ 10fps\n- merge-audio-video (sync): adds ElevenLabs narration\n\n## 🗣️ ElevenLabs TTS\n- Native node: @elevenlabs/n8n-nodes-elevenlabs.elevenLabs\n- Voice: Callum (N2lVS1w4EtoT3dr4eOWO) | Model: eleven_multilingual_v2\n\n## ⚠️ Code Node Sandbox Limits\n- fetch() NOT available\n- require() for http/https NOT available\n- All HTTP calls must go through HTTP Request nodes",
+        "height": 340,
+        "width": 680,
+        "color": 4
+      },
+      "id": "node-sticky-yellow",
+      "name": "Sticky: Slides + Video Pipeline",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3600,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚠️ Setup Required\n\n1. `@resvg/resvg-wasm` should be installed in n8n (graceful fallback if missing)\n2. Create: `DP: Gmail Account` (gmailOAuth2) for error alerts\n3. FB token needs `pages_manage_videos` scope — refresh in Meta for Developers\n4. Activate workflow\n\n## ⚠️ Known Limitations\n- ElevenLabs free tier: ~10k chars/month. If 401 error, quota likely exceeded.\n- fal.ai images-to-video: max 1000 total frames. Current: 4 slides × ~12s = ~480 frames at 10fps.\n- Code nodes: only fetch() for unauthenticated calls. Authenticated API calls use HTTP Request nodes.",
+        "height": 200,
+        "width": 500,
+        "color": 5
+      },
+      "id": "node-sticky-orange",
+      "name": "Sticky: Setup + Config",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        272,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fal.run/fal-ai/ideogram/v2",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[4], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+        "options": {}
+      },
+      "id": "node-http-verse-card-5",
+      "name": "HTTP: Verse Card 5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2144,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://fal.run/fal-ai/ideogram/v2",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[5], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+        "options": {}
+      },
+      "id": "node-http-verse-card-6",
+      "name": "HTTP: Verse Card 6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2384,
+        304
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8ehkq8gARMOTlOKl",
+          "name": "DP: fal.ai API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule: Mon/Wed/Fri 6AM": {
+      "main": [
+        [
+          {
+            "node": "Code: Set Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code: Set Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Set Context": {
+      "main": [
+        [
+          {
+            "node": "AI Agent: SDA Verse Picker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent: SDA Verse Picker": {
+      "main": [
+        [
+          {
+            "node": "Code: Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Verse Card 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Verse Card 1": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Verse Card 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Verse Card 2": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Verse Card 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Verse Card 3": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Verse Card 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Verse Card 4": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Verse Card 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Extract Slide URLs": {
+      "main": [
+        [
+          {
+            "node": "ElevenLabs: Text to Speech",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ElevenLabs: Text to Speech": {
+      "main": [
+        [
+          {
+            "node": "Code: Read Audio Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Read Audio Binary": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Initiate Audio Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Initiate Audio Upload": {
+      "main": [
+        [
+          {
+            "node": "Code: Attach Audio Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Attach Audio Binary": {
+      "main": [
+        [
+          {
+            "node": "HTTP: PUT Audio to fal.ai",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: PUT Audio to fal.ai": {
+      "main": [
+        [
+          {
+            "node": "Code: Get Video Inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Get Video Inputs": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Submit Images to Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Submit Images to Video": {
+      "main": [
+        [
+          {
+            "node": "Code: Wait 25s Img2Vid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Wait 25s Img2Vid": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Get Img2Vid Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Get Img2Vid Status": {
+      "main": [
+        [
+          {
+            "node": "Switch: Img2Vid Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch: Img2Vid Status": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Get Img2Vid Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code: Wait 10s Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Wait 10s Retry": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Get Img2Vid Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Get Img2Vid Result": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Merge Audio Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Merge Audio Video": {
+      "main": [
+        [
+          {
+            "node": "Code: Build Platform Captions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Build Platform Captions": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Post Video to Facebook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "No Op: Instagram Route",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "No Op: YouTube Route",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "No Op: TikTok Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Gmail: Send Error Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Verse Card 5": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Verse Card 6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Verse Card 6": {
+      "main": [
+        [
+          {
+            "node": "Code: Extract Slide URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI: GPT-5.4 Mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent: SDA Verse Picker",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveExecutionProgress": true,
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule: Mon/Wed/Fri 6AM": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "d740d213-62c5-4f3d-89cd-27cf3e9a1e13",
+  "activeVersionId": "6ed8bd35-3f27-459d-ba2e-d4749aa31d89",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-14T13:54:05.359Z",
+      "createdAt": "2026-05-14T13:54:05.359Z",
+      "role": "workflow:owner",
+      "workflowId": "COdtqWpp47SV9doi",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-05-17T10:01:38.830Z",
+    "createdAt": "2026-05-17T10:01:38.830Z",
+    "versionId": "6ed8bd35-3f27-459d-ba2e-d4749aa31d89",
+    "workflowId": "COdtqWpp47SV9doi",
+    "nodes": [
+      {
+        "id": "node-sched-001",
+        "name": "Schedule: Mon/Wed/Fri 6AM",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          260,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 6 * * 1,3,5"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "node-webhook-test",
+        "name": "Webhook: Manual Test Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "disabled": true,
+        "position": [
+          260,
+          480
+        ],
+        "parameters": {
+          "path": "trigger-bible-verse",
+          "httpMethod": "POST",
+          "responseMode": "onReceived",
+          "responseData": "firstEntryJson"
+        },
+        "webhookId": "2b2bc913-9a42-4d1b-bbd3-e82f093fc2c4"
+      },
+      {
+        "id": "node-code-002",
+        "name": "Code: Set Context",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          500,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const now = new Date();\nconst dayOfWeek = now.toLocaleDateString('en-US', {weekday: 'long'});\nconst isSabbath = now.getDay() === 6;\nconst themes = ['salvation', 'sanctuary', 'prophecy', 'Sabbath', 'health', 'second coming', 'resurrection', 'creation', 'baptism', 'stewardship', 'the church', 'grace'];\nconst dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);\nconst dailyTheme = isSabbath ? 'Sabbath' : themes[dayOfYear % themes.length];\nconst intro_music_url = null;\nreturn [{ json: { today_date: now.toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}), day_of_week: dayOfWeek, is_sabbath: isSabbath, daily_theme: dailyTheme, date_iso: now.toISOString().split('T')[0], intro_music_url } }];"
+        }
+      },
+      {
+        "id": "node-agent-003",
+        "name": "AI Agent: SDA Verse Picker",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.7,
+        "position": [
+          740,
+          300
+        ],
+        "parameters": {
+          "promptType": "define",
+          "text": "=SYSTEM: You are a Christian content curator for a page called \"Jesus Saves\". Pick ONE Bible verse for today's daily devotional post.\n\nInternal selection guide (do NOT mention these in the output):\n- Use the 28 Fundamental Beliefs as your internal theological guide for verse selection\n- Today's suggested theme: {{ $('Code: Set Context').first().json.daily_theme }}\n\nGuidelines:\n- Today is {{ $('Code: Set Context').first().json.day_of_week }}{{ $('Code: Set Context').first().json.is_sabbath ? ' (SABBATH)' : '' }}\n- Use KJV translation ONLY\n- verse_text must be the COMPLETE full verse, never truncated\n- tts_script must be 175-200 words for ~60 seconds of narration\n- NEVER mention \"Seventh-day Adventist\", \"SDA\", \"fundamental belief\", or any denominational label anywhere in the output\n- Respond ONLY with valid JSON — no commentary, no code blocks, raw JSON only\n\nRespond in this exact JSON format:\n{\"verse_text\":\"...\",\"verse_ref\":\"...\",\"book\":\"...\",\"theme\":\"...\",\"context\":\"2-3 sentence biblical context.\",\"tts_script\":\"Welcome to Jesus Saves Daily Bible Verse. Today from the book of [Book], chapter [chapter], verse [verse]: [verse text, read slowly and reverently]. [verse_ref], King James Version. [7-8 sentences of rich devotional content: the biblical historical background of this passage, the deep spiritual meaning of these words, a profound theological reflection on what this verse means for believers today, a practical way to apply this truth in your daily life, and an encouraging reflection or prayer thought]. May this word from God strengthen your faith and guide your steps today. God bless you. Amen.\",\"is_sabbath_verse\":false}\n\nHuman: Select today's Bible verse.",
+          "options": {
+            "systemMessage": "You are a Christian content curator for Jesus Saves. Always respond with valid JSON only. Never mention denominational labels.",
+            "maxIterations": 1,
+            "returnIntermediateSteps": false
+          }
+        }
+      },
+      {
+        "id": "node-openai-004",
+        "name": "OpenAI: GPT-5.4 Mini",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          740,
+          520
+        ],
+        "credentials": {
+          "openAiApi": {
+            "id": "JQ6ARVQIEbbwoWxD",
+            "name": "DP: OpenAi Account"
+          }
+        },
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "id",
+            "value": "gpt-5.4-mini"
+          },
+          "options": {
+            "temperature": 0.7,
+            "maxTokens": 1200
+          }
+        }
+      },
+      {
+        "id": "node-code-005",
+        "name": "Code: Parse AI Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          980,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const aiOutput = $input.first().json.output || $input.first().json.text || '';\nlet verseData;\ntry { verseData = JSON.parse(aiOutput.trim()); } catch (e) {\n  const jsonMatch = aiOutput.match(/\\{[\\s\\S]*\\}/);\n  if (!jsonMatch) throw new Error('Could not parse AI JSON: ' + aiOutput.slice(0, 300));\n  verseData = JSON.parse(jsonMatch[0]);\n}\n\n// Strip smart quotes, dashes, non-ASCII — English alphabet only\nfunction sanitize(text) {\n  if (!text) return '';\n  return text\n    .replace(/['']/g, \"'\")\n    .replace(/[\"\"]/g, '\"')\n    .replace(/[–—]/g, '-')\n    .replace(/…/g, '...')\n    .replace(/[^\\x20-\\x7E\\n]/g, '')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\n// Normalize to \"BookName Chapter:Verse (KJV)\" — e.g. \"1 Thessalonians 4:16 (KJV)\"\nfunction normalizeRef(ref) {\n  if (!ref) return '';\n  let r = ref.replace(/[^\\x20-\\x7E]/g, '').trim();\n  r = r.replace(/(\\d)\\s+(\\d)/g, '$1:$2');\n  r = r.replace(/\\s*\\(?KJV\\)?\\s*$/i, '').trim();\n  return r + ' (KJV)';\n}\n\nverseData.verse_text = sanitize(verseData.verse_text || '');\nverseData.verse_ref = normalizeRef(verseData.verse_ref || '');\nverseData.tts_script = sanitize(verseData.tts_script || '');\n\nif (!verseData.tts_script) {\n  verseData.tts_script = 'Welcome to Jesus Saves Daily Bible Verse. Today we read from the book of ' + verseData.book + ': ' + verseData.verse_text + '. ' + verseData.verse_ref + ', King James Version. ' + (verseData.context || '') + ' This precious word from Scripture reminds us of God\\'s unchanging love and faithfulness. May it encourage your heart, strengthen your faith, and guide your steps today. God bless you. Amen.';\n}\n\nfunction getContext(book) {\n  const b = (book || '').toLowerCase();\n  if (b.includes('exodus')) return 'Moses at Mount Sinai with divine fire and clouds, stone tablets, Israelites in wilderness';\n  if (b.includes('genesis')) return 'Garden of Eden paradise with divine light, lush ancient trees and flowing rivers';\n  if (b.includes('psalm')) return 'David playing harp on rocky hillside overlooking green valleys, ancient Israel landscape';\n  if (b.includes('john')) return 'Sea of Galilee at sunrise with fishing boats, Jesus teaching by the water, warm glow';\n  if (b.includes('revelation')) return 'Heavenly city New Jerusalem, celestial golden light, angelic figures, divine glory';\n  if (b.includes('isaiah')) return 'Hebrew prophet on hilltop in ancient Judea, divine light rays streaming from heaven';\n  if (b.includes('matthew')) return 'Sermon on the Mount, large crowd on green hillside, Jesus teaching, blue sky';\n  if (b.includes('daniel')) return 'Ancient Babylon palace, Daniel in prayer, dramatic moonlight, prophetic vision';\n  if (b.includes('proverb')) return 'Ancient sage with scrolls under olive tree, peaceful Hebrew countryside at dusk';\n  if (b.includes('hebrews')) return 'Ancient Jerusalem temple interior, golden menorah, sacred altar with divine light';\n  if (b.includes('act')) return 'Pentecost scene, disciples gathered in prayer, tongues of fire, Jerusalem temple';\n  if (b.includes('roman')) return 'Ancient Roman road through holy land, pilgrim walking toward golden sunrise horizon';\n  if (b.includes('luke')) return 'Birth of Jesus in Bethlehem stable, bright star overhead, shepherds and angels';\n  if (b.includes('mark')) return 'Jesus healing the sick by lakeside, crowd gathered, compassion and divine power';\n  if (b.includes('peter')) return 'Stormy sea with figure walking on water, faith over fear, divine radiance above';\n  if (b.includes('job')) return 'Lone man on rocky hilltop under dramatic storm sky, divine voice from whirlwind';\n  if (b.includes('jeremiah')) return 'Prophet kneeling over Jerusalem ruins, dramatic sky, dawn light breaking through';\n  if (b.includes('ezek')) return 'Vision of divine chariot with wheels within wheels, angelic beings, celestial light';\n  if (b.includes('number')) return 'Israelites marching through wilderness, pillar of cloud and fire leading the way';\n  if (b.includes('deuteron')) return 'Moses on mountain overlooking promised land, golden light, vast valley below';\n  if (b.includes('ruth')) return 'Golden wheat fields at harvest, woman gleaning grain, peaceful ancient countryside';\n  if (b.includes('zech')) return 'Jerusalem with surrounding mountains, olive trees, menorah, divine vision';\n  if (b.includes('thessalon')) return 'Heavenly trumpets sounding, souls rising toward brilliant light, angels in golden clouds';\n  if (b.includes('corinth')) return 'Ancient Greek city with temple columns, early church gathering, divine light descending';\n  if (b.includes('galat')) return 'Ancient Galatia landscape, rolling hills, Paul writing letters by lantern light';\n  if (b.includes('ephes')) return 'Ephesus harbor at dawn, early believers gathered, divine light breaking through clouds';\n  if (b.includes('philip')) return 'Philippi marketplace, Paul and Silas in prayer, divine light streaming through bars';\n  if (b.includes('coloss')) return 'Ancient Colossae, hillside gathering of early Christians, golden sunrise over valley';\n  if (b.includes('timothy')) return 'Young disciple reading scripture by candlelight, ancient church setting, warm glow';\n  return 'Ancient holy land landscape with divine golden light rays streaming through dramatic clouds above';\n}\n\nconst ctx = $('Code: Set Context').first().json;\nconst scene = getContext(verseData.book);\n\n// Build ideogram prompt — NO aspect ratio text in prompt (set as API param)\nconst verseBlock = '\"' + verseData.verse_text + '\"';\nconst refBlock = verseData.verse_ref;\n\nconst cardBase = 'Devotional Bible verse image card. Background scene: ' + scene + '. Dark semi-transparent overlay in center of image. On the overlay, display ONLY this text in Playfair Display serif font: first line in italic white — ' + verseBlock + ' — then directly below in bold white smaller text: ' + refBlock + '. Text wraps to fit fully. No other words, numbers, symbols, or decorative elements anywhere on the card.';\n\n// 6 unique lighting atmospheres — one per card\nconst ideogram_prompts = [\n  cardBase + ' Lighting: warm golden dawn rays, serene morning glow.',\n  cardBase + ' Lighting: dramatic sunset, rich orange and purple sky, divine radiance.',\n  cardBase + ' Lighting: bright midday light streaming through clouds from above.',\n  cardBase + ' Lighting: twilight blue hour, gentle mystical peaceful atmosphere.',\n  cardBase + ' Lighting: night sky filled with stars, moonlight glowing softly on the scene.',\n  cardBase + ' Lighting: early morning mist with soft diffused golden light, peaceful and still.'\n];\n\nreturn [{ json: { ...verseData, date_iso: ctx.date_iso, audio_filename: 'verse-' + ctx.date_iso + '.mp3', intro_music_url: ctx.intro_music_url, ideogram_prompts } }];\n"
+        }
+      },
+      {
+        "id": "node-http-verse-card-1",
+        "name": "HTTP: Verse Card 1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1180,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://fal.run/fal-ai/ideogram/v2",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[0], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-http-verse-card-2",
+        "name": "HTTP: Verse Card 2",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1420,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://fal.run/fal-ai/ideogram/v2",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[1], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-http-verse-card-3",
+        "name": "HTTP: Verse Card 3",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1660,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://fal.run/fal-ai/ideogram/v2",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[2], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-http-verse-card-4",
+        "name": "HTTP: Verse Card 4",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1900,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://fal.run/fal-ai/ideogram/v2",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[3], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-code-extract-slides",
+        "name": "Code: Extract Slide URLs",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2620,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const urls = [];\nfor (let i = 1; i <= 6; i++) {\n  const result = $('HTTP: Verse Card ' + i).first().json;\n  const imgUrls = (result.images || []).map(img => img.url).filter(Boolean);\n  urls.push(...imgUrls);\n}\nif (urls.length === 0) throw new Error('No images from any verse card node');\nconst verse = $('Code: Parse AI Response').first().json;\nreturn [{ json: { ...verse, slide_urls: urls } }];"
+        }
+      },
+      {
+        "id": "node-eleven-006",
+        "name": "ElevenLabs: Text to Speech",
+        "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+        "typeVersion": 1,
+        "position": [
+          2180,
+          300
+        ],
+        "credentials": {
+          "elevenLabsApi": {
+            "id": "e7RcB3YZf7dgKLPg",
+            "name": "DP: ElevenLabs API"
+          }
+        },
+        "parameters": {
+          "resource": "speech",
+          "operation": "textToSpeech",
+          "voice": {
+            "__rl": true,
+            "value": "N2lVS1w4EtoT3dr4eOWO",
+            "mode": "id"
+          },
+          "text": "={{ $('Code: Parse AI Response').first().json.tts_script }}",
+          "additionalOptions": {
+            "model": {
+              "__rl": true,
+              "value": "eleven_multilingual_v2",
+              "mode": "id"
+            },
+            "outputFormat": "mp3_44100_128"
+          }
+        }
+      },
+      {
+        "id": "node-code-007d",
+        "name": "Code: Read Audio Binary",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2420,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const binaryField = $input.first().binary?.data;\nif (!binaryField) throw new Error('No binary data from ElevenLabs TTS');\nlet audioBase64;\nconst rawData = String(binaryField.data || '');\nif (rawData && !rawData.startsWith('filesystem')) {\n  audioBase64 = rawData;\n} else {\n  const buf = await Promise.race([\n    this.helpers.getBinaryDataBuffer(0, 'data'),\n    new Promise((_, rej) => setTimeout(() => rej(new Error('audio binary read timeout')), 10000))\n  ]);\n  audioBase64 = buf.toString('base64');\n}\nconst verse = $('Code: Parse AI Response').first().json;\nreturn [{ json: { ...verse, audio_base64: audioBase64 } }];"
+        }
+      },
+      {
+        "id": "node-http-007a",
+        "name": "HTTP: Initiate Audio Upload",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2660,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ content_type: 'audio/mpeg', file_name: $('Code: Parse AI Response').first().json.audio_filename }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-code-007b",
+        "name": "Code: Attach Audio Binary",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2900,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const initiateResult = $input.first().json;\nif (!initiateResult.upload_url) throw new Error('No upload_url: ' + JSON.stringify(initiateResult));\nconst audioBase64 = $('Code: Read Audio Binary').first().json.audio_base64;\nif (!audioBase64) throw new Error('No audio_base64 from Code: Read Audio Binary');\nreturn [{ json: { upload_url: initiateResult.upload_url, file_url: initiateResult.file_url }, binary: { data: { data: audioBase64, mimeType: 'audio/mpeg', fileName: 'audio.mp3' } } }];"
+        }
+      },
+      {
+        "id": "node-http-007c",
+        "name": "HTTP: PUT Audio to fal.ai",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3140,
+          300
+        ],
+        "parameters": {
+          "method": "PUT",
+          "url": "={{ $json.upload_url }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "audio/mpeg"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "binaryData",
+          "inputDataFieldName": "data",
+          "options": {
+            "response": {
+              "response": {
+                "neverError": true,
+                "responseFormat": "text"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "node-code-010b",
+        "name": "Code: Get Video Inputs",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3380,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const verse = $('Code: Parse AI Response').first().json;\nconst audioUrl = $('HTTP: Initiate Audio Upload').first().json.file_url;\nconst slideUrls = $('Code: Extract Slide URLs').first().json.slide_urls;\nif (!audioUrl) throw new Error('Missing audio file_url from fal.ai CDN');\nif (!slideUrls || slideUrls.length === 0) throw new Error('Missing slide_urls from Code: Extract Slide URLs');\nconst wordCount = (verse.tts_script || '').split(/\\s+/).length;\nconst durationSec = Math.max(65, Math.ceil(wordCount / 2.3) + 10);\nconst fps = 10;\nconst framesPerSlide = Math.max(30, Math.floor(Math.min(durationSec * fps / slideUrls.length, 150)));\nreturn [{ json: { ...verse, audio_url: audioUrl, slide_urls: slideUrls, duration_sec: durationSec, i2v_fps: fps, frames_per_slide: framesPerSlide } }];"
+        }
+      },
+      {
+        "id": "node-http-011a",
+        "name": "HTTP: Submit Images to Video",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3620,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://queue.fal.run/fal-ai/ffmpeg-api/images-to-video",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ images: $json.slide_urls.map(url => ({ url, frames: $json.frames_per_slide })), fps: $json.i2v_fps }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-code-011b",
+        "name": "Code: Wait 25s Img2Vid",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3860,
+          300
+        ],
+        "parameters": {
+          "jsCode": "await new Promise(r => setTimeout(r, 25000));\nreturn $input.all();"
+        }
+      },
+      {
+        "id": "node-http-011c",
+        "name": "HTTP: Get Img2Vid Status",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4100,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "GET",
+          "url": "={{ $('HTTP: Submit Images to Video').first().json.status_url }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-switch-011d",
+        "name": "Switch: Img2Vid Status",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3,
+        "position": [
+          4340,
+          300
+        ],
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.status }}",
+                      "rightValue": "COMPLETED",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  },
+                  "combinator": "or",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.status }}",
+                      "rightValue": "IN_PROGRESS",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    },
+                    {
+                      "leftValue": "={{ $json.status }}",
+                      "rightValue": "IN_QUEUE",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra"
+          }
+        }
+      },
+      {
+        "id": "node-http-011f",
+        "name": "HTTP: Get Img2Vid Result",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4580,
+          160
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "GET",
+          "url": "={{ $('HTTP: Submit Images to Video').first().json.response_url }}",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-code-011e",
+        "name": "Code: Wait 10s Retry",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4580,
+          440
+        ],
+        "parameters": {
+          "jsCode": "await new Promise(r => setTimeout(r, 10000));\nreturn $input.all();"
+        }
+      },
+      {
+        "id": "node-http-012a",
+        "name": "HTTP: Merge Audio Video",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4820,
+          160
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://fal.run/fal-ai/ffmpeg-api/merge-audio-video",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ video_url: ($json.video && $json.video.url) || $json.video_url || $json.url, audio_url: $('Code: Get Video Inputs').first().json.audio_url }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-code-012",
+        "name": "Code: Build Platform Captions",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          5060,
+          160
+        ],
+        "parameters": {
+          "jsCode": "const verse = $('Code: Parse AI Response').first().json;\nconst falResult = $input.first().json;\nconst videoUrl = falResult.video_url || (falResult.video && falResult.video.url) || falResult.url || '';\nif (!videoUrl) throw new Error('No video_url from merge-audio-video result: ' + JSON.stringify(falResult).slice(0,200));\nconst baseHashtags = '#JesusSaves #BibleVerse #DailyVerse #Scripture #Faith #ChristianLife #DailyDevotion';\nconst themeMap = { 'salvation': '#Salvation #Grace #Redemption', 'Sabbath': '#Sabbath #SabbathRest #HappySabbath', 'second coming': '#SecondComing #Maranatha', 'prophecy': '#BibleProphecy #Prophecy', 'sanctuary': '#Sanctuary #Atonement', 'health': '#HealthMessage #SDAHealth', 'resurrection': '#Resurrection #EternalLife #Hope' };\nconst extraTags = themeMap[verse.theme] || '#DailyDevotion #GodIsGood';\nconst allHashtags = baseHashtags + ' ' + extraTags;\nconst fbDescription = ['\\u271d\\ufe0f Daily Bible Verse', '', '\\ud83d\\udcd6 \"' + verse.verse_text + '\"', '\\u2014 ' + verse.verse_ref + ' (KJV)', '', verse.context, '', allHashtags].join('\\n').trim();\nreturn [{ json: { video_url: videoUrl, fb_description: fbDescription, verse_ref: verse.verse_ref, theme: verse.theme } }];"
+        }
+      },
+      {
+        "id": "node-http-013",
+        "name": "HTTP: Post Video to Facebook",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          5300,
+          60
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "k3uWplyUFWBu2sB5",
+            "name": "DP: Facebook Page Token (Jesus Saves)"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://graph.facebook.com/v19.0/1180778398669428/videos",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ file_url: $json.video_url, description: $json.fb_description }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-noop-014",
+        "name": "No Op: Instagram Route",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          5300,
+          220
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "node-noop-015",
+        "name": "No Op: YouTube Route",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          5300,
+          380
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "node-noop-016",
+        "name": "No Op: TikTok Route",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          5300,
+          540
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "node-error-001",
+        "name": "Error Trigger",
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "position": [
+          260,
+          760
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "node-error-002",
+        "name": "Gmail: Send Error Alert",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "disabled": true,
+        "position": [
+          500,
+          760
+        ],
+        "parameters": {
+          "sendTo": "don.puerto.1003@gmail.com",
+          "subject": "=⚠️ n8n Error: {{ $json.workflow.name }}",
+          "emailType": "html",
+          "message": "=<h2>⚠️ Workflow Failed</h2><table cellpadding=\"6\"><tr><td><strong>Workflow</strong></td><td>{{ $json.workflow.name }}</td></tr><tr><td><strong>Error</strong></td><td>{{ $json.execution.error.message }}</td></tr><tr><td><strong>Failed Node</strong></td><td>{{ $json.execution.error.node?.name || 'Unknown' }}</td></tr><tr><td><strong>Time</strong></td><td>{{ $json.execution.startedAt }}</td></tr><tr><td><strong>Link</strong></td><td><a href=\"{{ $json.execution.url }}\">View execution in n8n</a></td></tr></table>",
+          "options": {}
+        },
+        "webhookId": "20e0ad37-0cd8-47ae-a3a3-9939647b01b0"
+      },
+      {
+        "id": "node-sticky-blue",
+        "name": "Sticky: Workflow Overview",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          260,
+          60
+        ],
+        "parameters": {
+          "content": "## 📖 Jesus Saves — Daily Bible Verse v1\n**Posts Mon/Wed/Fri at 6 AM**\n\n**Flow:**\n1. Set context (theme, date)\n2. GPT-4o Mini → verse + tts_script (~70s narration)\n3. Code: Parse AI Response → parses JSON, builds bg_prompt from book context\n4. HTTP: Generate Verse Cards → ideogram/v2 (num_images:4) → 4 verse card images WITH text baked in\n5. Code: Extract Slide URLs → reads 4 CDN URLs from ideogram/v2 output\n6. ElevenLabs TTS → MP3 narration (native node, Callum voice, elevenLabsApi credential)\n7. Upload audio → fal.ai CDN (two-step initiate + PUT)\n8. images-to-video (queue, 10fps) — 4 slides × framesPerSlide each\n9. Poll queue → COMPLETED → silent video URL\n10. merge-audio-video → final MP4 with narration (sync)\n11. Build captions → Facebook + stubs\n12. Error Trigger → Gmail alert (disabled — needs DP: Gmail Account gmailOAuth2)\n\n**Credentials:**\n- DP: OpenAi Account ✅\n- DP: fal.ai API ✅ (HTTP Request nodes — generation + CDN upload)\n- DP: ElevenLabs API ✅ (elevenLabsApi, ID: e7RcB3YZf7dgKLPg — NATIVE NODE)\n- DP: Facebook Page Token ⚠️ (needs pages_manage_videos scope)\n- DP: Gmail Account ⏳ (gmailOAuth2 — create to re-enable error alerts)",
+          "height": 440,
+          "width": 700,
+          "color": 3
+        }
+      },
+      {
+        "id": "node-sticky-yellow",
+        "name": "Sticky: Slides + Video Pipeline",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          3600,
+          60
+        ],
+        "parameters": {
+          "content": "## 🎨 Slide Generation\n\n**HTTP: Generate Verse Cards**\n- ideogram/v2 with num_images:4 → 4 verse card images WITH verse text baked in\n- Uses DP: fal.ai API (httpHeaderAuth)\n- Prompt includes verse_text + verse_ref displayed as white serif text on background\n- Output: { images: [{url, seed}×4] } — PNG format\n\n**Code: Extract Slide URLs**\n- Reads image URLs from HTTP: Generate Verse Cards\n- Pads to exactly 4 slides (repeats if ideogram returns < 4)\n- Returns { ...verse, slide_urls: [...4 fal.ai CDN URLs] }\n- No HTTP calls — n8n Code node has no fetch/http access\n- URLs are public fal.ai CDN, usable by images-to-video directly\n\n## 🎬 Video Pipeline\n- images-to-video (queue): 4 slides × framesPerSlide @ 10fps\n- merge-audio-video (sync): adds ElevenLabs narration\n\n## 🗣️ ElevenLabs TTS\n- Native node: @elevenlabs/n8n-nodes-elevenlabs.elevenLabs\n- Voice: Callum (N2lVS1w4EtoT3dr4eOWO) | Model: eleven_multilingual_v2\n\n## ⚠️ Code Node Sandbox Limits\n- fetch() NOT available\n- require() for http/https NOT available\n- All HTTP calls must go through HTTP Request nodes",
+          "height": 340,
+          "width": 680,
+          "color": 4
+        }
+      },
+      {
+        "id": "node-sticky-orange",
+        "name": "Sticky: Setup + Config",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          260,
+          620
+        ],
+        "parameters": {
+          "content": "## ⚠️ Setup Required\n\n1. `@resvg/resvg-wasm` should be installed in n8n (graceful fallback if missing)\n2. Create: `DP: Gmail Account` (gmailOAuth2) for error alerts\n3. FB token needs `pages_manage_videos` scope — refresh in Meta for Developers\n4. Activate workflow\n\n## ⚠️ Known Limitations\n- ElevenLabs free tier: ~10k chars/month. If 401 error, quota likely exceeded.\n- fal.ai images-to-video: max 1000 total frames. Current: 4 slides × ~12s = ~480 frames at 10fps.\n- Code nodes: only fetch() for unauthenticated calls. Authenticated API calls use HTTP Request nodes.",
+          "height": 200,
+          "width": 500,
+          "color": 5
+        }
+      },
+      {
+        "id": "node-http-verse-card-5",
+        "name": "HTTP: Verse Card 5",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2140,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://fal.run/fal-ai/ideogram/v2",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[4], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+          "options": {}
+        }
+      },
+      {
+        "id": "node-http-verse-card-6",
+        "name": "HTTP: Verse Card 6",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2380,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "8ehkq8gARMOTlOKl",
+            "name": "DP: fal.ai API"
+          }
+        },
+        "parameters": {
+          "method": "POST",
+          "url": "https://fal.run/fal-ai/ideogram/v2",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ prompt: $('Code: Parse AI Response').first().json.ideogram_prompts[5], aspect_ratio: '9:16', style_type: 'REALISTIC', rendering_speed: 'TURBO' }) }}",
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Schedule: Mon/Wed/Fri 6AM": {
+        "main": [
+          [
+            {
+              "node": "Code: Set Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook: Manual Test Trigger": {
+        "main": [
+          [
+            {
+              "node": "Code: Set Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Set Context": {
+        "main": [
+          [
+            {
+              "node": "AI Agent: SDA Verse Picker",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent: SDA Verse Picker": {
+        "main": [
+          [
+            {
+              "node": "Code: Parse AI Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Parse AI Response": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Verse Card 1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Verse Card 1": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Verse Card 2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Verse Card 2": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Verse Card 3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Verse Card 3": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Verse Card 4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Verse Card 4": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Verse Card 5",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Extract Slide URLs": {
+        "main": [
+          [
+            {
+              "node": "ElevenLabs: Text to Speech",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "ElevenLabs: Text to Speech": {
+        "main": [
+          [
+            {
+              "node": "Code: Read Audio Binary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Read Audio Binary": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Initiate Audio Upload",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Initiate Audio Upload": {
+        "main": [
+          [
+            {
+              "node": "Code: Attach Audio Binary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Attach Audio Binary": {
+        "main": [
+          [
+            {
+              "node": "HTTP: PUT Audio to fal.ai",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: PUT Audio to fal.ai": {
+        "main": [
+          [
+            {
+              "node": "Code: Get Video Inputs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Get Video Inputs": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Submit Images to Video",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Submit Images to Video": {
+        "main": [
+          [
+            {
+              "node": "Code: Wait 25s Img2Vid",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Wait 25s Img2Vid": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Get Img2Vid Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Get Img2Vid Status": {
+        "main": [
+          [
+            {
+              "node": "Switch: Img2Vid Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch: Img2Vid Status": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Get Img2Vid Result",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Code: Wait 10s Retry",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Wait 10s Retry": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Get Img2Vid Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Get Img2Vid Result": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Merge Audio Video",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Merge Audio Video": {
+        "main": [
+          [
+            {
+              "node": "Code: Build Platform Captions",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code: Build Platform Captions": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Post Video to Facebook",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "No Op: Instagram Route",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "No Op: YouTube Route",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "No Op: TikTok Route",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "node": "Gmail: Send Error Alert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Verse Card 5": {
+        "main": [
+          [
+            {
+              "node": "HTTP: Verse Card 6",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP: Verse Card 6": {
+        "main": [
+          [
+            {
+              "node": "Code: Extract Slide URLs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI: GPT-5.4 Mini": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent: SDA Verse Picker",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}
