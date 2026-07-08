@@ -3,7 +3,6 @@
   "createdAt": "2025-11-15T23:54:25.678Z",
   "id": "4JBe5cQbK4vNK9vS",
   "name": "01. Timezone",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -49,7 +48,6 @@
   "pinData": {},
   "versionId": "5450821f-096e-4142-9595-2f91f22088c4",
   "activeVersionId": null,
-  "versionCounter": 7,
   "triggerCount": 0,
   "shared": [
     {
@@ -57,19 +55,9 @@
       "createdAt": "2025-11-15T23:54:25.682Z",
       "role": "workflow:owner",
       "workflowId": "4JBe5cQbK4vNK9vS",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
