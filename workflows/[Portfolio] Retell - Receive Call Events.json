@@ -1,9 +1,8 @@
 {
-  "updatedAt": "2026-03-19T16:22:42.363Z",
+  "updatedAt": "2026-06-25T08:41:13.800Z",
   "createdAt": "2026-03-17T13:59:39.461Z",
   "id": "REOW8qevo6ToVETX",
   "name": "[Portfolio] Retell - Receive Call Events",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -175,7 +174,9 @@
               "conditions": {
                 "options": {
                   "caseSensitive": false,
-                  "leftValue": ""
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -197,7 +198,9 @@
               "conditions": {
                 "options": {
                   "caseSensitive": false,
-                  "leftValue": ""
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -219,7 +222,9 @@
               "conditions": {
                 "options": {
                   "caseSensitive": false,
-                  "leftValue": ""
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
                 },
                 "conditions": [
                   {
@@ -439,8 +444,10 @@
       "parameters": {
         "conditions": {
           "options": {
-            "version": 2,
-            "caseSensitive": true
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
           },
           "combinator": "and",
           "conditions": [
@@ -636,7 +643,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        904,
+        912,
         0
       ],
       "id": "prep_call_sheet",
@@ -661,7 +668,10 @@
           "value": {},
           "matchingColumns": [
             "Email"
-          ]
+          ],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
         },
         "options": {}
       },
@@ -688,7 +698,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        728,
+        752,
         208
       ],
       "id": "prep_analysis_sheet",
@@ -919,16 +929,16 @@
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "binaryMode": "separate"
   },
   "staticData": null,
   "meta": {
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "51292f39-400f-48a1-836f-b5ed181fbdd6",
+  "versionId": "11495a47-97e4-47a9-8b78-e58cdcaa0b0f",
   "activeVersionId": "51292f39-400f-48a1-836f-b5ed181fbdd6",
-  "versionCounter": 34,
   "triggerCount": 1,
   "shared": [
     {
@@ -936,25 +946,7 @@
       "createdAt": "2026-03-17T13:59:39.463Z",
       "role": "workflow:owner",
       "workflowId": "REOW8qevo6ToVETX",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
-    }
-  ],
-  "tags": [
-    {
-      "updatedAt": "2026-03-17T14:31:28.982Z",
-      "createdAt": "2026-03-17T14:31:28.982Z",
-      "id": "94WxhQrJEC73SqLi",
-      "name": "Workflow-B"
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
   "activeVersion": {
@@ -1875,24 +1867,14 @@
     "authors": "Don Puerto",
     "name": null,
     "description": null,
-    "autosaved": false,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-03-19T16:22:42.404Z",
-        "id": 747,
-        "workflowId": "REOW8qevo6ToVETX",
-        "versionId": "51292f39-400f-48a1-836f-b5ed181fbdd6",
-        "event": "activated",
-        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      },
-      {
-        "createdAt": "2026-03-19T16:22:42.392Z",
-        "id": 746,
-        "workflowId": "REOW8qevo6ToVETX",
-        "versionId": "51292f39-400f-48a1-836f-b5ed181fbdd6",
-        "event": "deactivated",
-        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
-    ]
-  }
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-03-17T14:31:28.982Z",
+      "createdAt": "2026-03-17T14:31:28.982Z",
+      "id": "94WxhQrJEC73SqLi",
+      "name": "Workflow-B"
+    }
+  ]
 }
