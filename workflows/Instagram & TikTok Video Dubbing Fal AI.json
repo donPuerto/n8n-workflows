@@ -3,7 +3,6 @@
   "createdAt": "2026-03-06T00:13:25.420Z",
   "id": "D7BU7tUnyNuzSlcW",
   "name": "Instagram & TikTok Video Dubbing Fal AI",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -556,7 +555,6 @@
   "pinData": {},
   "versionId": "edf32c4c-c205-4ba2-ab4d-71e1851d4ad8",
   "activeVersionId": null,
-  "versionCounter": 2,
   "triggerCount": 0,
   "shared": [
     {
@@ -564,19 +562,9 @@
       "createdAt": "2026-03-06T00:13:25.424Z",
       "role": "workflow:owner",
       "workflowId": "D7BU7tUnyNuzSlcW",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
