@@ -3,7 +3,6 @@
   "createdAt": "2026-02-18T11:28:38.751Z",
   "id": "FQP3FfrVGa1GvXTL",
   "name": "ArynPineconeChatWithData",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -2258,7 +2257,6 @@
   "pinData": {},
   "versionId": "5e440119-13e6-40f0-a632-f0396d579eb3",
   "activeVersionId": null,
-  "versionCounter": 11,
   "triggerCount": 0,
   "shared": [
     {
@@ -2266,19 +2264,9 @@
       "createdAt": "2026-02-18T11:28:38.757Z",
       "role": "workflow:owner",
       "workflowId": "FQP3FfrVGa1GvXTL",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
