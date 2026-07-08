@@ -1,0 +1,1469 @@
+{
+  "updatedAt": "2026-02-25T14:46:35.737Z",
+  "createdAt": "2026-02-23T07:56:52.005Z",
+  "id": "w6Z9bUvp62J8xTFT",
+  "name": "Facebook Auto Posting (Page Feed)",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        -400
+      ],
+      "id": "e12f6044-7f07-4d3e-b44c-c3b6319ad94d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "135479543431",
+        "edge": "feed",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "test"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -400
+      ],
+      "id": "8ee99820-f28c-4072-97d1-6d6c00bd785a",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "Z0goPgLaVU5HJqE4",
+          "name": "WR: Facebook Graph Account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v25.0/135479543431?fields=access_token",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        816,
+        -784
+      ],
+      "id": "f5e5a098-7888-4b08-8249-c3212cac6af9",
+      "name": "Get Token and Page ID",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3ri6jVKMrdN1vNPy",
+          "name": "WR: Facebook Header Auth Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v25.0/{{ $json.id }}/feed",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $('Get row(s) in sheet').item.json.message_text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1040,
+        -784
+      ],
+      "id": "86c2f764-c655-4bfa-bff8-8142c1fcf2ea",
+      "name": "Post Message"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        -688
+      ],
+      "id": "ee7826e8-2945-4ff7-acd3-f258c1864805",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw",
+          "mode": "list",
+          "cachedResultName": "Facebook Feeds",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -80,
+        -688
+      ],
+      "id": "a45bdf42-19b1-425c-b273-7de0a325b34f",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IgTz53yznufnsBXa",
+          "name": "WR: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -688
+      ],
+      "id": "3fe987ba-a505-4527-98d7-d85f5cc5fc7b",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Only pass through rows where status is \"draft\".\n// Everything else returns [] (dropped).\n\nconst id = ($json.id ?? '').toString().trim();\nconst message_text = ($json.message_text ?? '').toString().trim();\nconst schedule_at = ($json.schedule_at ?? '').toString().trim();\n\nconst rawStatus =\n  $json[\"status (draft / scheduled / posted / error)\"] ??\n  $json.status ??\n  '';\n\nconst status = rawStatus.toString().trim().toLowerCase();\n\n// ✅ Filter: ONLY allow draft rows to continue\nif (status !== 'draft') {\n  return [];\n}\n\n// Brisbane timeline (now)\nconst now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }));\nconst pad = (n) => String(n).padStart(2, '0');\nconst timeline =\n  `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ` +\n  `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;\n\n// validations\nconst hasMessage = message_text.length > 0;\n\n// Expect dd/mm/yy or dd/mm/yyyy (date-only)\nlet scheduleYMD = '';\nconst m = schedule_at.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{2}|\\d{4})$/);\n\nif (m) {\n  const dd = String(parseInt(m[1], 10)).padStart(2, '0');\n  const mm = String(parseInt(m[2], 10)).padStart(2, '0');\n  let yyyy = parseInt(m[3], 10);\n  if (yyyy < 100) yyyy += 2000;\n  scheduleYMD = `${yyyy}${mm}${dd}`;\n}\n\nconst todayBrisbane = new Date().toLocaleDateString('en-CA', {\n  timeZone: 'Australia/Brisbane'\n}).replace(/-/g, '');\n\n// ready_to_post (date-only): schedule <= today in Brisbane AND message exists\nconst ready_to_post =\n  hasMessage &&\n  scheduleYMD !== '' &&\n  scheduleYMD <= todayBrisbane;\n\nreturn [{\n  id,\n  timeline,\n  message_text,\n  status,        // will always be \"draft\" here\n  schedule_at,\n  ready_to_post,\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        -688
+      ],
+      "id": "762b57e6-45a1-4468-82df-18399b6c3241",
+      "name": "Validation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a5f182dc-3acf-4651-a096-7db2686b2522",
+              "leftValue": "={{ $json.ready_to_post }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        592,
+        -688
+      ],
+      "id": "f6d5de94-b4eb-443d-8c2e-96f990e03aba",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        816,
+        -592
+      ],
+      "id": "1ee1917f-cff8-44b4-a203-1fe176a07556",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "jsCode": "const statusCode = $json.statusCode;\nconst body = $json.body || $json;\n\nif (statusCode >= 200 && statusCode < 300 && body.id) {\n  return [{\n    result: \"success\",\n    status_code: statusCode,\n    fb_post_id: body.id\n  }];\n}\n\nreturn [{\n  result: \"error\",\n  status_code: statusCode,\n  error_reason: body.error?.message || \"Unknown error\",\n  error_type: body.error?.type || null,\n  error_code: body.error?.code || null\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        -784
+      ],
+      "id": "5467fac0-6530-4e5d-9aa2-3639e139327e",
+      "name": "Execution Status"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3b68c612-ec85-4fb1-a5e2-690d230958e4",
+              "leftValue": "={{ $json.result }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1488,
+        -784
+      ],
+      "id": "36c1d6f9-3010-48ed-a7bf-92db4f85a20e",
+      "name": "if success"
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -224
+      ],
+      "id": "0d8a96f8-a90b-4c42-b0df-56435bfc7170",
+      "name": "Clear Cache",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw",
+          "mode": "list",
+          "cachedResultName": "Facebook Feeds",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status (draft / scheduled / posted / error)": "=posted ",
+            "fb_post_id": "={{ $json.fb_post_id }}",
+            "timestamp": "={{ $json.timestamp }}",
+            "id": "={{ $json.id }}",
+            "posted_at": "={{ $json.posted_at }}",
+            "status_code": "={{ $json.status_code || '' }}",
+            "error message": "={{ $json[\"error message\"] || '' }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "schedule_at",
+              "displayName": "schedule_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fb_post_id",
+              "displayName": "fb_post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status (draft / scheduled / posted / error)",
+              "displayName": "status (draft / scheduled / posted / error)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "posted_at",
+              "displayName": "posted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error message",
+              "displayName": "error message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status_code",
+              "displayName": "status_code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1936,
+        -784
+      ],
+      "id": "b366054b-93ab-4298-9f99-cb81974d1fc2",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IgTz53yznufnsBXa",
+          "name": "WR: Google Sheets Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dbf92ae4-57fc-463b-9f40-0b6b108ab831",
+              "name": "id",
+              "value": "={{ $('Validation').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "b9f7be71-1d6d-4648-9350-fc35bd2dd2c1",
+              "name": "fb_post_id",
+              "value": "={{ $json.fb_post_id }}",
+              "type": "string"
+            },
+            {
+              "id": "7516bb41-3a55-41ba-83c8-2d05fd3eab31",
+              "name": "status (draft / scheduled / posted / error)",
+              "value": "=posted",
+              "type": "string"
+            },
+            {
+              "id": "a3a8949d-edcb-448c-84b1-6bd63e4fef7b",
+              "name": "posted_at",
+              "value": "={{ new Date().toLocaleString('sv-SE', { timeZone: 'Australia/Brisbane' }).replace(' ', 'T') }}",
+              "type": "string"
+            },
+            {
+              "id": "fe58d96e-31ed-4b82-9f63-9e8db65b1775",
+              "name": "timestamp",
+              "value": "={{ $('Validation').item.json.timeline }}",
+              "type": "string"
+            },
+            {
+              "id": "b7756557-463a-45a1-8fb0-ee8076fa6cc1",
+              "name": "message_text",
+              "value": "={{ $('Validation').item.json.message_text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1712,
+        -880
+      ],
+      "id": "ef061391-3f47-4efa-9ba8-fb20345ae402",
+      "name": "Set Success Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dbf92ae4-57fc-463b-9f40-0b6b108ab831",
+              "name": "id",
+              "value": "={{ $('Validation').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "b9f7be71-1d6d-4648-9350-fc35bd2dd2c1",
+              "name": "fb_post_id",
+              "value": "={{ $json.fb_post_id || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "7516bb41-3a55-41ba-83c8-2d05fd3eab31",
+              "name": "status (draft / scheduled / posted / error)",
+              "value": "=error",
+              "type": "string"
+            },
+            {
+              "id": "a3a8949d-edcb-448c-84b1-6bd63e4fef7b",
+              "name": "posted_at",
+              "value": "={{ new Date().toLocaleString('sv-SE', { timeZone: 'Australia/Brisbane' }).replace(' ', 'T') }}",
+              "type": "string"
+            },
+            {
+              "id": "fe58d96e-31ed-4b82-9f63-9e8db65b1775",
+              "name": "timestamp",
+              "value": "={{ $('Validation').item.json.timeline }}",
+              "type": "string"
+            },
+            {
+              "id": "b7756557-463a-45a1-8fb0-ee8076fa6cc1",
+              "name": "message_text",
+              "value": "={{ $('Validation').item.json.message_text }}",
+              "type": "string"
+            },
+            {
+              "id": "9b83b2d0-1e97-4ef8-8d27-4fcbb7d60d1a",
+              "name": "error message",
+              "value": "={{ $('Execution Status').item.json.error_reason }}",
+              "type": "string"
+            },
+            {
+              "id": "8c458774-2f6b-4beb-b3b3-b3767f6fc3d4",
+              "name": "status_code",
+              "value": "={{ $('Execution Status').item.json.status_code }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1712,
+        -688
+      ],
+      "id": "fdc8a858-68e0-4518-bc83-ac46d487f346",
+      "name": "Set Error Fields"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Clear Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Token and Page ID": {
+      "main": [
+        [
+          {
+            "node": "Post Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Message": {
+      "main": [
+        [
+          {
+            "node": "Execution Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get Token and Page ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Status": {
+      "main": [
+        [
+          {
+            "node": "if success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if success": {
+      "main": [
+        [
+          {
+            "node": "Set Success Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Error Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear Cache": {
+      "main": [
+        []
+      ]
+    },
+    "Set Success Fields": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Error Fields": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "1f38fd0e-ebac-48b7-aab3-2aeefab3b2ee",
+  "activeVersionId": "1f38fd0e-ebac-48b7-aab3-2aeefab3b2ee",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-23T07:56:52.010Z",
+      "createdAt": "2026-02-23T07:56:52.010Z",
+      "role": "workflow:owner",
+      "workflowId": "w6Z9bUvp62J8xTFT",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-25T14:47:03.000Z",
+    "createdAt": "2026-02-25T14:46:35.738Z",
+    "versionId": "1f38fd0e-ebac-48b7-aab3-2aeefab3b2ee",
+    "workflowId": "w6Z9bUvp62J8xTFT",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -304,
+          -400
+        ],
+        "id": "e12f6044-7f07-4d3e-b44c-c3b6319ad94d",
+        "name": "When clicking ‘Execute workflow’"
+      },
+      {
+        "parameters": {
+          "httpRequestMethod": "POST",
+          "graphApiVersion": "v23.0",
+          "node": "135479543431",
+          "edge": "feed",
+          "options": {
+            "queryParameters": {
+              "parameter": [
+                {
+                  "name": "message",
+                  "value": "test"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.facebookGraphApi",
+        "typeVersion": 1,
+        "position": [
+          -80,
+          -400
+        ],
+        "id": "8ee99820-f28c-4072-97d1-6d6c00bd785a",
+        "name": "Facebook Graph API",
+        "credentials": {
+          "facebookGraphApi": {
+            "id": "Z0goPgLaVU5HJqE4",
+            "name": "WR: Facebook Graph Account"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "url": "https://graph.facebook.com/v25.0/135479543431?fields=access_token",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          816,
+          -784
+        ],
+        "id": "f5e5a098-7888-4b08-8249-c3212cac6af9",
+        "name": "Get Token and Page ID",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "3ri6jVKMrdN1vNPy",
+            "name": "WR: Facebook Header Auth Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://graph.facebook.com/v25.0/{{ $json.id }}/feed",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "=Bearer {{ $json.access_token }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "form-urlencoded",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "={{ $('Get row(s) in sheet').item.json.message_text }}"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true,
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.4,
+        "position": [
+          1040,
+          -784
+        ],
+        "id": "86c2f764-c655-4bfa-bff8-8142c1fcf2ea",
+        "name": "Post Message"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 1
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -304,
+          -688
+        ],
+        "id": "ee7826e8-2945-4ff7-acd3-f258c1864805",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw",
+            "mode": "list",
+            "cachedResultName": "Facebook Feeds",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Post",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw/edit#gid=0"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          -80,
+          -688
+        ],
+        "id": "a45bdf42-19b1-425c-b273-7de0a325b34f",
+        "name": "Get row(s) in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "IgTz53yznufnsBXa",
+            "name": "WR: Google Sheets Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "removeItemsSeenInPreviousExecutions",
+          "dedupeValue": "={{ $json.id }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.removeDuplicates",
+        "typeVersion": 2,
+        "position": [
+          144,
+          -688
+        ],
+        "id": "3fe987ba-a505-4527-98d7-d85f5cc5fc7b",
+        "name": "Remove Duplicates"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Only pass through rows where status is \"draft\".\n// Everything else returns [] (dropped).\n\nconst id = ($json.id ?? '').toString().trim();\nconst message_text = ($json.message_text ?? '').toString().trim();\nconst schedule_at = ($json.schedule_at ?? '').toString().trim();\n\nconst rawStatus =\n  $json[\"status (draft / scheduled / posted / error)\"] ??\n  $json.status ??\n  '';\n\nconst status = rawStatus.toString().trim().toLowerCase();\n\n// ✅ Filter: ONLY allow draft rows to continue\nif (status !== 'draft') {\n  return [];\n}\n\n// Brisbane timeline (now)\nconst now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Brisbane' }));\nconst pad = (n) => String(n).padStart(2, '0');\nconst timeline =\n  `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ` +\n  `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;\n\n// validations\nconst hasMessage = message_text.length > 0;\n\n// Expect dd/mm/yy or dd/mm/yyyy (date-only)\nlet scheduleYMD = '';\nconst m = schedule_at.match(/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{2}|\\d{4})$/);\n\nif (m) {\n  const dd = String(parseInt(m[1], 10)).padStart(2, '0');\n  const mm = String(parseInt(m[2], 10)).padStart(2, '0');\n  let yyyy = parseInt(m[3], 10);\n  if (yyyy < 100) yyyy += 2000;\n  scheduleYMD = `${yyyy}${mm}${dd}`;\n}\n\nconst todayBrisbane = new Date().toLocaleDateString('en-CA', {\n  timeZone: 'Australia/Brisbane'\n}).replace(/-/g, '');\n\n// ready_to_post (date-only): schedule <= today in Brisbane AND message exists\nconst ready_to_post =\n  hasMessage &&\n  scheduleYMD !== '' &&\n  scheduleYMD <= todayBrisbane;\n\nreturn [{\n  id,\n  timeline,\n  message_text,\n  status,        // will always be \"draft\" here\n  schedule_at,\n  ready_to_post,\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          368,
+          -688
+        ],
+        "id": "762b57e6-45a1-4468-82df-18399b6c3241",
+        "name": "Validation"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "a5f182dc-3acf-4651-a096-7db2686b2522",
+                "leftValue": "={{ $json.ready_to_post }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          592,
+          -688
+        ],
+        "id": "f6d5de94-b4eb-443d-8c2e-96f990e03aba",
+        "name": "If"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          816,
+          -592
+        ],
+        "id": "1ee1917f-cff8-44b4-a203-1fe176a07556",
+        "name": "No Operation, do nothing"
+      },
+      {
+        "parameters": {
+          "jsCode": "const statusCode = $json.statusCode;\nconst body = $json.body || $json;\n\nif (statusCode >= 200 && statusCode < 300 && body.id) {\n  return [{\n    result: \"success\",\n    status_code: statusCode,\n    fb_post_id: body.id\n  }];\n}\n\nreturn [{\n  result: \"error\",\n  status_code: statusCode,\n  error_reason: body.error?.message || \"Unknown error\",\n  error_type: body.error?.type || null,\n  error_code: body.error?.code || null\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1264,
+          -784
+        ],
+        "id": "5467fac0-6530-4e5d-9aa2-3639e139327e",
+        "name": "Execution Status"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "3b68c612-ec85-4fb1-a5e2-690d230958e4",
+                "leftValue": "={{ $json.result }}",
+                "rightValue": "success",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1488,
+          -784
+        ],
+        "id": "36c1d6f9-3010-48ed-a7bf-92db4f85a20e",
+        "name": "if success"
+      },
+      {
+        "parameters": {
+          "operation": "removeItemsSeenInPreviousExecutions",
+          "dedupeValue": "2",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.removeDuplicates",
+        "typeVersion": 2,
+        "position": [
+          -64,
+          -224
+        ],
+        "id": "0d8a96f8-a90b-4c42-b0df-56435bfc7170",
+        "name": "Clear Cache",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "operation": "appendOrUpdate",
+          "documentId": {
+            "__rl": true,
+            "value": "1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw",
+            "mode": "list",
+            "cachedResultName": "Facebook Feeds",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Post",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vNLslMbKwoiptC50CWW43o6yCSuNYrAk0Fpwjizo8Nw/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "status (draft / scheduled / posted / error)": "=posted ",
+              "fb_post_id": "={{ $json.fb_post_id }}",
+              "timestamp": "={{ $json.timestamp }}",
+              "id": "={{ $json.id }}",
+              "posted_at": "={{ $json.posted_at }}",
+              "status_code": "={{ $json.status_code || '' }}",
+              "error message": "={{ $json[\"error message\"] || '' }}"
+            },
+            "matchingColumns": [
+              "id"
+            ],
+            "schema": [
+              {
+                "id": "timestamp",
+                "displayName": "timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "id",
+                "displayName": "id",
+                "required": false,
+                "defaultMatch": true,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "message_text",
+                "displayName": "message_text",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "schedule_at",
+                "displayName": "schedule_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "fb_post_id",
+                "displayName": "fb_post_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status (draft / scheduled / posted / error)",
+                "displayName": "status (draft / scheduled / posted / error)",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "posted_at",
+                "displayName": "posted_at",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "error message",
+                "displayName": "error message",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "status_code",
+                "displayName": "status_code",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          1936,
+          -784
+        ],
+        "id": "b366054b-93ab-4298-9f99-cb81974d1fc2",
+        "name": "Append or update row in sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "IgTz53yznufnsBXa",
+            "name": "WR: Google Sheets Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "dbf92ae4-57fc-463b-9f40-0b6b108ab831",
+                "name": "id",
+                "value": "={{ $('Validation').item.json.id }}",
+                "type": "string"
+              },
+              {
+                "id": "b9f7be71-1d6d-4648-9350-fc35bd2dd2c1",
+                "name": "fb_post_id",
+                "value": "={{ $json.fb_post_id }}",
+                "type": "string"
+              },
+              {
+                "id": "7516bb41-3a55-41ba-83c8-2d05fd3eab31",
+                "name": "status (draft / scheduled / posted / error)",
+                "value": "=posted",
+                "type": "string"
+              },
+              {
+                "id": "a3a8949d-edcb-448c-84b1-6bd63e4fef7b",
+                "name": "posted_at",
+                "value": "={{ new Date().toLocaleString('sv-SE', { timeZone: 'Australia/Brisbane' }).replace(' ', 'T') }}",
+                "type": "string"
+              },
+              {
+                "id": "fe58d96e-31ed-4b82-9f63-9e8db65b1775",
+                "name": "timestamp",
+                "value": "={{ $('Validation').item.json.timeline }}",
+                "type": "string"
+              },
+              {
+                "id": "b7756557-463a-45a1-8fb0-ee8076fa6cc1",
+                "name": "message_text",
+                "value": "={{ $('Validation').item.json.message_text }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1712,
+          -880
+        ],
+        "id": "ef061391-3f47-4efa-9ba8-fb20345ae402",
+        "name": "Set Success Fields"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "dbf92ae4-57fc-463b-9f40-0b6b108ab831",
+                "name": "id",
+                "value": "={{ $('Validation').item.json.id }}",
+                "type": "string"
+              },
+              {
+                "id": "b9f7be71-1d6d-4648-9350-fc35bd2dd2c1",
+                "name": "fb_post_id",
+                "value": "={{ $json.fb_post_id || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "7516bb41-3a55-41ba-83c8-2d05fd3eab31",
+                "name": "status (draft / scheduled / posted / error)",
+                "value": "=error",
+                "type": "string"
+              },
+              {
+                "id": "a3a8949d-edcb-448c-84b1-6bd63e4fef7b",
+                "name": "posted_at",
+                "value": "={{ new Date().toLocaleString('sv-SE', { timeZone: 'Australia/Brisbane' }).replace(' ', 'T') }}",
+                "type": "string"
+              },
+              {
+                "id": "fe58d96e-31ed-4b82-9f63-9e8db65b1775",
+                "name": "timestamp",
+                "value": "={{ $('Validation').item.json.timeline }}",
+                "type": "string"
+              },
+              {
+                "id": "b7756557-463a-45a1-8fb0-ee8076fa6cc1",
+                "name": "message_text",
+                "value": "={{ $('Validation').item.json.message_text }}",
+                "type": "string"
+              },
+              {
+                "id": "9b83b2d0-1e97-4ef8-8d27-4fcbb7d60d1a",
+                "name": "error message",
+                "value": "={{ $('Execution Status').item.json.error_reason }}",
+                "type": "string"
+              },
+              {
+                "id": "8c458774-2f6b-4beb-b3b3-b3767f6fc3d4",
+                "name": "status_code",
+                "value": "={{ $('Execution Status').item.json.status_code }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1712,
+          -688
+        ],
+        "id": "fdc8a858-68e0-4518-bc83-ac46d487f346",
+        "name": "Set Error Fields"
+      }
+    ],
+    "connections": {
+      "When clicking ‘Execute workflow’": {
+        "main": [
+          [
+            {
+              "node": "Facebook Graph API",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Clear Cache",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Token and Page ID": {
+        "main": [
+          [
+            {
+              "node": "Post Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Post Message": {
+        "main": [
+          [
+            {
+              "node": "Execution Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Get row(s) in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s) in sheet": {
+        "main": [
+          [
+            {
+              "node": "Remove Duplicates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Remove Duplicates": {
+        "main": [
+          [
+            {
+              "node": "Validation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validation": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Get Token and Page ID",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Operation, do nothing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Execution Status": {
+        "main": [
+          [
+            {
+              "node": "if success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "if success": {
+        "main": [
+          [
+            {
+              "node": "Set Success Fields",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Set Error Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Clear Cache": {
+        "main": [
+          []
+        ]
+      },
+      "Set Success Fields": {
+        "main": [
+          [
+            {
+              "node": "Append or update row in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Error Fields": {
+        "main": [
+          [
+            {
+              "node": "Append or update row in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": "Version 1f38fd0e",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}
