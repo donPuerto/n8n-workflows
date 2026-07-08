@@ -3,7 +3,6 @@
   "createdAt": "2026-01-13T05:57:44.356Z",
   "id": "VO009CqRh4IAVzmP",
   "name": "04. Backup & Restore WF",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -1413,7 +1412,6 @@
   "pinData": {},
   "versionId": "df3c253f-1e5d-47a0-a67a-8c0c4fe64e3e",
   "activeVersionId": "df3c253f-1e5d-47a0-a67a-8c0c4fe64e3e",
-  "versionCounter": 576,
   "triggerCount": 2,
   "shared": [
     {
@@ -1421,25 +1419,7 @@
       "createdAt": "2026-01-13T05:57:44.364Z",
       "role": "workflow:owner",
       "workflowId": "VO009CqRh4IAVzmP",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
-    }
-  ],
-  "tags": [
-    {
-      "updatedAt": "2026-01-13T05:57:42.279Z",
-      "createdAt": "2026-01-13T05:57:42.279Z",
-      "id": "5XsA5sivBhdIUy04",
-      "name": "YouTube"
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
   "activeVersion": {
@@ -2842,32 +2822,14 @@
     "authors": "Christine Kam",
     "name": "Version df3c253f",
     "description": "",
-    "autosaved": true,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-02-11T15:59:41.964Z",
-        "id": 150,
-        "workflowId": "VO009CqRh4IAVzmP",
-        "versionId": "df3c253f-1e5d-47a0-a67a-8c0c4fe64e3e",
-        "event": "activated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      },
-      {
-        "createdAt": "2026-02-13T14:25:29.046Z",
-        "id": 161,
-        "workflowId": "VO009CqRh4IAVzmP",
-        "versionId": "df3c253f-1e5d-47a0-a67a-8c0c4fe64e3e",
-        "event": "activated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      },
-      {
-        "createdAt": "2026-02-13T14:20:18.289Z",
-        "id": 160,
-        "workflowId": "VO009CqRh4IAVzmP",
-        "versionId": "df3c253f-1e5d-47a0-a67a-8c0c4fe64e3e",
-        "event": "deactivated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
-    ]
-  }
+    "autosaved": true
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-01-13T05:57:42.279Z",
+      "createdAt": "2026-01-13T05:57:42.279Z",
+      "id": "5XsA5sivBhdIUy04",
+      "name": "YouTube"
+    }
+  ]
 }
