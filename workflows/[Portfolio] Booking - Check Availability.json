@@ -1,0 +1,592 @@
+{
+  "updatedAt": "2026-03-18T13:52:34.177Z",
+  "createdAt": "2026-03-17T13:53:50.612Z",
+  "id": "fFWpYYrzaQez1O0r",
+  "name": "[Portfolio] Booking - Check Availability",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "check-availability",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        96
+      ],
+      "id": "wh-check-avail",
+      "name": "Receive Availability Request",
+      "webhookId": "check-availability-001"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "caseSensitive": true
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ ($json.body.args?.requested_start ?? $json.body.requested_start) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "cond2",
+              "leftValue": "={{ ($json.body.args?.requested_date ?? $json.body.requested_date) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        96
+      ],
+      "id": "if-validate",
+      "name": "Validate Input"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, code: \"MISSING_FIELDS\", message: \"requested_date and requested_time are required.\", retryable: false }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        192
+      ],
+      "id": "resp-error-validation",
+      "name": "Validation Error Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "calendar_id",
+              "value": "={{ $json.body.calendar_id || 'e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com' }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "requested_start",
+              "value": "={{ ($json.body.args?.requested_start ?? $json.body.requested_start) || (($json.body.args?.requested_date ?? $json.body.requested_date) + 'T' + (($json.body.args?.requested_time ?? $json.body.requested_time) || '10:00') + ':00') }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "requested_end",
+              "value": "={{ ($json.body.args?.requested_end ?? $json.body.requested_end) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "timezone",
+              "value": "={{ ($json.body.args?.timezone ?? $json.body.timezone) || 'Asia/Manila' }}",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "duration_min",
+              "value": "={{ ($json.body.args?.preferred_duration_minutes ?? $json.body.preferred_duration_minutes) || 60 }}",
+              "type": "number"
+            },
+            {
+              "id": "a6",
+              "name": "customer_name",
+              "value": "={{ ($json.body.args?.customer_name ?? $json.body.customer_name) || ($json.body.args?.name ?? $json.body.name) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a7",
+              "name": "email",
+              "value": "={{ ($json.body.args?.email ?? $json.body.email) || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a8",
+              "name": "service_type",
+              "value": "={{ ($json.body.args?.service_type ?? $json.body.service_type) || ($json.body.args?.consultation_topic ?? $json.body.consultation_topic) || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "set-normalize",
+      "name": "Normalize Dates"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Automation Bookings Hub"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $json.requested_start }}",
+        "timeMax": "={{ $now.endOf(\"year\").toISO() }}",
+        "options": {
+          "singleEvents": true
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "gcal-events",
+      "name": "Get Calendar Events",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "1TXl73FCExI5p2lV",
+          "name": "DP: Google Calendar Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get normalized input from earlier node\nconst normalized = $('Normalize Dates').first().json;\nconst requestedStart = new Date(normalized.requested_start);\nconst durationMin = Number(normalized.duration_min) || 60;\nconst requestedEnd = normalized.requested_end \n  ? new Date(normalized.requested_end)\n  : new Date(requestedStart.getTime() + durationMin * 60000);\n\n// Get all calendar events - handle empty input gracefully\nlet events = [];\ntry {\n  const rawItems = $input.all().map(i => i.json);\n  events = rawItems.filter(e => e && (e.start || e.summary));\n} catch (err) {\n  events = [];\n}\n\n// Check if any event overlaps with requested time\nconst conflict = events.find(event => {\n  let eStart, eEnd;\n  if (event.start?.dateTime) {\n    eStart = new Date(event.start.dateTime);\n    eEnd = new Date(event.end.dateTime);\n  } else if (event.start?.date) {\n    // All-day events: treat as full day\n    eStart = new Date(event.start.date + 'T00:00:00');\n    eEnd = new Date(event.end.date + 'T00:00:00');\n  } else {\n    return false;\n  }\n  return requestedStart < eEnd && requestedEnd > eStart;\n});\n\nconst available = !conflict;\n\n// If unavailable, find next 3 open slots (working hours 8:00-17:00)\nlet alternatives = [];\nif (!available) {\n  const workStart = 8, workEnd = 17;\n  let candidate = new Date(requestedStart);\n  candidate.setMinutes(0, 0, 0);\n  if (candidate.getHours() < workStart) candidate.setHours(workStart);\n\n  for (let attempts = 0; attempts < 30 && alternatives.length < 3; attempts++) {\n    candidate = new Date(candidate.getTime() + 60 * 60000);\n    if (candidate.getHours() >= workEnd) {\n      candidate.setDate(candidate.getDate() + 1);\n      candidate.setHours(workStart, 0, 0, 0);\n      while (candidate.getDay() === 0 || candidate.getDay() === 6) {\n        candidate.setDate(candidate.getDate() + 1);\n      }\n    }\n    const candEnd = new Date(candidate.getTime() + durationMin * 60000);\n    const hasConflict = events.some(event => {\n      let eStart, eEnd;\n      if (event.start?.dateTime) {\n        eStart = new Date(event.start.dateTime);\n        eEnd = new Date(event.end.dateTime);\n      } else if (event.start?.date) {\n        eStart = new Date(event.start.date + 'T00:00:00');\n        eEnd = new Date(event.end.date + 'T00:00:00');\n      } else {\n        return false;\n      }\n      return candidate < eEnd && candEnd > eStart;\n    });\n    if (!hasConflict) {\n      alternatives.push({\n        start: candidate.toISOString(),\n        end: candEnd.toISOString()\n      });\n    }\n  }\n}\n\nreturn [{\n  json: {\n    success: true,\n    available,\n    events_found: events.length,\n    calendar_id: normalized.calendar_id,\n    requested_start: requestedStart.toISOString(),\n    requested_end: requestedEnd.toISOString(),\n    timezone: normalized.timezone,\n    alternatives\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "code-check-slot",
+      "name": "Check Slot and Find Alternatives"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "resp-availability",
+      "name": "Respond with Availability"
+    }
+  ],
+  "connections": {
+    "Receive Availability Request": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Normalize Dates",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validation Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Dates": {
+      "main": [
+        [
+          {
+            "node": "Get Calendar Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calendar Events": {
+      "main": [
+        [
+          {
+            "node": "Check Slot and Find Alternatives",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Slot and Find Alternatives": {
+      "main": [
+        [
+          {
+            "node": "Respond with Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "9a9c3ad6-4167-4fb6-af11-b9551cb332a8",
+  "activeVersionId": "9a9c3ad6-4167-4fb6-af11-b9551cb332a8",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-17T13:53:50.615Z",
+      "createdAt": "2026-03-17T13:53:50.615Z",
+      "role": "workflow:owner",
+      "workflowId": "fFWpYYrzaQez1O0r",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-03-18T13:34:51.415Z",
+    "createdAt": "2026-03-18T13:34:51.415Z",
+    "versionId": "9a9c3ad6-4167-4fb6-af11-b9551cb332a8",
+    "workflowId": "fFWpYYrzaQez1O0r",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "check-availability",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          96
+        ],
+        "id": "wh-check-avail",
+        "name": "Receive Availability Request",
+        "webhookId": "check-availability-001"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "caseSensitive": true
+            },
+            "combinator": "or",
+            "conditions": [
+              {
+                "id": "cond1",
+                "leftValue": "={{ ($json.body.args?.requested_start ?? $json.body.requested_start) }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              },
+              {
+                "id": "cond2",
+                "leftValue": "={{ ($json.body.args?.requested_date ?? $json.body.requested_date) }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          96
+        ],
+        "id": "if-validate",
+        "name": "Validate Input"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ success: false, code: \"MISSING_FIELDS\", message: \"requested_date and requested_time are required.\", retryable: false }) }}",
+          "options": {
+            "responseCode": 400
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          448,
+          192
+        ],
+        "id": "resp-error-validation",
+        "name": "Validation Error Response"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a1",
+                "name": "calendar_id",
+                "value": "={{ $json.body.calendar_id || 'e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com' }}",
+                "type": "string"
+              },
+              {
+                "id": "a2",
+                "name": "requested_start",
+                "value": "={{ ($json.body.args?.requested_start ?? $json.body.requested_start) || (($json.body.args?.requested_date ?? $json.body.requested_date) + 'T' + (($json.body.args?.requested_time ?? $json.body.requested_time) || '10:00') + ':00') }}",
+                "type": "string"
+              },
+              {
+                "id": "a3",
+                "name": "requested_end",
+                "value": "={{ ($json.body.args?.requested_end ?? $json.body.requested_end) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "a4",
+                "name": "timezone",
+                "value": "={{ ($json.body.args?.timezone ?? $json.body.timezone) || 'Asia/Manila' }}",
+                "type": "string"
+              },
+              {
+                "id": "a5",
+                "name": "duration_min",
+                "value": "={{ ($json.body.args?.preferred_duration_minutes ?? $json.body.preferred_duration_minutes) || 60 }}",
+                "type": "number"
+              },
+              {
+                "id": "a6",
+                "name": "customer_name",
+                "value": "={{ ($json.body.args?.customer_name ?? $json.body.customer_name) || ($json.body.args?.name ?? $json.body.name) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "a7",
+                "name": "email",
+                "value": "={{ ($json.body.args?.email ?? $json.body.email) || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "a8",
+                "name": "service_type",
+                "value": "={{ ($json.body.args?.service_type ?? $json.body.service_type) || ($json.body.args?.consultation_topic ?? $json.body.consultation_topic) || '' }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          448,
+          0
+        ],
+        "id": "set-normalize",
+        "name": "Normalize Dates"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "calendar": {
+            "__rl": true,
+            "value": "e9125362854663aaf3bf950614104d453e80f5cbe9c0529c292e3403e3e4d29a@group.calendar.google.com",
+            "mode": "list",
+            "cachedResultName": "Automation Bookings Hub"
+          },
+          "returnAll": true,
+          "timeMin": "={{ $json.requested_start }}",
+          "timeMax": "={{ $now.endOf(\"year\").toISO() }}",
+          "options": {
+            "singleEvents": true
+          }
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1.3,
+        "position": [
+          672,
+          0
+        ],
+        "id": "gcal-events",
+        "name": "Get Calendar Events",
+        "alwaysOutputData": true,
+        "onError": "continueRegularOutput",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "1TXl73FCExI5p2lV",
+            "name": "DP: Google Calendar Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Get normalized input from earlier node\nconst normalized = $('Normalize Dates').first().json;\nconst requestedStart = new Date(normalized.requested_start);\nconst durationMin = Number(normalized.duration_min) || 60;\nconst requestedEnd = normalized.requested_end \n  ? new Date(normalized.requested_end)\n  : new Date(requestedStart.getTime() + durationMin * 60000);\n\n// Get all calendar events - handle empty input gracefully\nlet events = [];\ntry {\n  const rawItems = $input.all().map(i => i.json);\n  events = rawItems.filter(e => e && (e.start || e.summary));\n} catch (err) {\n  events = [];\n}\n\n// Check if any event overlaps with requested time\nconst conflict = events.find(event => {\n  let eStart, eEnd;\n  if (event.start?.dateTime) {\n    eStart = new Date(event.start.dateTime);\n    eEnd = new Date(event.end.dateTime);\n  } else if (event.start?.date) {\n    // All-day events: treat as full day\n    eStart = new Date(event.start.date + 'T00:00:00');\n    eEnd = new Date(event.end.date + 'T00:00:00');\n  } else {\n    return false;\n  }\n  return requestedStart < eEnd && requestedEnd > eStart;\n});\n\nconst available = !conflict;\n\n// If unavailable, find next 3 open slots (working hours 8:00-17:00)\nlet alternatives = [];\nif (!available) {\n  const workStart = 8, workEnd = 17;\n  let candidate = new Date(requestedStart);\n  candidate.setMinutes(0, 0, 0);\n  if (candidate.getHours() < workStart) candidate.setHours(workStart);\n\n  for (let attempts = 0; attempts < 30 && alternatives.length < 3; attempts++) {\n    candidate = new Date(candidate.getTime() + 60 * 60000);\n    if (candidate.getHours() >= workEnd) {\n      candidate.setDate(candidate.getDate() + 1);\n      candidate.setHours(workStart, 0, 0, 0);\n      while (candidate.getDay() === 0 || candidate.getDay() === 6) {\n        candidate.setDate(candidate.getDate() + 1);\n      }\n    }\n    const candEnd = new Date(candidate.getTime() + durationMin * 60000);\n    const hasConflict = events.some(event => {\n      let eStart, eEnd;\n      if (event.start?.dateTime) {\n        eStart = new Date(event.start.dateTime);\n        eEnd = new Date(event.end.dateTime);\n      } else if (event.start?.date) {\n        eStart = new Date(event.start.date + 'T00:00:00');\n        eEnd = new Date(event.end.date + 'T00:00:00');\n      } else {\n        return false;\n      }\n      return candidate < eEnd && candEnd > eStart;\n    });\n    if (!hasConflict) {\n      alternatives.push({\n        start: candidate.toISOString(),\n        end: candEnd.toISOString()\n      });\n    }\n  }\n}\n\nreturn [{\n  json: {\n    success: true,\n    available,\n    events_found: events.length,\n    calendar_id: normalized.calendar_id,\n    requested_start: requestedStart.toISOString(),\n    requested_end: requestedEnd.toISOString(),\n    timezone: normalized.timezone,\n    alternatives\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          896,
+          0
+        ],
+        "id": "code-check-slot",
+        "name": "Check Slot and Find Alternatives"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify($json) }}",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          1120,
+          0
+        ],
+        "id": "resp-availability",
+        "name": "Respond with Availability"
+      }
+    ],
+    "connections": {
+      "Receive Availability Request": {
+        "main": [
+          [
+            {
+              "node": "Validate Input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Input": {
+        "main": [
+          [
+            {
+              "node": "Normalize Dates",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Validation Error Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Normalize Dates": {
+        "main": [
+          [
+            {
+              "node": "Get Calendar Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Calendar Events": {
+        "main": [
+          [
+            {
+              "node": "Check Slot and Find Alternatives",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Slot and Find Alternatives": {
+        "main": [
+          [
+            {
+              "node": "Respond with Availability",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-03-17T14:33:56.182Z",
+      "createdAt": "2026-03-17T14:33:56.182Z",
+      "id": "me4oEuvYam1TwdIi",
+      "name": "Workflow-c"
+    }
+  ]
+}
