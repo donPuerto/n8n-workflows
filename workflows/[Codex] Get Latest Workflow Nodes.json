@@ -1,0 +1,118 @@
+{
+  "updatedAt": "2026-05-17T11:48:31.000Z",
+  "createdAt": "2026-05-06T00:02:41.494Z",
+  "id": "j5PRKo0shuJCM3ky",
+  "name": "[Codex] Get Latest Workflow Nodes",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "id": "trig-latest",
+      "name": "MCP Server Trigger",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {
+        "path": "codex-latest-nodes",
+        "authentication": "none"
+      },
+      "webhookId": "e0efc6bd-a317-41b4-8b0f-d9076c40e8af"
+    },
+    {
+      "id": "http-latest",
+      "name": "Get Recent Workflows",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://n8n.srv1127913.hstgr.cloud/api/v1/workflows",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNDZkYzg3Zi0xMGJiLTQwMmUtOWE3My05ZmUzODgzOGY0NTEiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiMTQyODc0YjMtM2QxMy00YTIyLTg1NGItOTg4YTZlZWJhMTFkIiwiaWF0IjoxNzcxNjgzMDExfQ.EIHWHtiXBfBzdWhAlmG2XE1lYUGTSxRAEJBARf12qxg"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "code-latest",
+      "name": "Format Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const workflows = $input.first().json;\nconst data = Array.isArray(workflows) ? workflows : (workflows.data || []);\nconst sorted = [...data].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));\nreturn sorted.slice(0, 10).map(wf => ({\n  json: {\n    id: wf.id,\n    name: wf.name,\n    active: wf.active,\n    nodeCount: wf.nodeCount,\n    updatedAt: wf.updatedAt\n  }\n}));"
+      }
+    }
+  ],
+  "connections": {
+    "MCP Server Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Recent Workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent Workflows": {
+      "main": [
+        [
+          {
+            "node": "Format Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "bd85c535-da66-4199-84a1-a7a656ad57bd",
+  "activeVersionId": null,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-06T00:02:41.501Z",
+      "createdAt": "2026-05-06T00:02:41.501Z",
+      "role": "workflow:owner",
+      "workflowId": "j5PRKo0shuJCM3ky",
+      "projectId": "6TsYTzg0HY92xH2K"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
