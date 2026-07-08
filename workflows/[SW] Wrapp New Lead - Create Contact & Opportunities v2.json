@@ -1,0 +1,310 @@
+{
+  "updatedAt": "2026-02-19T05:27:02.736Z",
+  "createdAt": "2026-02-19T01:14:17.513Z",
+  "id": "oR1wXz7h7qdpptgT",
+  "name": "[SW] Wrapp: New Lead - Create Contact & Opportunities v2",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        128
+      ],
+      "id": "4d634bc1-512e-4524-ad99-d154ede76558",
+      "name": "When Executed by Another Workflow",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node (JavaScript) - Mimic incoming NEW lead\n// Matches real pipeline output structure\n// No payload field\n// Google Sheets safe enquiry (leading apostrophe)\n\nreturn [\n  {\n    json: {\n      Timestamp: \"19/02/2026, 10:54:53\",\n\n      id: \"1473844842055471156\",\n      authorId: \"325664446103945217\",\n      channelId: \"1456133270352822373\",\n      messageId: \"1473844842055471156\",\n\n      leadType: \"HiPages Lead\",\n      firstName: \"Elma\",\n      lastName: \"Spooner\",\n\n      mobileNumber: \"0427145371\",\n      phoneNumber: \"\",\n      emailAddress: \"emararai@gmail.com\",\n\n      postalCode: \"4109\",\n      address: \"Sunnybank Hills\",\n      state: \"Brisbane\",\n      suburb: \"Sunnybank Hills\",\n\n      enquiry: \"'===== IMAGE DETAILS =====\\nflyscreen damage from dog biting on fly screens\",\n\n      quantity: \"2\",\n      leadQualifier: \"Good\",\n      referredBy: \"\",\n\n      IdLikeToGetMyProjectUnderway: \"I'm flexible\",\n      howTheyHeardAboutUs: \"HiPages\",\n\n      fileName: \"ElmaSpooner-19-02-2026-HiLead\",\n\n      imageAttachments: [\n        {\n          id: \"1473844841786900634\",\n          name: \"Image_17.jpg\",\n          url: \"https://cdn.discordapp.com/attachments/1456133270352822373/1473844841786900634/Image_17.jpg?ex=6997b078&is=69965ef8&hm=08790a38e922adbeb8a9a22096db5f331ae27e4f19d9de64ceabfe7b6211d9d8&\",\n          proxyURL: \"https://media.discordapp.net/attachments/1456133270352822373/1473844841786900634/Image_17.jpg?ex=6997b078&is=69965ef8&hm=08790a38e922adbeb8a9a22096db5f331ae27e4f19d9de64ceabfe7b6211d9d8&\",\n          size: 609108,\n          width: 1290,\n          height: 2796,\n          contentType: \"image/jpeg\",\n          title: \"Image (17)\",\n          description: null\n        }\n      ]\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -128
+      ],
+      "id": "9f217a0d-3fd7-4450-b175-8252f483c6a9",
+      "name": "Code node to mimic incoming data (for testing inside the sub-workflow)",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -128
+      ],
+      "id": "6bf7efa1-b2d6-49ad-931b-67a0c7d83f71",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wrapp2.windowrevival.com.au/api/opportunities/create",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        112
+      ],
+      "id": "a7936e2a-a938-4605-9457-9d22dd462a07",
+      "name": "Create Opportunities",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "UTs7Hb7x8Xe72hTe",
+          "name": "WR: Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfe143c1-1c01-4b62-b292-ab210706031b",
+              "name": "Timestamp",
+              "value": "={{ $json.Timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "7c753874-2708-4658-9211-ab1a07be7f81",
+              "name": "id",
+              "value": "={{ $json.messageId }}",
+              "type": "string"
+            },
+            {
+              "id": "59c5c353-8830-4285-9b9d-f3b53888cb50",
+              "name": "authorId",
+              "value": "={{ $json.authorId }}",
+              "type": "string"
+            },
+            {
+              "id": "265db7eb-7687-476b-96f5-11d030f8251a",
+              "name": "channelId",
+              "value": "={{ $json.channelId }}",
+              "type": "string"
+            },
+            {
+              "id": "4814f4f1-cea7-4c83-94c9-691ed2a48b65",
+              "name": "messageId",
+              "value": "={{ $json.messageId }}",
+              "type": "string"
+            },
+            {
+              "id": "7fd6c372-a574-46eb-b8a8-4ca5514c2bb4",
+              "name": "leadType",
+              "value": "={{ $json.leadType }}",
+              "type": "string"
+            },
+            {
+              "id": "319cbc2f-686c-4690-b0da-99edb563a4d9",
+              "name": "firstName",
+              "value": "={{ $json.firstName }}",
+              "type": "string"
+            },
+            {
+              "id": "e318f933-3a86-4e92-8d45-fdd5c9d6db45",
+              "name": "lastName",
+              "value": "={{ $json.lastName }}",
+              "type": "string"
+            },
+            {
+              "id": "1033f6f6-ff3d-462c-a819-0253ba1097a9",
+              "name": "mobileNumber",
+              "value": "={{ $json.mobileNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "42c58a65-dab0-4938-a047-f6beba67e9d3",
+              "name": "phoneNumber",
+              "value": "={{ $json.phoneNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "75060d69-eaa3-4924-b9f6-b7cf159502d4",
+              "name": "emailAddress",
+              "value": "={{ $json.emailAddress }}",
+              "type": "string"
+            },
+            {
+              "id": "518ce6f1-f3a0-4e61-b483-c85feb63ae15",
+              "name": "postalCode",
+              "value": "={{ $json.postalCode }}",
+              "type": "string"
+            },
+            {
+              "id": "2420ae52-e6a5-4d5e-889a-014ad00b28b2",
+              "name": "address",
+              "value": "={{ $json.address }}",
+              "type": "string"
+            },
+            {
+              "id": "421623c8-2db6-4b40-a102-f6dc36ff61ed",
+              "name": "state",
+              "value": "={{ $json.state }}",
+              "type": "string"
+            },
+            {
+              "id": "7cc111a4-9134-4fe3-97eb-75b5e81c8d31",
+              "name": "suburb",
+              "value": "={{ $json.suburb }}",
+              "type": "string"
+            },
+            {
+              "id": "fb3af799-02a3-4669-97b7-5616f9bc8d93",
+              "name": "enquiry",
+              "value": "={{ $json.enquiry }}",
+              "type": "string"
+            },
+            {
+              "id": "e76aa2b3-3c3f-43d7-b9e2-8dfe2c4ecad3",
+              "name": "quantity",
+              "value": "={{ $json.Quantity }}",
+              "type": "string"
+            },
+            {
+              "id": "193cbe77-7015-40c3-95b1-eba1fd89481c",
+              "name": "leadQualifier",
+              "value": "={{ $json.leadQualifier }}",
+              "type": "string"
+            },
+            {
+              "id": "6c8b740a-0f64-4828-bc0a-f71e2bf6621b",
+              "name": "referredBy",
+              "value": "={{ $json.referredBy }}",
+              "type": "string"
+            },
+            {
+              "id": "33a52d4e-10f1-4357-90d4-de70e6873925",
+              "name": "IdLikeToGetMyProjectUnderway",
+              "value": "={{ $json.IdLikeToGetMyProjectUnderway }}",
+              "type": "string"
+            },
+            {
+              "id": "9c3726e2-0e35-4a55-8fb3-2cfc97653e48",
+              "name": "howTheyHeardAboutUs",
+              "value": "={{ $json.howDidYouHearAboutUs }}",
+              "type": "string"
+            },
+            {
+              "id": "891ac909-a00b-497c-b50e-9edfcab72a09",
+              "name": "fileName",
+              "value": "={{ $json.fileName }}",
+              "type": "string"
+            },
+            {
+              "id": "a17b94b9-37be-4b9d-a580-8debdcaba569",
+              "name": "imageAttachments",
+              "value": "={{ $json.imageAttachments }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        -144
+      ],
+      "id": "47b0b3ee-1875-4fe2-9006-81e5a26f5362",
+      "name": "Map HiPages Lead"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: $json };\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        128
+      ],
+      "id": "5a065755-b9c3-4f88-9aee-8ef648d854f1",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Code node to mimic incoming data (for testing inside the sub-workflow)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code node to mimic incoming data (for testing inside the sub-workflow)": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "ed0c3820-3fa0-4123-91a2-8703e3deb78e",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-19T01:14:17.517Z",
+      "createdAt": "2026-02-19T01:14:17.517Z",
+      "role": "workflow:owner",
+      "workflowId": "oR1wXz7h7qdpptgT",
+      "projectId": "6TsYTzg0HY92xH2K"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
