@@ -3,7 +3,6 @@
   "createdAt": "2026-03-30T00:52:30.297Z",
   "id": "XuEJUSibmhjQPGYh",
   "name": "Google Ads Lead",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -977,10 +976,9 @@
   "staticData": {
     "node:Gmail Trigger": {
       "Gmail Trigger": {
-        "lastTimeChecked": 1775764480,
+        "lastTimeChecked": 1776541240,
         "possibleDuplicates": [
-          "19d73d15adaecd45",
-          "19d71e17cc3bcd25"
+          "19da21dc45826f55"
         ]
       }
     }
@@ -1088,7 +1086,6 @@
   },
   "versionId": "b6559d3a-8e36-40f0-a33b-90a30ce8cc75",
   "activeVersionId": "b6559d3a-8e36-40f0-a33b-90a30ce8cc75",
-  "versionCounter": 238,
   "triggerCount": 1,
   "shared": [
     {
@@ -1096,20 +1093,9 @@
       "createdAt": "2026-03-30T00:52:30.301Z",
       "role": "workflow:owner",
       "workflowId": "XuEJUSibmhjQPGYh",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
   "activeVersion": {
     "updatedAt": "2026-04-06T21:40:28.000Z",
     "createdAt": "2026-04-06T21:40:09.548Z",
@@ -2076,16 +2062,7 @@
     "authors": "Christine Kam",
     "name": "Version b6559d3a",
     "description": "",
-    "autosaved": true,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-04-06T21:40:28.735Z",
-        "id": 889,
-        "workflowId": "XuEJUSibmhjQPGYh",
-        "versionId": "b6559d3a-8e36-40f0-a33b-90a30ce8cc75",
-        "event": "activated",
-        "userId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
-    ]
-  }
+    "autosaved": true
+  },
+  "tags": []
 }
