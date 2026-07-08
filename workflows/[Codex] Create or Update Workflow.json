@@ -1,0 +1,115 @@
+{
+  "updatedAt": "2026-05-17T11:28:00.000Z",
+  "createdAt": "2026-05-06T00:02:53.803Z",
+  "id": "ipMQJ33mM2JD0O2X",
+  "name": "[Codex] Create or Update Workflow",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "codex-create-update-workflow"
+      },
+      "id": "trig-cuw",
+      "name": "MCP Server Trigger",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        240,
+        304
+      ],
+      "webhookId": "a5a9dc05-6fa5-4d41-84dc-85fe777e5f86"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input.body || input;\nconst action = body.action || 'create';\nconst workflowId = body.workflowId || body.id;\nconst name = body.name || '[Codex] New Workflow';\nconst nodes = body.nodes || [];\nconst connections = body.connections || {};\n\nreturn [{\n  json: {\n    action,\n    workflowId,\n    name,\n    nodes,\n    connections,\n    method: action === 'update' && workflowId ? 'PUT' : 'POST',\n    url: action === 'update' && workflowId\n      ? `https://n8n.srv1127913.hstgr.cloud/api/v1/workflows/${workflowId}`\n      : 'https://n8n.srv1127913.hstgr.cloud/api/v1/workflows'\n  }\n}];"
+      },
+      "id": "code-cuw",
+      "name": "Prepare Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNDZkYzg3Zi0xMGJiLTQwMmUtOWE3My05ZmUzODgzOGY0NTEiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiMTQyODc0YjMtM2QxMy00YTIyLTg1NGItOTg4YTZlZWJhMTFkIiwiaWF0IjoxNzcxNjgzMDExfQ.EIHWHtiXBfBzdWhAlmG2XE1lYUGTSxRAEJBARf12qxg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ name: $json.name, nodes: $json.nodes, connections: $json.connections, settings: { executionOrder: 'v1' } }) }}",
+        "options": {}
+      },
+      "id": "http-cuw",
+      "name": "Create or Update",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        304
+      ]
+    }
+  ],
+  "connections": {
+    "MCP Server Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Request": {
+      "main": [
+        [
+          {
+            "node": "Create or Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b1de2026-0d21-4969-b1c9-154abcb2e98d",
+  "activeVersionId": null,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-05-06T00:02:53.813Z",
+      "createdAt": "2026-05-06T00:02:53.813Z",
+      "role": "workflow:owner",
+      "workflowId": "ipMQJ33mM2JD0O2X",
+      "projectId": "6TsYTzg0HY92xH2K"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
