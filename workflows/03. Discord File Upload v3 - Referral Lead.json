@@ -3,7 +3,6 @@
   "createdAt": "2026-01-01T07:44:39.231Z",
   "id": "RBKVsJedeWvoIpth",
   "name": "03. Discord File Upload v3 - Referral Lead",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -1183,7 +1182,6 @@
   "pinData": {},
   "versionId": "225d7c52-f5c2-4463-b8d4-18e35cc7096a",
   "activeVersionId": null,
-  "versionCounter": 121,
   "triggerCount": 1,
   "shared": [
     {
@@ -1191,19 +1189,10 @@
       "createdAt": "2026-01-01T07:44:39.234Z",
       "role": "workflow:owner",
       "workflowId": "RBKVsJedeWvoIpth",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
+  "activeVersion": null,
   "tags": [
     {
       "updatedAt": "2025-11-25T13:05:18.454Z",
@@ -1211,6 +1200,5 @@
       "id": "xn6seEX74pkTOLqC",
       "name": "@lead"
     }
-  ],
-  "activeVersion": null
+  ]
 }
