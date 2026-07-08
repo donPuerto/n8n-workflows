@@ -3,7 +3,6 @@
   "createdAt": "2025-11-21T02:45:00.534Z",
   "id": "QAc1qmZNOByAMd9C",
   "name": "03. Twilio Messaging",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -97,7 +96,6 @@
   "pinData": {},
   "versionId": "3294ebde-ebc7-459a-88b3-ae339af7aac3",
   "activeVersionId": null,
-  "versionCounter": 13,
   "triggerCount": 2,
   "shared": [
     {
@@ -105,19 +103,9 @@
       "createdAt": "2025-11-21T02:45:00.538Z",
       "role": "workflow:owner",
       "workflowId": "QAc1qmZNOByAMd9C",
-      "projectId": "6TsYTzg0HY92xH2K",
-      "project": {
-        "updatedAt": "2025-11-14T08:33:27.896Z",
-        "createdAt": "2025-11-14T07:49:25.938Z",
-        "id": "6TsYTzg0HY92xH2K",
-        "name": "Christine Kam <windowrevival@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "bc31a112-3ed8-48ca-b94c-7225571c3d7b"
-      }
+      "projectId": "6TsYTzg0HY92xH2K"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
