@@ -1,0 +1,159 @@
+{
+  "updatedAt": "2026-04-08T21:23:15.013Z",
+  "createdAt": "2026-04-08T21:23:15.013Z",
+  "id": "9ZWML82lTRZIhUbI",
+  "name": "Ingest Debug Upload",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "webhook1",
+      "name": "Receive Debug Upload",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ingest-knowledge-debug-upload",
+        "responseMode": "lastNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "code1",
+      "name": "Echo Multipart Shape",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const item = items[0];\nreturn [{ json: {\n  body: item.json.body ?? item.json,\n  topLevelJsonKeys: Object.keys(item.json || {}),\n  binaryKeys: Object.keys(item.binary || {}),\n  binaryDetails: Object.fromEntries(Object.entries(item.binary || {}).map(([k,v]) => [k, { fileName: v.fileName, mimeType: v.mimeType, fileExtension: v.fileExtension, fileSize: v.fileSize }]))\n} }];"
+      }
+    },
+    {
+      "id": "note1",
+      "name": "Debug Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        80
+      ],
+      "parameters": {
+        "content": "Temporary debug workflow for multipart webhook inspection",
+        "width": 480,
+        "height": 140,
+        "color": 7
+      }
+    }
+  ],
+  "connections": {
+    "Receive Debug Upload": {
+      "main": [
+        [
+          {
+            "node": "Echo Multipart Shape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "d084bece-d236-4f2a-8181-e314cb7bd1a3",
+  "activeVersionId": "d084bece-d236-4f2a-8181-e314cb7bd1a3",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-08T21:23:15.015Z",
+      "createdAt": "2026-04-08T21:23:15.015Z",
+      "role": "workflow:owner",
+      "workflowId": "9ZWML82lTRZIhUbI",
+      "projectId": "p3k6mrxCVXQTfj2s"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-04-08T21:23:15.017Z",
+    "createdAt": "2026-04-08T21:23:15.017Z",
+    "versionId": "d084bece-d236-4f2a-8181-e314cb7bd1a3",
+    "workflowId": "9ZWML82lTRZIhUbI",
+    "nodes": [
+      {
+        "id": "webhook1",
+        "name": "Receive Debug Upload",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          260,
+          300
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "ingest-knowledge-debug-upload",
+          "responseMode": "lastNode",
+          "options": {}
+        }
+      },
+      {
+        "id": "code1",
+        "name": "Echo Multipart Shape",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          520,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const item = items[0];\nreturn [{ json: {\n  body: item.json.body ?? item.json,\n  topLevelJsonKeys: Object.keys(item.json || {}),\n  binaryKeys: Object.keys(item.binary || {}),\n  binaryDetails: Object.fromEntries(Object.entries(item.binary || {}).map(([k,v]) => [k, { fileName: v.fileName, mimeType: v.mimeType, fileExtension: v.fileExtension, fileSize: v.fileSize }]))\n} }];"
+        }
+      },
+      {
+        "id": "note1",
+        "name": "Debug Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          60,
+          80
+        ],
+        "parameters": {
+          "content": "Temporary debug workflow for multipart webhook inspection",
+          "width": 480,
+          "height": 140,
+          "color": 7
+        }
+      }
+    ],
+    "connections": {
+      "Receive Debug Upload": {
+        "main": [
+          [
+            {
+              "node": "Echo Multipart Shape",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Don Puerto",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}
