@@ -1,9 +1,8 @@
 {
-  "updatedAt": "2026-04-05T16:49:12.890Z",
+  "updatedAt": "2026-06-25T08:26:37.302Z",
   "createdAt": "2026-04-05T07:12:53.321Z",
   "id": "E1JxllLWHTJNdt8F",
   "name": "[POC] Golden Record - Lead Dedup & Merge - v1",
-  "description": null,
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -987,7 +986,7 @@
     {
       "parameters": {
         "content": "## [POC] Golden Record - Lead Dedup & Merge - v1\n**Trigger:** Manual | **Sources:** County CSV (A), Facebook (B), Researcher Sheet (C) | **CRM:** Google Sheet (GHL Mock)\n**Clay:** Visible HTTP Request node (neverError=true â€” workflow continues even if Clay is down)\n**Match threshold:** >=70% merge, 50-69% review, <50% create new\n**Credentials:** DP: Google Sheets Account | Sheet IDs + Clay key pre-filled in Set: Config\n**Fix 2026-04-05:** Cascade merge (A+B â†’ MergeAll+C) replaces buggy single 3-input Merge",
-        "height": 130,
+        "height": 194,
         "width": 750,
         "color": 2
       },
@@ -1218,7 +1217,7 @@
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": true,
+    "availableInMCP": false,
     "binaryMode": "separate"
   },
   "staticData": null,
@@ -1226,9 +1225,8 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "bc641829-ae46-45fd-91af-92f1ee49f5b4",
+  "versionId": "7dd31c3f-096d-49b0-95c2-a53b3140377e",
   "activeVersionId": null,
-  "versionCounter": 10,
   "triggerCount": 0,
   "shared": [
     {
@@ -1236,19 +1234,9 @@
       "createdAt": "2026-04-05T07:12:53.323Z",
       "role": "workflow:owner",
       "workflowId": "E1JxllLWHTJNdt8F",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "activeVersion": null,
+  "tags": []
 }
