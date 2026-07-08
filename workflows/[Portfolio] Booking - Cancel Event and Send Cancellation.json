@@ -3,7 +3,6 @@
   "createdAt": "2026-03-17T13:58:23.578Z",
   "id": "Do4yTrqCVQyM9noy",
   "name": "[Portfolio] Booking - Cancel Event and Send Cancellation",
-  "description": null,
   "active": true,
   "isArchived": false,
   "nodes": [
@@ -682,7 +681,6 @@
   "pinData": {},
   "versionId": "149acb60-e46f-49f6-854b-6e1b50bd0985",
   "activeVersionId": "149acb60-e46f-49f6-854b-6e1b50bd0985",
-  "versionCounter": 137,
   "triggerCount": 1,
   "shared": [
     {
@@ -690,25 +688,7 @@
       "createdAt": "2026-03-17T13:58:23.580Z",
       "role": "workflow:owner",
       "workflowId": "Do4yTrqCVQyM9noy",
-      "projectId": "p3k6mrxCVXQTfj2s",
-      "project": {
-        "updatedAt": "2025-12-28T03:48:55.498Z",
-        "createdAt": "2025-12-23T06:42:33.272Z",
-        "id": "p3k6mrxCVXQTfj2s",
-        "name": "Don Puerto <don.puerto.1003@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null,
-        "creatorId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
-    }
-  ],
-  "tags": [
-    {
-      "updatedAt": "2026-03-17T15:13:49.246Z",
-      "createdAt": "2026-03-17T15:13:49.246Z",
-      "id": "d7mqfOtooEEoFB3C",
-      "name": "Workflow-F"
+      "projectId": "p3k6mrxCVXQTfj2s"
     }
   ],
   "activeVersion": {
@@ -1383,24 +1363,14 @@
     "authors": "Don Puerto",
     "name": null,
     "description": null,
-    "autosaved": false,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2026-03-19T07:16:52.037Z",
-        "id": 737,
-        "workflowId": "Do4yTrqCVQyM9noy",
-        "versionId": "149acb60-e46f-49f6-854b-6e1b50bd0985",
-        "event": "activated",
-        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      },
-      {
-        "createdAt": "2026-03-19T07:16:52.026Z",
-        "id": 736,
-        "workflowId": "Do4yTrqCVQyM9noy",
-        "versionId": "149acb60-e46f-49f6-854b-6e1b50bd0985",
-        "event": "deactivated",
-        "userId": "e46dc87f-10bb-402e-9a73-9fe38838f451"
-      }
-    ]
-  }
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-03-17T15:13:49.246Z",
+      "createdAt": "2026-03-17T15:13:49.246Z",
+      "id": "d7mqfOtooEEoFB3C",
+      "name": "Workflow-F"
+    }
+  ]
 }
