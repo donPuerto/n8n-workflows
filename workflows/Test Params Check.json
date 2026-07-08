@@ -1,0 +1,66 @@
+{
+  "updatedAt": "2026-04-26T22:14:37.000Z",
+  "createdAt": "2026-04-05T04:30:03.187Z",
+  "id": "KRbqtEdbCeEEhyNr",
+  "name": "Test Params Check",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "id": "b34c525d-4c08-437e-94d5-913d2d34ea16",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "id": "0a324748-e1ed-4a45-9554-bd28adfe7212",
+      "name": "Test Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Test Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "aiBuilderAssisted": true
+  },
+  "pinData": null,
+  "versionId": "c1e7388d-df73-42b6-8472-b0cc82c56afb",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-04-05T04:30:03.191Z",
+      "createdAt": "2026-04-05T04:30:03.191Z",
+      "role": "workflow:owner",
+      "workflowId": "KRbqtEdbCeEEhyNr",
+      "projectId": "6TsYTzg0HY92xH2K"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}
